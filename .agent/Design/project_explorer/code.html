@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Project Explorer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#a9a7ff",
+                        "tertiary-fixed": "#ffdbca",
+                        "secondary-fixed-dim": "#6bd8cb",
+                        "on-primary-fixed": "#0f0069",
+                        "on-background": "#0b1c30",
+                        "secondary": "#006a61",
+                        "primary": "#1f108e",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "background": "#f8f9ff",
+                        "primary-container": "#3730a3",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-low": "#eff4ff",
+                        "surface": "#f8f9ff",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "outline": "#777584",
+                        "on-secondary-fixed": "#00201d",
+                        "tertiary": "#4f1e00",
+                        "tertiary-fixed-dim": "#ffb690",
+                        "tertiary-container": "#722f00",
+                        "on-secondary-fixed-variant": "#005049",
+                        "surface-container": "#e5eeff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-surface-variant": "#464553",
+                        "on-tertiary-fixed-variant": "#783200",
+                        "surface-bright": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#89f5e7",
+                        "on-secondary-container": "#006f66",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-tertiary-fixed": "#341100",
+                        "surface-tint": "#544fc0",
+                        "on-tertiary-container": "#ff9559",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#e2dfff",
+                        "secondary-container": "#86f2e4",
+                        "inverse-on-surface": "#eaf1ff",
+                        "inverse-surface": "#213145",
+                        "outline-variant": "#c8c4d5",
+                        "on-surface": "#0b1c30",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#dce9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin": "32px",
+                        "sm": "12px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "lg": "40px",
+                        "xs": "4px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Lexend"],
+                        "h2": ["Plus Jakarta Sans"],
+                        "body-sm": ["Lexend"],
+                        "button": ["Plus Jakarta Sans"],
+                        "h3": ["Plus Jakarta Sans"],
+                        "h1": ["Plus Jakarta Sans"],
+                        "body-lg": ["Lexend"],
+                        "label-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "h2": ["32px", { "lineHeight": "1.25", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "button": ["16px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "h1": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(55, 48, 163, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-body-md text-on-background flex h-screen overflow-hidden antialiased selection:bg-primary selection:text-on-primary">
+<!-- SideNavBar -->
+<aside class="hidden md:flex bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl h-screen w-64 border-r rounded-r-none border-r border-white/20 dark:border-slate-800 shadow-xl shadow-indigo-900/5 flex flex-col h-full p-4 gap-2 z-40">
+<div class="mb-8 px-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-h3">P</div>
+<div>
+<div class="font-black text-indigo-950 dark:text-indigo-100 font-h3 text-h3 tracking-tight">Project Polaris</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Academic Hub</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<a class="flex items-center gap-sm px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:translate-x-1 transition-all duration-300 font-button text-button hover:shadow-indigo-200/50" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-sm px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:translate-x-1 transition-all duration-300 font-button text-button hover:shadow-indigo-200/50" href="#">
+<span class="material-symbols-outlined text-[20px]">folder_managed</span>
+                My Projects
+            </a>
+<a class="flex items-center gap-sm px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:translate-x-1 transition-all duration-300 font-button text-button hover:shadow-indigo-200/50" href="#">
+<span class="material-symbols-outlined text-[20px]">format_list_bulleted</span>
+                Task Board
+            </a>
+<a class="flex items-center gap-sm px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:translate-x-1 transition-all duration-300 font-button text-button hover:shadow-indigo-200/50" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+                Collaboration
+            </a>
+<a class="flex items-center gap-sm px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:translate-x-1 transition-all duration-300 font-button text-button hover:shadow-indigo-200/50" href="#">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+                Resource Library
+            </a>
+<a class="flex items-center gap-sm px-4 py-3 bg-indigo-100/50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg shadow-sm font-button text-button hover:shadow-indigo-200/50 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">travel_explore</span>
+                Discovery
+            </a>
+</nav>
+<div class="mt-auto pt-4 border-t border-slate-200/50 flex flex-col gap-1">
+<a class="flex items-center gap-sm px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:translate-x-1 transition-all duration-300 font-button text-button hover:shadow-indigo-200/50" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+                Help Center
+            </a>
+<a class="flex items-center gap-sm px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:translate-x-1 transition-all duration-300 font-button text-button hover:shadow-indigo-200/50" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+                Sign Out
+            </a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col min-w-0 bg-surface-bright">
+<!-- TopNavBar -->
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md docked full-width top-0 border-b border-b border-white/20 dark:border-slate-800 shadow-[0_8px_30px_rgb(55,48,163,0.08)] sticky top-0 z-50 flex justify-between items-center px-6 py-3 w-full font-['Plus_Jakarta_Sans'] antialiased">
+<div class="flex items-center gap-4 flex-1">
+<h1 class="text-xl font-bold tracking-tight text-indigo-900 dark:text-indigo-100 hidden md:block">Project Polaris</h1>
+<!-- Search Bar (on_left as per JSON) -->
+<div class="relative w-full max-w-md ml-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full font-body-sm text-body-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors" placeholder="Search projects, courses..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 transition-colors rounded-full scale-95 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 transition-colors rounded-full scale-95 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 transition-colors rounded-full scale-95 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 overflow-y-auto p-md lg:p-gutter flex gap-gutter">
+<!-- Filter Sidebar -->
+<aside class="w-64 hidden lg:flex flex-col gap-md shrink-0">
+<div class="glass-panel rounded-xl p-md flex flex-col gap-sm sticky top-0">
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-h3 text-h3 text-on-surface">Filters</h3>
+<button class="font-label-md text-label-md text-primary hover:text-secondary transition-colors">Clear All</button>
+</div>
+<!-- Filter Section: Course -->
+<div class="border-t border-outline-variant/30 pt-4">
+<h4 class="font-label-md text-label-md text-on-surface-variant mb-3 flex items-center justify-between cursor-pointer">
+                            Course Discipline
+                            <span class="material-symbols-outlined text-sm">expand_more</span>
+</h4>
+<div class="flex flex-col gap-2">
+<label class="flex items-center gap-2 cursor-pointer group">
+<div class="w-4 h-4 border border-outline rounded flex items-center justify-center group-hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-[12px] text-transparent group-hover:text-primary transition-colors" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface">Computer Science</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer group">
+<div class="w-4 h-4 border border-outline rounded flex items-center justify-center group-hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-[12px] text-transparent group-hover:text-primary transition-colors" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface">Interaction Design</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer group">
+<div class="w-4 h-4 border border-outline rounded flex items-center justify-center group-hover:border-primary transition-colors bg-primary border-primary">
+<span class="material-symbols-outlined text-[12px] text-white" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface">Data Analytics</span>
+</label>
+</div>
+</div>
+<!-- Filter Section: Instructor -->
+<div class="border-t border-outline-variant/30 pt-4">
+<h4 class="font-label-md text-label-md text-on-surface-variant mb-3 flex items-center justify-between cursor-pointer">
+                            Instructor
+                            <span class="material-symbols-outlined text-sm">expand_more</span>
+</h4>
+<div class="relative mb-3">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="w-full pl-8 pr-2 py-1.5 bg-surface border border-outline-variant rounded font-body-sm text-body-sm focus:outline-none focus:border-secondary" placeholder="Find instructor..." type="text"/>
+</div>
+<div class="flex flex-col gap-2 max-h-32 overflow-y-auto">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Dr. A. Turing</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Prof. M. Hamilton</span>
+</label>
+</div>
+</div>
+<!-- Filter Section: Date -->
+<div class="border-t border-outline-variant/30 pt-4">
+<h4 class="font-label-md text-label-md text-on-surface-variant mb-3 flex items-center justify-between cursor-pointer">
+                            Date Added
+                            <span class="material-symbols-outlined text-sm">expand_more</span>
+</h4>
+<select class="w-full p-2 bg-surface border border-outline-variant rounded font-body-sm text-body-sm focus:outline-none focus:border-secondary">
+<option>Any Time</option>
+<option>Past Week</option>
+<option>Past Month</option>
+<option>Past Semester</option>
+</select>
+</div>
+</div>
+</aside>
+<!-- Main Grid View -->
+<div class="flex-1 flex flex-col gap-md">
+<!-- Top Actions -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass-panel rounded-xl p-4">
+<div>
+<h2 class="font-h2 text-h2 text-on-surface mb-1">Discover Projects</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Showing 142 outstanding academic works.</p>
+</div>
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Sort by:</span>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-1.5 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary">
+<option>Highest Rated</option>
+<option>Newest First</option>
+<option>Most Viewed</option>
+</select>
+<div class="flex gap-1 ml-2 bg-surface-container-low p-1 rounded-lg border border-outline-variant/30">
+<button class="p-1.5 rounded bg-white shadow-sm text-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+</button>
+<button class="p-1.5 rounded text-on-surface-variant hover:bg-white/50">
+<span class="material-symbols-outlined text-sm">view_list</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md">
+<!-- Featured Card (Spans 2 columns) -->
+<div class="xl:col-span-2 glass-panel rounded-xl overflow-hidden flex flex-col sm:flex-row group cursor-pointer hover:-translate-y-1 transition-all duration-300">
+<div class="w-full sm:w-1/2 h-48 sm:h-auto relative overflow-hidden bg-surface-variant">
+<img alt="Data visualization dashboard interface on a computer screen" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="close up of a modern software interface displaying complex data graphs in neon blue and purple on dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJxnQPHNmT-wu6nS1Sk9liVHuifwMrSLxfnzwNY1G8XnywdflsSnaDJnrcP_mDGVkU81uEb3A2DjzM3sCDebfcTQ95Jl-3QHhfJfQOvmf7fSSVYtv4QqYz2YXr3ywGI30lF7D5iKOy9P0SAVBynCJChQl2ni-6fbzrhsaaIAmY0DvzTcZ6-M2yun7VLFn4VvhV20GAk0T3rqccYTgYK64bexKgXgVI3iygks5lNnYRUMvSftG7vv6lvCH-9rurdVhgVfG7JjZwmMhM"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full font-label-md text-label-md text-primary flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span> Featured
+                            </div>
+</div>
+<div class="p-6 flex flex-col justify-between w-full sm:w-1/2 bg-surface-container-lowest">
+<div>
+<div class="flex gap-2 mb-3">
+<span class="bg-primary-container/10 text-primary px-2 py-0.5 rounded-full font-label-md text-[11px] uppercase tracking-wider">Data Analytics</span>
+<span class="bg-secondary-container/20 text-on-secondary-container px-2 py-0.5 rounded-full font-label-md text-[11px] uppercase tracking-wider">Capstone</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface mb-2 group-hover:text-primary transition-colors">Predictive Modeling for Urban Traffic Flow</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-3 mb-4">A comprehensive analysis using machine learning to predict congestion patterns in metropolitan areas, utilizing real-time sensor data and historical traffic models to optimize routing algorithms.</p>
+</div>
+<div class="flex items-center justify-between border-t border-outline-variant/30 pt-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center font-label-md text-primary">S</div>
+<span class="font-label-md text-label-md text-on-surface">Sarah J.</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-sm">
+<span class="material-symbols-outlined text-[16px]">visibility</span> 1.2k
+                                </div>
+</div>
+</div>
+</div>
+<!-- Standard Card 1 -->
+<div class="glass-panel rounded-xl overflow-hidden flex flex-col group cursor-pointer hover:-translate-y-1 transition-all duration-300 bg-surface-container-lowest">
+<div class="h-40 relative overflow-hidden bg-surface-variant">
+<img alt="Modern mobile app design layout" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="clean minimalistic mobile application interface design showing wireframes and bright color palettes on a white surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjZN2PGCcdk59SwX-0Qf715y4y0OBFkavYIDanpQA86owci4cP8BR8p45U6whwLkiQK1bf4BQQHo7C6hHSa9bnNzll6DeNFjDhuxHwPT3RFZ_kHrTjgY27FyvdAUgTKdn72H9xlXhsSKPBh6EkokRGvqTLxXmkH4BMlZvxT_3EG0jvwSysWQBmFUPnue5TgD7OY2oDDZEy-eEgWbj-P81nyXC0OTYwKAosLRT7gZtjBGcP9nI9FlifN3EXdlmGe_Ipb8LUCd97qPiN"/>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<div class="flex gap-2 mb-2">
+<span class="bg-tertiary-container/10 text-tertiary px-2 py-0.5 rounded-full font-label-md text-[11px] uppercase tracking-wider">UX Design</span>
+</div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface mb-2 group-hover:text-primary transition-colors line-clamp-2">EcoTracker: Sustainable Living Companion</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mb-4 flex-1">An intuitive mobile application designed to help users track and reduce their daily carbon footprint through gamification.</p>
+<div class="flex items-center justify-between border-t border-outline-variant/30 pt-3 mt-auto">
+<span class="font-label-md text-sm text-on-surface">Team Alpha</span>
+<div class="flex text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm">star_half</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Standard Card 2 -->
+<div class="glass-panel rounded-xl overflow-hidden flex flex-col group cursor-pointer hover:-translate-y-1 transition-all duration-300 bg-surface-container-lowest">
+<div class="h-40 relative overflow-hidden bg-surface-variant">
+<div class="absolute inset-0 bg-gradient-to-br from-primary-container to-secondary-container opacity-80"></div>
+<span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-4xl" style="font-variation-settings: 'FILL' 1;">code_blocks</span>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<div class="flex gap-2 mb-2">
+<span class="bg-primary-container/10 text-primary px-2 py-0.5 rounded-full font-label-md text-[11px] uppercase tracking-wider">Comp Sci</span>
+</div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface mb-2 group-hover:text-primary transition-colors line-clamp-2">Distributed Consensus Algorithm Simulation</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mb-4 flex-1">A visual simulation environment for demonstrating fault tolerance in distributed network systems using WebGL.</p>
+<div class="flex items-center justify-between border-t border-outline-variant/30 pt-3 mt-auto">
+<span class="font-label-md text-sm text-on-surface">M. Chen</span>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-sm">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span> Oct 24
+                                </div>
+</div>
+</div>
+</div>
+<!-- Standard Card 3 -->
+<div class="glass-panel rounded-xl overflow-hidden flex flex-col group cursor-pointer hover:-translate-y-1 transition-all duration-300 bg-surface-container-lowest">
+<div class="h-40 relative overflow-hidden bg-surface-variant">
+<img alt="Artificial intelligence concept" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="abstract glowing neural network node connections representing artificial intelligence on dark blue background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABrs0sZY0Z_LvfXBhXJUVm44ADX1zGfJgqlZK09a4tcdbGv2gKS3cW5pfI-_A-RhlxqndbSJnx59owHPR9zTyJR5QKSVPOljYxpj2a6LnNyRkH1mYOfgXfKOkOHKa_NjhBfBnHVp700IpopOeJZkrQzEj9SFvJp6AgQ0QDC4UiA7h0WBurAKa6uzilfzdmRWJT7a0Ss5NiOktKe0oMxLeIcbdjys-9Lq33u3xXpBxoUZcXB9RFqqbDRT0bOkZKdYsmDqcPtg5mHyPs"/>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<div class="flex gap-2 mb-2">
+<span class="bg-primary-container/10 text-primary px-2 py-0.5 rounded-full font-label-md text-[11px] uppercase tracking-wider">Machine Learning</span>
+</div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface mb-2 group-hover:text-primary transition-colors line-clamp-2">NLP Sentiment Analysis Tool</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mb-4 flex-1">Real-time sentiment processing API built with PyTorch, capable of analyzing massive text streams with high accuracy.</p>
+<div class="flex items-center justify-between border-t border-outline-variant/30 pt-3 mt-auto">
+<span class="font-label-md text-sm text-on-surface">DataLab Group</span>
+<div class="flex text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

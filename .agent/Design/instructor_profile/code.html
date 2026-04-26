@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Instructor Profile - Project Polaris</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#a9a7ff",
+                        "tertiary-fixed": "#ffdbca",
+                        "secondary-fixed-dim": "#6bd8cb",
+                        "on-primary-fixed": "#0f0069",
+                        "on-background": "#0b1c30",
+                        "secondary": "#006a61",
+                        "primary": "#1f108e",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "background": "#f8f9ff",
+                        "primary-container": "#3730a3",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-low": "#eff4ff",
+                        "surface": "#f8f9ff",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "outline": "#777584",
+                        "on-secondary-fixed": "#00201d",
+                        "tertiary": "#4f1e00",
+                        "tertiary-fixed-dim": "#ffb690",
+                        "tertiary-container": "#722f00",
+                        "on-secondary-fixed-variant": "#005049",
+                        "surface-container": "#e5eeff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-surface-variant": "#464553",
+                        "on-tertiary-fixed-variant": "#783200",
+                        "surface-bright": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#89f5e7",
+                        "on-secondary-container": "#006f66",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-tertiary-fixed": "#341100",
+                        "surface-tint": "#544fc0",
+                        "on-tertiary-container": "#ff9559",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#e2dfff",
+                        "secondary-container": "#86f2e4",
+                        "inverse-on-surface": "#eaf1ff",
+                        "inverse-surface": "#213145",
+                        "outline-variant": "#c8c4d5",
+                        "on-surface": "#0b1c30",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#dce9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin": "32px",
+                        "sm": "12px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "lg": "40px",
+                        "xs": "4px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Lexend"],
+                        "h2": ["Plus Jakarta Sans"],
+                        "body-sm": ["Lexend"],
+                        "button": ["Plus Jakarta Sans"],
+                        "h3": ["Plus Jakarta Sans"],
+                        "h1": ["Plus Jakarta Sans"],
+                        "body-lg": ["Lexend"],
+                        "label-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "h2": ["32px", { "lineHeight": "1.25", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "button": ["16px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "h1": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col p-4 gap-2 h-screen w-64 fixed left-0 border-r bg-slate-50/50 backdrop-blur-2xl border-indigo-100/20 z-40">
+<div class="mb-8 px-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-h3">P</div>
+<div>
+<div class="font-black text-indigo-950 font-h3 text-h3 tracking-tight">Project Polaris</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Academic Hub</div>
+</div>
+</div>
+<div class="flex flex-col gap-1 flex-grow">
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span>
+<span class="font-button text-button">Dashboard</span>
+</a>
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="folder_managed">folder_managed</span>
+<span class="font-button text-button">My Projects</span>
+</a>
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_list_bulleted">format_list_bulleted</span>
+<span class="font-button text-button">Task Board</span>
+</a>
+<a class="bg-indigo-100/50 text-indigo-700 font-semibold rounded-lg flex items-center gap-3 px-4 py-3 transition-all" href="#">
+<span class="material-symbols-outlined fill-icon text-[20px]" data-icon="group">group</span>
+<span class="font-button text-button">Collaboration</span>
+</a>
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="menu_book">menu_book</span>
+<span class="font-button text-button">Resource Library</span>
+</a>
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="travel_explore">travel_explore</span>
+<span class="font-button text-button">Discovery</span>
+</a>
+</div>
+<div class="mt-auto border-t border-slate-200 dark:border-slate-800 pt-md flex flex-col gap-1">
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+<span class="font-button text-button">Help Center</span>
+</a>
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+<span class="font-button text-button">Sign Out</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto md:ml-64 relative z-10">
+<!-- TopNavBar (Mobile) -->
+<header class="md:hidden sticky top-0 z-50 flex justify-between items-center px-6 py-3 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md font-['Plus_Jakarta_Sans'] antialiased docked full-width border-b border-white/20 dark:border-slate-800 shadow-[0_8px_30px_rgb(55,48,163,0.08)] text-indigo-700 dark:text-indigo-400">
+<div class="flex items-center gap-md">
+<span class="text-xl font-bold tracking-tight text-indigo-900 dark:text-indigo-100">Project Polaris</span>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-xs text-slate-500 dark:text-slate-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 transition-colors scale-95 active:scale-90 duration-200 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-xs text-slate-500 dark:text-slate-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 transition-colors scale-95 active:scale-90 duration-200 rounded-full">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-1 p-gutter lg:p-margin max-w-7xl mx-auto w-full">
+<!-- Hero / Profile Header -->
+<section class="relative bg-surface-container rounded-xl shadow-[0_8px_30px_rgb(55,48,163,0.08)] overflow-hidden mb-margin">
+<div class="h-32 md:h-48 bg-gradient-to-r from-primary to-secondary w-full object-cover"></div>
+<div class="px-gutter pb-gutter relative">
+<div class="flex flex-col md:flex-row gap-gutter items-start md:items-end -mt-16 md:-mt-20">
+<img alt="Profile Picture" class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-surface object-cover shadow-lg" data-alt="professional headshot of an academic female professor with glasses, smiling, bright modern office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB771dnKj3kt9mewZX3MVxt6XQyEbFmaeEvrx9aupl6EKYft7uOaHOM53OpuBFJsaMaYPPx5Hfpg2CNR57kmkkkLB9eAQVBfUaMwiYXojV2sBjXUSM2m1BDNGc6jdhlhjHIH12fPH57XkSiN6H-KjTBh_dTstluYiCxvo2tiD1iuqQ_iyNszoo0fRx6H1YkszO4mjRM2EsfvXRZ3rPXcw2fvbEFqwoH4XStbxT74F24nPYAvGfajEgoUnasIzbJTmB_h4_ZWgZl4ivG"/>
+<div class="flex-1 pt-sm">
+<h2 class="font-h1 text-h1 text-on-surface mb-xs">Dr. Elena Rostova</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-sm">Professor of Human-Computer Interaction</p>
+<div class="flex flex-wrap gap-sm">
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-primary-container/10 text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] mr-xs" data-icon="school">school</span>
+                                    Ph.D. Stanford University
+                                </span>
+<span class="inline-flex items-center px-sm py-xs rounded-full bg-secondary-container/20 text-on-secondary-container font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] mr-xs" data-icon="location_on">location_on</span>
+                                    San Francisco, CA
+                                </span>
+</div>
+</div>
+<div class="flex gap-sm w-full md:w-auto mt-md md:mt-0">
+<button class="flex-1 md:flex-none flex items-center justify-center gap-xs px-md py-sm bg-surface-variant text-on-surface rounded-lg font-button text-button shadow-[0_2px_0_0_rgba(0,0,0,0.05)] hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+                                Contact
+                            </button>
+<button class="flex-1 md:flex-none flex items-center justify-center gap-xs px-md py-sm bg-primary text-on-primary rounded-lg font-button text-button shadow-[0_2px_0_0_rgba(0,0,0,0.1)] hover:bg-on-primary-fixed-variant transition-colors hover:bg-gradient-to-r hover:from-primary hover:to-secondary">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+                                Office Hours
+                            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid Content -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Main Column -->
+<div class="md:col-span-8 flex flex-col gap-gutter">
+<!-- Biography -->
+<div class="bg-surface-container-lowest rounded-xl p-gutter shadow-[0_4px_20px_rgb(55,48,163,0.04)] border border-outline-variant/30">
+<div class="flex items-center gap-sm mb-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface">Biography</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">
+                            Dr. Rostova directs the Interactive Systems Lab and focuses her research on how novel interfaces can enhance human cognitive capabilities during complex tasks. With over 15 years of academic and industry experience, she bridges the gap between theoretical models of interaction and practical, deployable systems.
+                        </p>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            Before joining Project Polaris University, she was a principal researcher at a major tech firm, leading teams in augmented reality interface design. Her work has been published in top-tier HCI conferences including CHI, UIST, and CSCW.
+                        </p>
+</div>
+<!-- Research Interests -->
+<div class="bg-surface-container-lowest rounded-xl p-gutter shadow-[0_4px_20px_rgb(55,48,163,0.04)] border border-outline-variant/30">
+<div class="flex items-center gap-sm mb-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface">Research Focus</h3>
+</div>
+<div class="flex flex-wrap gap-sm mb-md">
+<span class="px-sm py-xs rounded-full bg-secondary-container/30 text-on-secondary-container font-label-md text-label-md">Cognitive Ergonomics</span>
+<span class="px-sm py-xs rounded-full bg-secondary-container/30 text-on-secondary-container font-label-md text-label-md">Augmented Reality</span>
+<span class="px-sm py-xs rounded-full bg-secondary-container/30 text-on-secondary-container font-label-md text-label-md">Accessible Design</span>
+<span class="px-sm py-xs rounded-full bg-secondary-container/30 text-on-secondary-container font-label-md text-label-md">Tangible Interfaces</span>
+</div>
+<div class="space-y-sm">
+<div class="p-sm rounded-lg border border-outline-variant/50 hover:bg-surface-container-low transition-colors cursor-pointer flex justify-between items-center group">
+<div>
+<h4 class="font-button text-button text-on-surface">Current Project: Spatial Computing in Education</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">NSF Grant funded research exploring AR in STEM classrooms.</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="arrow_forward">arrow_forward</span>
+</div>
+<div class="p-sm rounded-lg border border-outline-variant/50 hover:bg-surface-container-low transition-colors cursor-pointer flex justify-between items-center group">
+<div>
+<h4 class="font-button text-button text-on-surface">Lab: Interactive Systems Group</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Currently accepting MS and PhD students for Fall.</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Column -->
+<div class="md:col-span-4 flex flex-col gap-gutter">
+<!-- Education Background -->
+<div class="bg-surface-container-lowest rounded-xl p-gutter shadow-[0_4px_20px_rgb(55,48,163,0.04)] border border-outline-variant/30">
+<div class="flex items-center gap-sm mb-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface">Education</h3>
+</div>
+<div class="relative pl-6 border-l-2 border-surface-variant space-y-md">
+<div class="relative">
+<div class="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-primary border-4 border-surface-container-lowest"></div>
+<h4 class="font-button text-button text-on-surface">Ph.D. Computer Science</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Stanford University</p>
+<p class="font-label-md text-label-md text-outline mt-xs">2010 - 2015</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-surface-variant border-4 border-surface-container-lowest"></div>
+<h4 class="font-button text-button text-on-surface">M.S. Human-Computer Interaction</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Carnegie Mellon University</p>
+<p class="font-label-md text-label-md text-outline mt-xs">2008 - 2010</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-surface-variant border-4 border-surface-container-lowest"></div>
+<h4 class="font-button text-button text-on-surface">B.S. Cognitive Science</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">UC San Diego</p>
+<p class="font-label-md text-label-md text-outline mt-xs">2004 - 2008</p>
+</div>
+</div>
+</div>
+<!-- Courses Taught -->
+<div class="bg-surface-container-lowest rounded-xl p-gutter shadow-[0_4px_20px_rgb(55,48,163,0.04)] border border-outline-variant/30">
+<div class="flex items-center gap-sm mb-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="class">class</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface">Current Courses</h3>
+</div>
+<div class="space-y-sm">
+<div class="flex items-center justify-between p-sm rounded-lg bg-surface hover:bg-surface-container-low transition-colors">
+<div>
+<span class="font-label-md text-label-md text-primary block">HCI 401</span>
+<span class="font-button text-button text-on-surface">Interaction Design</span>
+</div>
+<span class="px-2 py-1 rounded bg-secondary-container/20 text-on-secondary-container font-label-md text-[12px]">Fall</span>
+</div>
+<div class="flex items-center justify-between p-sm rounded-lg bg-surface hover:bg-surface-container-low transition-colors">
+<div>
+<span class="font-label-md text-label-md text-primary block">HCI 550</span>
+<span class="font-button text-button text-on-surface">Adv. Prototyping</span>
+</div>
+<span class="px-2 py-1 rounded bg-surface-variant text-on-surface-variant font-label-md text-[12px]">Spring</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

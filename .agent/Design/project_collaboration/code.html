@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Collaboration Management - Project Polaris</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#a9a7ff",
+                    "tertiary-fixed": "#ffdbca",
+                    "secondary-fixed-dim": "#6bd8cb",
+                    "on-primary-fixed": "#0f0069",
+                    "on-background": "#0b1c30",
+                    "secondary": "#006a61",
+                    "primary": "#1f108e",
+                    "on-primary-fixed-variant": "#3b35a7",
+                    "background": "#f8f9ff",
+                    "primary-container": "#3730a3",
+                    "surface-dim": "#cbdbf5",
+                    "surface-container-low": "#eff4ff",
+                    "surface": "#f8f9ff",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "outline": "#777584",
+                    "on-secondary-fixed": "#00201d",
+                    "tertiary": "#4f1e00",
+                    "tertiary-fixed-dim": "#ffb690",
+                    "tertiary-container": "#722f00",
+                    "on-secondary-fixed-variant": "#005049",
+                    "surface-container": "#e5eeff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-surface-variant": "#464553",
+                    "on-tertiary-fixed-variant": "#783200",
+                    "surface-bright": "#f8f9ff",
+                    "on-error-container": "#93000a",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#89f5e7",
+                    "on-secondary-container": "#006f66",
+                    "surface-container-highest": "#d3e4fe",
+                    "on-tertiary-fixed": "#341100",
+                    "surface-tint": "#544fc0",
+                    "on-tertiary-container": "#ff9559",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#e2dfff",
+                    "secondary-container": "#86f2e4",
+                    "inverse-on-surface": "#eaf1ff",
+                    "inverse-surface": "#213145",
+                    "outline-variant": "#c8c4d5",
+                    "on-surface": "#0b1c30",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#c3c0ff",
+                    "surface-variant": "#d3e4fe",
+                    "on-primary": "#ffffff",
+                    "surface-container-high": "#dce9ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "margin": "32px",
+                    "sm": "12px",
+                    "gutter": "24px",
+                    "xl": "64px",
+                    "lg": "40px",
+                    "xs": "4px",
+                    "md": "24px"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Lexend"
+                    ],
+                    "h2": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-sm": [
+                            "Lexend"
+                    ],
+                    "button": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "h3": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "h1": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Lexend"
+                    ],
+                    "label-md": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "h2": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.25",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "button": [
+                            "16px",
+                            {
+                                    "lineHeight": "1",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "h3": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "h1": [
+                            "40px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "1",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; }
+        h1, h2, h3, .font-h1, .font-h2, .font-h3, .font-button, .font-label-md { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar Component -->
+<nav class="hidden md:flex flex-col p-4 gap-2 h-screen w-64 border-r bg-slate-50/50 backdrop-blur-2xl border-indigo-100/20 z-40">
+<div class="mb-8 px-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-h3">P</div>
+<div>
+<div class="font-black text-indigo-950 font-h3 text-h3 tracking-tight">Project Polaris</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Academic Hub</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<!-- Inactive Tab -->
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-button text-button">Dashboard</span>
+</a>
+<!-- Inactive Tab -->
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]">folder_managed</span>
+<span class="font-button text-button">My Projects</span>
+</a>
+<!-- Inactive Tab -->
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]">format_list_bulleted</span>
+<span class="font-button text-button">Task Board</span>
+</a>
+<!-- Active Tab: Collaboration -->
+<a class="bg-indigo-100/50 text-indigo-700 font-semibold rounded-lg flex items-center gap-3 px-4 py-3 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-button text-button">Collaboration</span>
+</a>
+<!-- Inactive Tab -->
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span class="font-button text-button">Resource Library</span>
+</a>
+<!-- Inactive Tab -->
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]">travel_explore</span>
+<span class="font-button text-button">Discovery</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/30 flex flex-col gap-1">
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="font-button text-button">Help Center</span>
+</a>
+<a class="text-slate-600 hover:translate-x-1 hover:bg-indigo-50 transition-all rounded-lg flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-button text-button">Sign Out</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-surface">
+<!-- TopNavBar Component -->
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-indigo-700 dark:text-indigo-400 font-['Plus_Jakarta_Sans'] antialiased docked full-width top-0 border-b border-b border-white/20 dark:border-slate-800 shadow-[0_8px_30px_rgb(55,48,163,0.08)] sticky top-0 z-50 flex justify-between items-center px-6 py-3 w-full">
+<!-- Left: Mobile Menu & Search -->
+<div class="flex items-center gap-md w-1/3">
+<button class="md:hidden p-1 text-slate-500 hover:text-indigo-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 transition-colors rounded-lg scale-95 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Search Bar (on_left) -->
+<div class="relative w-full max-w-sm hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container border-none rounded-full text-body-sm text-on-surface focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-outline/70" placeholder="Search people, projects..." type="text"/>
+</div>
+</div>
+<!-- Center: Brand (Mobile primarily, or subtle center logo if needed, sticking to left/right balance) -->
+<div class="flex justify-center w-1/3 md:hidden">
+<span class="text-xl font-bold tracking-tight text-indigo-900 dark:text-indigo-100">Project Polaris</span>
+</div>
+<!-- Right: Actions -->
+<div class="flex items-center justify-end gap-2 w-1/3">
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 transition-colors rounded-full scale-95 active:scale-90 transition-transform duration-200 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 transition-colors rounded-full scale-95 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 transition-colors rounded-full scale-95 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-px bg-outline-variant/50 mx-2 hidden sm:block"></div>
+<img alt="User Profile" class="w-9 h-9 rounded-full border-2 border-surface cursor-pointer shadow-sm ml-1 hidden sm:block" data-alt="professional headshot of a young woman smiling warmly, soft studio lighting, light gray background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDb4VLGvHzJ8-Vu3K1ZQNe_BhbV4CCtTy3vLoIL-SeX8n4_0-I5XyQkV4FxCfbPk3m-4enMgY8uLWY-h3XsXL1VtZ9LNMmeoSMCpAHd5jAztG2eb2DIEHoawunqJBz8J_ufsog0cc73SQHdmsVjeM6Gno41_wNl3yeCLoHpBbp_W7cGAUD54Jgro3SU9H1LraLVBTynNrYcqt6BPnrqos4w3e4ESI6ZZQtHyIqDILepD1AGMQGrQhQ4u3rknK_XkcFP49DGvjilK4yN"/>
+</div>
+</header>
+<!-- Canvas Content -->
+<main class="flex-1 p-gutter max-w-7xl mx-auto w-full @container">
+<!-- Page Header & Action Bar -->
+<div class="flex flex-col @2xl:flex-row @2xl:items-end justify-between gap-md mb-lg">
+<div>
+<h1 class="font-h1 text-h1 text-on-surface mb-xs tracking-tight">Collaboration Team</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Manage your project members and pending invitations.</p>
+</div>
+<div class="flex gap-sm">
+<button class="flex items-center gap-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-button text-button px-4 py-2.5 rounded-lg shadow-[0_2px_10px_rgb(55,48,163,0.05)] transition-all active:translate-y-[1px]">
+<span class="material-symbols-outlined text-lg">person_search</span>
+                        Find Instructors
+                    </button>
+<button class="flex items-center gap-2 bg-gradient-to-r from-primary to-surface-tint hover:opacity-90 text-on-primary font-button text-button px-5 py-2.5 rounded-lg shadow-[0_4px_14px_rgb(55,48,163,0.2)] transition-all active:translate-y-[1px]">
+<span class="material-symbols-outlined text-lg">person_add</span>
+                        Invite User
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 @4xl:grid-cols-12 gap-gutter">
+<!-- Left Column: Active Collaborators (Spans 8 cols on large screens) -->
+<div class="@4xl:col-span-8 flex flex-col gap-md">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/40">
+<h2 class="font-h3 text-h3 text-on-surface flex items-center gap-2">
+                            Active Members
+                            <span class="bg-primary-container/20 text-primary-container px-2 py-0.5 rounded-full text-label-md font-label-md">4</span>
+</h2>
+<div class="flex items-center gap-2 text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+<span>Filter</span>
+</div>
+</div>
+<div class="grid grid-cols-1 @xl:grid-cols-2 gap-md">
+<!-- Collaborator Card 1 (Owner) -->
+<div class="bg-surface-container-lowest rounded-xl p-md shadow-[0_8px_30px_rgb(55,48,163,0.06)] border border-outline-variant/30 flex flex-col relative group hover:-translate-y-1 transition-transform duration-300">
+<div class="absolute top-4 right-4">
+<span class="bg-secondary-container text-on-secondary-container px-2.5 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider">Owner</span>
+</div>
+<div class="flex items-center gap-4 mb-4">
+<img alt="Sarah Jenkins" class="w-14 h-14 rounded-full shadow-sm" data-alt="professional headshot of a young woman smiling warmly, soft studio lighting, light gray background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEp2sR-1zUcLJS_6qnqH_h8Jja73fG2h1zS0_jrtHR82uY-mluGKeb6FKQicuaYHZGXiAeM1h7q0FZYwDBZEPcvkLneDAhqULJ6DgkA0DY8P1fvCRyR3vRz3MBr6_JIRsnwr6ORSZUf9-5ylMpnq9gD56U6RlXfF8XPX9h0KsFBCptXbrqTHtIZbc27u7scsCmckfCKyGgv_PtFBQs9nLRS1gQAn6x9c6-aN633p6swS5Y5M-Cc6xJh5uTb7moz2Lkuku2j60KEEW8"/>
+<div>
+<h3 class="font-h3 text-[18px] text-on-surface leading-tight">Sarah Jenkins</h3>
+<p class="font-body-sm text-body-sm text-outline">Lead Researcher</p>
+</div>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/20 flex gap-2">
+<button class="flex-1 py-1.5 rounded-lg text-body-sm font-button text-primary hover:bg-primary-fixed-dim/30 transition-colors">Message</button>
+<button class="p-1.5 rounded-lg text-outline hover:bg-surface-variant transition-colors"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</div>
+</div>
+<!-- Collaborator Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-md shadow-[0_8px_30px_rgb(55,48,163,0.06)] border border-outline-variant/30 flex flex-col relative group hover:-translate-y-1 transition-transform duration-300">
+<div class="absolute top-4 right-4">
+<span class="bg-surface-variant text-on-surface-variant px-2.5 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider">Editor</span>
+</div>
+<div class="flex items-center gap-4 mb-4">
+<div class="w-14 h-14 rounded-full bg-tertiary-fixed-dim text-on-tertiary-fixed flex items-center justify-center font-h2 text-[20px] shadow-sm">
+                                    MR
+                                </div>
+<div>
+<h3 class="font-h3 text-[18px] text-on-surface leading-tight">Marcus Reed</h3>
+<p class="font-body-sm text-body-sm text-outline">Data Analyst</p>
+</div>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/20 flex gap-2">
+<button class="flex-1 py-1.5 rounded-lg text-body-sm font-button text-primary hover:bg-primary-fixed-dim/30 transition-colors">Message</button>
+<button class="p-1.5 rounded-lg text-outline hover:bg-surface-variant transition-colors"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Pending Invitations & Activity (Spans 4 cols on large screens) -->
+<div class="@4xl:col-span-4 flex flex-col gap-md">
+<!-- Pending Invitations Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgb(55,48,163,0.08)] border border-outline-variant/30 overflow-hidden flex flex-col h-full">
+<div class="p-4 border-b border-outline-variant/20 bg-surface-container-low/50 flex items-center justify-between">
+<h2 class="font-h3 text-[18px] text-on-surface">Pending Invites</h2>
+<span class="bg-error-container text-on-error-container w-6 h-6 flex items-center justify-center rounded-full text-label-md font-label-md">2</span>
+</div>
+<div class="flex flex-col p-2 gap-1 flex-1">
+<!-- Received Invitation -->
+<div class="p-3 rounded-lg hover:bg-surface-container transition-colors flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-bold text-sm">
+                                            DR
+                                        </div>
+<div>
+<p class="font-button text-body-sm text-on-surface">Dr. Robert Chen</p>
+<p class="font-body-sm text-[12px] text-outline">Invited you to project</p>
+</div>
+</div>
+<span class="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded font-label-md uppercase">Received</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-on-primary font-button text-[13px] py-1.5 rounded-md hover:bg-primary/90 transition-colors shadow-sm">Accept</button>
+<button class="flex-1 bg-surface-container-high text-on-surface font-button text-[13px] py-1.5 rounded-md hover:bg-surface-container-highest transition-colors">Decline</button>
+</div>
+</div>
+<div class="h-px w-full bg-outline-variant/20 mx-auto w-[90%]"></div>
+<!-- Sent Invitation -->
+<div class="p-3 rounded-lg hover:bg-surface-container transition-colors flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<img alt="Elena Rostova" class="w-10 h-10 rounded-full opacity-70 grayscale-[30%]" data-alt="professional headshot of a young man with short dark hair, slight smile, neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3XXwraYKdPQ15KLDAV-76kDyl3ZeiOECweS8QIECiAhyFKokbrswqDR_JvMbsjLghOth5LslDTYp7U4KDYj85VhQQ7NocznsH3A4NZO0guQSvOpYb3iOA5mLDRTjLGwyHe0L2Lcs7FaVFJ9aD7imgFyQR1Fun2gY1IbLhky3uva73NUq7bd2mRIBCdEjs9i00Al7AoOymZYiUTXxNWUXQiaMMj6M7S0-k52Xa3AACqvfaUAsUJS6T7IcJJd49jEg9D4ExYbSDtZo"/>
+<div>
+<p class="font-button text-body-sm text-on-surface">Elena Rostova</p>
+<p class="font-body-sm text-[12px] text-outline">elena@university.edu</p>
+</div>
+</div>
+<span class="bg-outline-variant/30 text-on-surface-variant text-[10px] px-2 py-0.5 rounded font-label-md uppercase">Sent</span>
+</div>
+<div class="flex justify-end">
+<button class="text-error font-button text-[13px] py-1 px-3 rounded-md hover:bg-error-container/50 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+                                        Cancel Invite
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

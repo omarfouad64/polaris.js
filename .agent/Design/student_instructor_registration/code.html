@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Registration - Project Polaris</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#a9a7ff",
+                        "tertiary-fixed": "#ffdbca",
+                        "secondary-fixed-dim": "#6bd8cb",
+                        "on-primary-fixed": "#0f0069",
+                        "on-background": "#0b1c30",
+                        "secondary": "#006a61",
+                        "primary": "#1f108e",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "background": "#f8f9ff",
+                        "primary-container": "#3730a3",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-low": "#eff4ff",
+                        "surface": "#f8f9ff",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "outline": "#777584",
+                        "on-secondary-fixed": "#00201d",
+                        "tertiary": "#4f1e00",
+                        "tertiary-fixed-dim": "#ffb690",
+                        "tertiary-container": "#722f00",
+                        "on-secondary-fixed-variant": "#005049",
+                        "surface-container": "#e5eeff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-surface-variant": "#464553",
+                        "on-tertiary-fixed-variant": "#783200",
+                        "surface-bright": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#89f5e7",
+                        "on-secondary-container": "#006f66",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-tertiary-fixed": "#341100",
+                        "surface-tint": "#544fc0",
+                        "on-tertiary-container": "#ff9559",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#e2dfff",
+                        "secondary-container": "#86f2e4",
+                        "inverse-on-surface": "#eaf1ff",
+                        "inverse-surface": "#213145",
+                        "outline-variant": "#c8c4d5",
+                        "on-surface": "#0b1c30",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#dce9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin": "32px",
+                        "sm": "12px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "lg": "40px",
+                        "xs": "4px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Lexend"],
+                        "h2": ["Plus Jakarta Sans"],
+                        "body-sm": ["Lexend"],
+                        "button": ["Plus Jakarta Sans"],
+                        "h3": ["Plus Jakarta Sans"],
+                        "h1": ["Plus Jakarta Sans"],
+                        "body-lg": ["Lexend"],
+                        "label-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "h2": ["32px", { "lineHeight": "1.25", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "button": ["16px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "h1": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen antialiased flex flex-col md:flex-row">
+<div class="hidden md:flex md:w-5/12 lg:w-1/2 relative bg-surface-container-high overflow-hidden items-center justify-center p-xl">
+<div class="absolute inset-0 z-0">
+<img alt="Students collaborating on a laptop in a bright, modern university library setting with natural sunlight" class="w-full h-full object-cover opacity-80 mix-blend-multiply filter grayscale-[20%]" data-alt="Students collaborating on a laptop in a bright, modern university library setting with natural sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjA3rhI-zepr1UeAjIUTeFKaKo-Fm8f6JTovdt9G1wJ39rm5Jpdlu46-raoao9G1IHVAU-5IFWqQXx9luyA-dSUVKt4rOxhtdHu11MDXGevMwdfzrJf7d6Dv9csYXidnCitodFUgHgRVbgtKTtbN_hYwCm1GPD0AJCakiks8UmlvYh4TCw3HhJ7Lqi-5HfwvHLek7eXhaGsfbt5DRLrSzG02ZBV_1CvljoOPCkN6h6C__g9wRbgZlLkJ6H78dEcaKL5ZTOdG_hjLfD"/>
+<div class="absolute inset-0 bg-gradient-to-br from-primary/80 to-secondary/60 mix-blend-overlay"></div>
+</div>
+<div class="relative z-10 w-full max-w-md bg-surface-container-lowest/20 backdrop-blur-[20px] rounded-xl border border-on-primary/20 p-lg shadow-[0_8px_30px_rgb(55,48,163,0.15)] flex flex-col gap-md">
+<div class="flex items-center gap-sm mb-sm">
+<div class="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-[24px]">school</span>
+</div>
+<span class="font-h3 text-h3 text-on-primary">Project Polaris</span>
+</div>
+<h1 class="font-h1 text-h1 text-on-primary mb-sm leading-tight">Elevate Your Academic Journey.</h1>
+<p class="font-body-lg text-body-lg text-inverse-on-surface/90">Join our collaborative ecosystem designed to bridge the gap between rigorous academia and vibrant project execution. A trusted space for students and mentors alike.</p>
+<div class="mt-lg flex items-center gap-sm">
+<div class="flex -space-x-3">
+<img alt="Profile portrait of a young female student with dark hair smiling" class="w-10 h-10 rounded-full border-2 border-primary/20" data-alt="Profile portrait of a young female student with dark hair smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfh5CWST2fQX7KgeMq_WFu5CRQH8HPNp4eXIRtrTA8nmueOniepkCWRemItiYr5-GxRvC60VdrXg6KEXoaMiei87RmOeiJ8mntK8qNoLE-FwVudvSvnp2kOylAkTfv6CxdTMLy5y4wxR3y2gF0eq5EuQcmmPCiUbQL_lE8WCOC49hhlOXrzk1fBoWnBlJNypMpjIwcRU7f4PX-myVfQN5_VgvP3dtMxh6dGi2IAZ3BnAsCT4st6SxW6mjSvsBIcMhoEeTF5infyDNr"/>
+<img alt="Profile portrait of a young male student with short hair looking thoughtfully" class="w-10 h-10 rounded-full border-2 border-primary/20" data-alt="Profile portrait of a young male student with short hair looking thoughtfully" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6nS4kpGNeVCJEqJecpKAcv82YlU54lzxbYigYs7ZuOBuO5-P7zSKzOqc2zPBq5PBKxtPaGA4VRoj5sp0X5RDOqOIY7YVfGgAhkZFYQG0rjnR0MsHC32klaVl3v1LuxXoTBdP-5Y_7jDzsZwLBD_Pf9ljkifWhOJtHVQPzSZBE_HQCz_F4HNe6UUfhSPiJoW1QUsW__GFlTdiRdjva05UT20ZP_OBxkDD2aT8Oufih6eRAepeELnGJb0uQKknjZXa3i_pybRxiv4At"/>
+<img alt="Profile portrait of an older female instructor with glasses smiling warmly" class="w-10 h-10 rounded-full border-2 border-primary/20" data-alt="Profile portrait of an older female instructor with glasses smiling warmly" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxdPdF9qRQfjUCEF7rpXoU6jwvxnas1YLVWZPaZstEl6sjcD3bDIfpe1hzti99eao0TL7lW4c1iVhF8fwlKFefNZdadx9YU7irp8HIq9eh24oTKzZa_Kedcw6_-o_6YYYiFIYI6A-UiSjAzHr_PHQjNuXhupY-Q1xP6jJfbVSrw2MpbpeA_JBoqM2Fdbgpfat4pooOnXbqEW34LAC-zasZ89ihfY1I4u0-K5BGmj24kRSZYHR9hntvDs0tXBdMbvzYp9hLF-rrf_D5"/>
+</div>
+<span class="font-body-sm text-body-sm text-inverse-on-surface">+2,000 active users</span>
+</div>
+</div>
+</div>
+<div class="w-full md:w-7/12 lg:w-1/2 flex items-center justify-center p-gutter lg:p-xl bg-surface">
+<div class="w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgb(55,48,163,0.06)] p-lg lg:p-[48px] flex flex-col gap-lg border border-surface-container">
+<div class="text-center md:text-left flex flex-col gap-xs">
+<div class="md:hidden flex items-center justify-center gap-xs mb-md">
+<span class="material-symbols-outlined text-primary">school</span>
+<span class="font-h3 text-h3 text-primary">Project Polaris</span>
+</div>
+<h2 class="font-h2 text-h2 text-on-surface">Create an account</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Start organizing your projects and collaborating today.</p>
+</div>
+<form class="flex flex-col gap-md">
+<div class="flex flex-col gap-sm mb-sm">
+<label class="font-label-md text-label-md text-on-surface-variant px-xs">I am joining as a:</label>
+<div class="flex p-xs bg-surface-container rounded-lg border border-surface-variant">
+<button class="flex-1 py-[10px] text-center rounded-md bg-primary text-on-primary font-label-md text-label-md shadow-[0_2px_4px_rgb(55,48,163,0.15)] transition-all" type="button">Student</button>
+<button class="flex-1 py-[10px] text-center rounded-md text-on-surface-variant hover:text-on-surface font-label-md text-label-md hover:bg-surface-container-highest transition-all" type="button">Instructor</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="firstName">First Name</label>
+<input class="w-full bg-surface rounded-lg border border-outline-variant px-sm py-[12px] font-body-md text-body-md text-on-surface placeholder:text-outline focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors" id="firstName" placeholder="Jane" type="text"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="lastName">Last Name</label>
+<input class="w-full bg-surface rounded-lg border border-outline-variant px-sm py-[12px] font-body-md text-body-md text-on-surface placeholder:text-outline focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors" id="lastName" placeholder="Doe" type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="email">University Email</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline-variant">mail</span>
+<input class="w-full bg-surface rounded-lg border border-outline-variant pl-[40px] pr-sm py-[12px] font-body-md text-body-md text-on-surface placeholder:text-outline focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors" id="email" placeholder="jane.doe@university.edu" type="email"/>
+</div>
+</div>
+<div class="flex flex-col gap-xs mb-sm">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline-variant">lock</span>
+<input class="w-full bg-surface rounded-lg border border-outline-variant pl-[40px] pr-sm py-[12px] font-body-md text-body-md text-on-surface placeholder:text-outline focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-sm top-1/2 -translate-y-1/2 text-outline hover:text-on-surface-variant flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-outline mt-1 ml-1">Must be at least 8 characters.</p>
+</div>
+<button class="w-full bg-primary text-on-primary rounded-lg py-[14px] font-button text-button shadow-[0_2px_0_rgb(55,48,163,0.3)] hover:translate-y-[1px] hover:shadow-none active:bg-primary-container transition-all duration-200 flex items-center justify-center gap-xs mt-xs" type="submit">
+                    Create Account
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</form>
+<div class="text-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Already have an account?</span>
+<a class="font-label-md text-label-md text-primary hover:text-secondary ml-xs transition-colors" href="#">Sign in</a>
+</div>
+</div>
+</div>
+</body></html>
