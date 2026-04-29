@@ -46,3 +46,12 @@ This document lists and describes the reusable UI components implemented for the
 
 ### Layout Components
 - **RootLayout:** Sidebar-based navigation shell with user profile and logout.
+- **AdminLayout:** Admin Control Panel layout with sub-navigation tabs for Stats, Users, Courses, etc.
+
+### Admin Components
+- **UserDataTable:** Reusable table list for displaying users with role badges and active/deactivate toggles.
+- **CreateAdminModal:** Dialog form for creating new administrators.
+- **CourseDataTable:** Reusable table list for displaying courses.
+- **CourseModal:** Dialog form for creating and editing courses.
+- **EmployerApplicationList:** Reusable card list for displaying employer applications awaiting verification.
+- **EmployerDetailModal:** Modal pane for viewing employer company details and embedded PDF tax certificates.

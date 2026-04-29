@@ -24,3 +24,30 @@ This document lists and describes the custom React hooks implemented to manage s
     - **Functions:**
         - `registerUser(username, role, password)`: Appends a new user to the mock database.
         - `findUser(username)`: Retrieves a user by their email/username.
+
+## Local/Page Hooks
+
+### 1. Admin - useUsers
+- **Source:** `src/pages/portal/admin/users/scripts/useUsers.ts`
+- **Purpose:** Provides a dummy list of users with toggle status and add admin functions.
+- **Key Features:**
+    - State: `users`
+    - Functions: `toggleUserStatus`, `addAdmin`
+
+### 2. Admin - useCourses
+- **Source:** `src/pages/portal/admin/courses/scripts/useCourses.ts`
+- **Purpose:** Provides a dummy list of courses with CRUD capabilities.
+- **Key Features:**
+    - State: `courses`
+    - Functions: `addCourse`, `editCourse`, `deleteCourse`
+
+### 3. Admin - usePlatformStats
+- **Source:** `src/pages/portal/admin/scripts/usePlatformStats.ts`
+- **Purpose:** Provides static dummy data for the main admin dashboard stats.
+
+### 4. Admin - useEmployerApplications
+- **Source:** `src/pages/portal/admin/verification/scripts/useEmployerApplications.ts`
+- **Purpose:** Provides a dummy list of employer applications for verification.
+- **Key Features:**
+    - State: `applications`
+    - Functions: `acceptApplication`, `rejectApplication`, `downloadDocument`

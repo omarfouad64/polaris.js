@@ -13,6 +13,9 @@ import DashboardPage from './pages/portal/dashboard/DashboardPage.tsx'
 import ExplorerPage from './pages/portal/explorer/ExplorerPage.tsx'
 import AdminLayout from './pages/portal/admin/AdminLayout.tsx'
 import AdminPage from './pages/portal/admin/AdminPage.tsx'
+import UserDirectoryPage from './pages/portal/admin/users/UserDirectoryPage.tsx'
+import CourseDirectoryPage from './pages/portal/admin/courses/CourseDirectoryPage.tsx'
+import EmployerVerificationPage from './pages/portal/admin/verification/EmployerVerificationPage.tsx'
 import ErrorPage from './pages/error/ErrorPage.tsx'
 
 // Role Switcher Component
@@ -97,9 +100,9 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <AdminPage /> },
-          { path: 'verification', element: <div className="text-white">Verification Section</div> },
-          { path: 'users', element: <div className="text-white">User Management Section</div> },
-          { path: 'courses', element: <div className="text-white">Course Directory Section</div> },
+          { path: 'verification', element: <EmployerVerificationPage /> },
+          { path: 'users', element: <UserDirectoryPage /> },
+          { path: 'courses', element: <CourseDirectoryPage /> },
           { path: 'moderation', element: <div className="text-white">Content Moderation Section</div> }
         ]
       }

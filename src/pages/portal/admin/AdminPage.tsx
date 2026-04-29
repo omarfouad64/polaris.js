@@ -1,33 +1,40 @@
+import { usePlatformStats } from './scripts/usePlatformStats'
+
 export default function AdminPage() {
+  const stats = usePlatformStats()
+
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="p-8 bg-primary-container/20 rounded-3xl border border-primary/10 flex flex-col gap-4">
           <span className="material-symbols-outlined text-primary text-3xl">groups</span>
           <div>
             <p className="text-sm font-lexend text-on-surface-variant">Total Users</p>
-            <p className="text-3xl font-jakarta font-extrabold text-primary">1,284</p>
+            <p className="text-3xl font-jakarta font-extrabold text-primary">{stats.totalUsers.toLocaleString()}</p>
           </div>
         </div>
+        
         <div className="p-8 bg-secondary-container/20 rounded-3xl border border-secondary/10 flex flex-col gap-4">
-          <span className="material-symbols-outlined text-secondary text-3xl">pending_actions</span>
+          <span className="material-symbols-outlined text-secondary text-3xl">folder_managed</span>
           <div>
-            <p className="text-sm font-lexend text-on-surface-variant">Pending Approvals</p>
-            <p className="text-3xl font-jakarta font-extrabold text-secondary">24</p>
+            <p className="text-sm font-lexend text-on-surface-variant">Total Projects</p>
+            <p className="text-3xl font-jakarta font-extrabold text-secondary">{stats.totalProjects.toLocaleString()}</p>
           </div>
         </div>
+
+        <div className="p-8 bg-tertiary-container/20 rounded-3xl border border-tertiary/10 flex flex-col gap-4">
+          <span className="material-symbols-outlined text-tertiary text-3xl">school</span>
+          <div>
+            <p className="text-sm font-lexend text-on-surface-variant">Total Courses</p>
+            <p className="text-3xl font-jakarta font-extrabold text-tertiary">{stats.totalCourses.toLocaleString()}</p>
+          </div>
+        </div>
+
         <div className="p-8 bg-surface-container-highest rounded-3xl border border-surface-container flex flex-col gap-4">
           <span className="material-symbols-outlined text-on-surface-variant text-3xl">verified</span>
           <div>
             <p className="text-sm font-lexend text-on-surface-variant">Active Employers</p>
-            <p className="text-3xl font-jakarta font-extrabold text-on-surface">56</p>
-          </div>
-        </div>
-        <div className="p-8 bg-surface-container-highest rounded-3xl border border-surface-container flex flex-col gap-4">
-          <span className="material-symbols-outlined text-on-surface-variant text-3xl">error</span>
-          <div>
-            <p className="text-sm font-lexend text-on-surface-variant">System Alerts</p>
-            <p className="text-3xl font-jakarta font-extrabold text-on-surface">0</p>
+            <p className="text-3xl font-jakarta font-extrabold text-on-surface">{stats.activeEmployers}</p>
           </div>
         </div>
       </div>
