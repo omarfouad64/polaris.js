@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useGlobalContext } from '../globalContext'
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isLoggedIn } = useGlobalContext()
