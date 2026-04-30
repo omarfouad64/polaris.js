@@ -55,3 +55,17 @@ This document lists and describes the reusable UI components implemented for the
 - **CourseModal:** Dialog form for creating and editing courses.
 - **EmployerApplicationList:** Reusable card list for displaying employer applications awaiting verification.
 - **EmployerDetailModal:** Modal pane for viewing employer company details and embedded PDF tax certificates.
+
+### Employer Components
+- **EmployerLayout:** (`src/pages/portal/employer/EmployerLayout.tsx`) — Layout shell with sub-navigation tabs: Dashboard, Company Profile, Internships, Favorites, Communications.
+- **EmployerDashboardPage:** (`src/pages/portal/employer/dashboard/EmployerDashboardPage.tsx`) — Statistics cards (internships offered, students placed) and placements-over-time bar chart. Req 71.
+- **CompanyProfilePage:** (`src/pages/portal/employer/profile/CompanyProfilePage.tsx`) — Company info CRUD with Details/Location/Documents tabs. Includes Google Maps placeholder and PDF upload. Req 10, 11, 13.
+- **InternshipManagementPage:** (`src/pages/portal/employer/internships/InternshipManagementPage.tsx`) — Internship CRUD with Active/Archived tabs, hiring status toggle, archive control, and create/edit modal. Req 74, 77, 78, 85, 86.
+- **ApplicantReviewPage:** (`src/pages/portal/employer/applicants/ApplicantReviewPage.tsx`) — Candidates/Suggested Matches tabs, applicant cards with status selector (Nominated/Accepted/Rejected), cover letter preview, sort by top contributors. Req 75, 76, 87, 88.
+
+### Student Components
+- **InternshipExplorerPage:** (`src/pages/portal/student/internships/InternshipExplorerPage.tsx`) — Search/filter/sort internships with filter sidebar, application modal with cover letter, My Applications and Completed tabs. Req 79–84, 89, 90.
+
+### Shared Components
+- **FavoritesPage:** (`src/pages/portal/shared/favorites/FavoritesPage.tsx`) — Projects/Portfolios/Recommended tabs with favorite cards, remove buttons. Shared between Student and Employer. Req 65, 66, 67.
+- **CommunicationsPage:** (`src/pages/portal/shared/communications/CommunicationsPage.tsx`) — Notifications list with read/unread management and private messaging chat interface. Req 68, 69, 70.

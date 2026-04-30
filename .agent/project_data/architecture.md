@@ -35,10 +35,23 @@ The application uses a nested layout pattern with `<Outlet />` to manage shared 
 - **Root Redirection:** `/` -> `RoleSwitcher` -> Redirects to `/portal/[role]`
 - **Parent:** `PortalLayout` (Provides Sidebar and Top Header)
   - `/portal/student` -> DashboardLayout (Sub-tabs: Overview, Projects, etc.)
-  - `/portal/employer` -> Employer-specific views
+    - `/portal/student/internships` -> InternshipExplorerPage
+    - `/portal/student/favorites` -> FavoritesPage (shared)
+    - `/portal/student/communications` -> CommunicationsPage (shared)
+  - `/portal/employer` -> EmployerLayout (Sub-tabs: Dashboard, Profile, Internships, Favorites, Communications)
+    - `/portal/employer` (index) -> EmployerDashboardPage
+    - `/portal/employer/profile` -> CompanyProfilePage
+    - `/portal/employer/internships` -> InternshipManagementPage
+    - `/portal/employer/internships/:id/applicants` -> ApplicantReviewPage
+    - `/portal/employer/favorites` -> FavoritesPage (shared)
+    - `/portal/employer/communications` -> CommunicationsPage (shared)
   - `/portal/instructor` -> Instructor-specific views
   - `/portal/admin` -> AdminPage (Control Center)
 
 ## 3. Communication Patterns
 - **Layout to Child:** Use `useOutletContext` for state that needs to be shared between a Layout and its nested routes (e.g., sharing the active role in Signup).
 - **Global State:** Uses `GlobalContext` for session management (user authentication status).
+
+## 4. Shared Pages
+- **FavoritesPage** (`src/pages/portal/shared/favorites/`) — Reused across Student and Employer portals via routing.
+- **CommunicationsPage** (`src/pages/portal/shared/communications/`) — Reused across Student and Employer portals.

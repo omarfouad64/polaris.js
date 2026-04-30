@@ -51,3 +51,56 @@ This document lists and describes the custom React hooks implemented to manage s
 - **Key Features:**
     - State: `applications`
     - Functions: `acceptApplication`, `rejectApplication`, `downloadDocument`
+
+### 5. Employer - useCompanyProfile
+- **Source:** `src/pages/portal/employer/profile/scripts/useCompanyProfile.ts`
+- **Purpose:** Manages employer company profile data with CRUD operations.
+- **Key Features:**
+    - State: `profile` (CompanyProfile)
+    - Functions: `updateProfile`, `setLocation`, `uploadDocument`, `removeDocument`
+
+### 6. Employer - useInternships
+- **Source:** `src/pages/portal/employer/internships/scripts/useInternships.ts`
+- **Purpose:** Manages employer internship listings with CRUD, archive, and status toggling.
+- **Key Features:**
+    - State: `internships`, `activeInternships`, `archivedInternships`
+    - Functions: `addInternship`, `updateInternship`, `deleteInternship`, `toggleStatus`, `toggleArchive`
+
+### 7. Employer - useApplicants
+- **Source:** `src/pages/portal/employer/applicants/scripts/useApplicants.ts`
+- **Purpose:** Manages student applications for a specific internship with sorting and filtering.
+- **Key Features:**
+    - State: `applicants`, `suggestedApplicants`, `sortByContributors`
+    - Functions: `updateStatus`, `toggleSortByContributors`
+
+### 8. Employer - useEmployerStats
+- **Source:** `src/pages/portal/employer/dashboard/scripts/useEmployerStats.ts`
+- **Purpose:** Provides employer dashboard statistics (internships offered, students placed, monthly trends).
+
+### 9. Global - useFavorites
+- **Source:** `src/hooks/useFavorites.ts`
+- **Purpose:** Manages saved projects and portfolios, and provides recommended projects.
+- **Key Features:**
+    - State: `favorites`, `favoriteProjects`, `favoritePortfolios`, `recommendedProjects`
+    - Functions: `addFavorite`, `removeFavorite`, `isFavorite`
+
+### 10. Global - useMessages
+- **Source:** `src/hooks/useMessages.ts`
+- **Purpose:** Manages private messaging conversations with send/receive functionality.
+- **Key Features:**
+    - State: `conversations`, `activeConversation`, `activeMessages`, `totalUnread`
+    - Functions: `sendMessage`, `selectConversation`
+
+### 11. Global - useNotifications
+- **Source:** `src/hooks/useNotifications.ts`
+- **Purpose:** Manages notification data with read/unread toggling.
+- **Key Features:**
+    - State: `notifications`, `unreadCount`
+    - Functions: `toggleRead`, `markAllRead`
+
+### 12. Global - useInternshipSearch
+- **Source:** `src/hooks/useInternshipSearch.ts`
+- **Purpose:** Provides student-facing internship search, filter, sort, and application functionality.
+- **Key Features:**
+    - State: `internships`, `applications`, `completedInternships`, search/filter state
+    - Functions: `applyForInternship`, `hasApplied`, filter/sort setters

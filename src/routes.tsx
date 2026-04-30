@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { useGlobalContext } from './globalContext'
 import PortalLayout from './pages/portal/PortalLayout.tsx'
 import AuthLayout from './pages/auth/AuthLayout.tsx'
@@ -17,6 +17,20 @@ import UserDirectoryPage from './pages/portal/admin/users/UserDirectoryPage.tsx'
 import CourseDirectoryPage from './pages/portal/admin/courses/CourseDirectoryPage.tsx'
 import EmployerVerificationPage from './pages/portal/admin/verification/EmployerVerificationPage.tsx'
 import ErrorPage from './pages/error/ErrorPage.tsx'
+
+// Employer Sub-Sections
+import EmployerLayout from './pages/portal/employer/EmployerLayout.tsx'
+import EmployerDashboardPage from './pages/portal/employer/dashboard/EmployerDashboardPage.tsx'
+import CompanyProfilePage from './pages/portal/employer/profile/CompanyProfilePage.tsx'
+import InternshipManagementPage from './pages/portal/employer/internships/InternshipManagementPage.tsx'
+import ApplicantReviewPage from './pages/portal/employer/applicants/ApplicantReviewPage.tsx'
+
+// Student Sub-Sections
+import InternshipExplorerPage from './pages/portal/student/internships/InternshipExplorerPage.tsx'
+
+// Shared Pages
+import FavoritesPage from './pages/portal/shared/favorites/FavoritesPage.tsx'
+import CommunicationsPage from './pages/portal/shared/communications/CommunicationsPage.tsx'
 
 // Role Switcher Component
 function RoleSwitcher() {
@@ -68,30 +82,34 @@ export const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: 'projects', element: <div className="text-white">Student Projects</div> },
+          { path: 'projects', element: <div className="text-on-surface">Student Projects</div> },
           { path: 'explorer', element: <ExplorerPage /> },
-          { path: 'portfolio', element: <div className="text-white">Student Portfolio</div> },
-          { path: 'communications', element: <div className="text-white">Student Chat</div> }
+          { path: 'internships', element: <InternshipExplorerPage /> },
+          { path: 'portfolio', element: <div className="text-on-surface">Student Portfolio</div> },
+          { path: 'favorites', element: <FavoritesPage /> },
+          { path: 'communications', element: <CommunicationsPage /> }
         ]
       },
       {
         path: 'employer',
-        element: <div className="space-y-6">
-          <h1 className="text-3xl font-jakarta font-bold text-white">Employer Portal</h1>
-          <div className="grid grid-cols-2 gap-6">
-            <div className="h-64 bg-surface-container rounded-3xl border border-surface-variant flex items-center justify-center text-on-surface-variant">Talent Pool View</div>
-            <div className="h-64 bg-surface-container rounded-3xl border border-surface-variant flex items-center justify-center text-on-surface-variant">Job Postings</div>
-          </div>
-        </div>
+        element: <EmployerLayout />,
+        children: [
+          { index: true, element: <EmployerDashboardPage /> },
+          { path: 'profile', element: <CompanyProfilePage /> },
+          { path: 'internships', element: <InternshipManagementPage /> },
+          { path: 'internships/:id/applicants', element: <ApplicantReviewPage /> },
+          { path: 'favorites', element: <FavoritesPage /> },
+          { path: 'communications', element: <CommunicationsPage /> }
+        ]
       },
       {
         path: 'instructor',
         element: <div className="space-y-6">
-          <h1 className="text-3xl font-jakarta font-bold text-white">Instructor Dashboard</h1>
+          <h1 className="text-3xl font-jakarta font-bold text-on-surface">Instructor Dashboard</h1>
           <div className="grid grid-cols-3 gap-6">
-            <div className="h-48 bg-primary-container/20 rounded-2xl border border-primary/10 flex items-center justify-center text-primary">Grades</div>
-            <div className="h-48 bg-secondary-container/20 rounded-2xl border border-secondary/10 flex items-center justify-center text-secondary">Projects</div>
-            <div className="h-48 bg-surface-container rounded-2xl border border-surface-container flex items-center justify-center text-on-surface-variant">Class Chat</div>
+            <div className="h-48 bg-primary-container/20 rounded-xl border border-primary/10 flex items-center justify-center text-primary">Grades</div>
+            <div className="h-48 bg-secondary-container/20 rounded-xl border border-secondary/10 flex items-center justify-center text-secondary">Projects</div>
+            <div className="h-48 bg-surface-container rounded-xl border border-surface-container flex items-center justify-center text-on-surface-variant">Class Chat</div>
           </div>
         </div>
       },
@@ -103,7 +121,7 @@ export const router = createBrowserRouter([
           { path: 'verification', element: <EmployerVerificationPage /> },
           { path: 'users', element: <UserDirectoryPage /> },
           { path: 'courses', element: <CourseDirectoryPage /> },
-          { path: 'moderation', element: <div className="text-white">Content Moderation Section</div> }
+          { path: 'moderation', element: <div className="text-on-surface">Content Moderation Section</div> }
         ]
       }
     ]

@@ -31,3 +31,23 @@ This document records key architectural and design decisions made during the imp
 - **Decision:** Created a dedicated `AdminPage` with ecosystem-wide metrics and activity feeds.
 - **Rationale:** Administrators require a high-level overview of system health and user activities that differs significantly from other roles.
 - **Impact:** Provides a centralized hub for system oversight and manual user approvals.
+
+## 10. Employer Portal Architecture
+- **Decision:** Created a dedicated `EmployerLayout` mirroring the `AdminLayout` pattern with sub-navigation tabs.
+- **Rationale:** The employer portal has 5 distinct feature areas (Dashboard, Profile, Internships, Favorites, Communications) that benefit from a tabbed layout for contextual navigation.
+- **Impact:** All employer pages are nested under `/portal/employer/` with their own layout shell.
+
+## 11. Shared Pages Pattern
+- **Decision:** Created a `shared/` directory under `pages/portal/` for pages reused across multiple roles (Favorites, Communications).
+- **Rationale:** Favorites and Communications pages have identical UI for both Students and Employers. Sharing components avoids duplication while keeping the code DRY.
+- **Impact:** Both Student and Employer routes reference the same `FavoritesPage` and `CommunicationsPage` components.
+
+## 12. Google Maps Integration Placeholder
+- **Decision:** Implemented a clickable placeholder for the map location picker in the Company Profile page.
+- **Rationale:** No Google Maps API key is available in the dummy-data context. The placeholder simulates location selection and stores lat/lng coordinates.
+- **Impact:** When a real API key is available, the placeholder can be swapped for a real map component without changing the data model.
+
+## 13. Internship Application Flow
+- **Decision:** Student internship applications use a modal overlay with a cover letter textarea.
+- **Rationale:** Keeps the user in context (the internship listing) while providing a focused application form. Cover letter is limited to 500 characters per Req 84.
+- **Impact:** Applications are tracked in the student's "My Applications" tab and appear in the employer's "Applicant Review" page.

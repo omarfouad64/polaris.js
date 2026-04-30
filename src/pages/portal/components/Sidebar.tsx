@@ -1,4 +1,3 @@
-import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useGlobalContext } from '../../../globalContext'
 import Button from '../../../components/Button'
@@ -15,13 +14,16 @@ const roleTabs: Record<UserRole, Tab[]> = {
     { name: 'Dashboard', path: '/portal/student', icon: 'dashboard' },
     { name: 'My Projects', path: '/portal/student/projects', icon: 'list_alt' },
     { name: 'Explorer', path: '/portal/student/explorer', icon: 'explore' },
+    { name: 'Internships', path: '/portal/student/internships', icon: 'work' },
     { name: 'Portfolio', path: '/portal/student/portfolio', icon: 'person' },
+    { name: 'Favorites', path: '/portal/student/favorites', icon: 'favorite' },
     { name: 'Communications', path: '/portal/student/communications', icon: 'chat' }
   ],
   Employer: [
-    { name: 'Company Overview', path: '/portal/employer', icon: 'business' },
-    { name: 'Talent Pool', path: '/portal/employer/talent', icon: 'groups' },
-    { name: 'Postings', path: '/portal/employer/postings', icon: 'post_add' },
+    { name: 'Dashboard', path: '/portal/employer', icon: 'dashboard' },
+    { name: 'Company Profile', path: '/portal/employer/profile', icon: 'business' },
+    { name: 'Internships', path: '/portal/employer/internships', icon: 'work' },
+    { name: 'Favorites', path: '/portal/employer/favorites', icon: 'favorite' },
     { name: 'Communications', path: '/portal/employer/communications', icon: 'chat' }
   ],
   'Course Instructor': [
@@ -36,24 +38,34 @@ const roleTabs: Record<UserRole, Tab[]> = {
   ]
 }
 
-export default function Sidebar() {
+/**
+ * Sidebar — persistent sidebar navigation with role-based tabs, user profile, and logout.
+ */
+export default function Sidebar(): React.JSX.Element {
   const { user, logout } = useGlobalContext()
   const navigate = useNavigate()
   const location = useLocation()
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     logout()
     navigate('/auth/login')
   }
 
   const tabs = roleTabs[user?.role || 'Student']
 
+  const isActive = (path: string): boolean => {
+    if (path === `/portal/${location.pathname.split('/')[2]}`) {
+      return location.pathname === path
+    }
+    return location.pathname.startsWith(path)
+  }
+
   return (
     <aside className="w-72 bg-surface-container-lowest border-r border-surface-container flex flex-col shadow-sm">
       <div className="h-24 flex items-center px-8 border-b border-surface-container bg-surface-container-low/20">
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 p-2.5 rounded-xl border border-primary/20 shadow-sm">
-            <span className="material-symbols-outlined text-primary text-[24px] fill-1">explore</span>
+            <span className="material-symbols-outlined text-primary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
           </div>
           <span className="font-jakarta text-xl font-extrabold text-on-surface tracking-tight">Project Polaris</span>
         </div>
@@ -65,12 +77,12 @@ export default function Sidebar() {
             key={tab.name}
             onClick={() => navigate(tab.path)}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-jakarta font-semibold rounded-xl transition-all ${
-              location.pathname === tab.path
+              isActive(tab.path)
                 ? 'bg-primary text-on-primary shadow-md'
                 : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
             }`}
           >
-            <span className={`material-symbols-outlined text-[20px] ${location.pathname === tab.path ? '' : 'text-outline-variant'}`}>
+            <span className={`material-symbols-outlined text-[20px] ${isActive(tab.path) ? '' : 'text-outline-variant'}`}>
               {tab.icon}
             </span>
             {tab.name}
