@@ -52,6 +52,20 @@ This document lists and describes the custom React hooks implemented to manage s
     - State: `applications`
     - Functions: `acceptApplication`, `rejectApplication`, `downloadDocument`
 
+### 4.1 Admin - useLinkRequests
+- **Source:** `src/pages/portal/admin/courses/scripts/useLinkRequests.ts`
+- **Purpose:** Provides a dummy list of instructor course link/unlink requests.
+- **Key Features:**
+    - State: `requests`, `pendingRequests`
+    - Functions: `acceptRequest`, `rejectRequest`
+
+### 4.2 Admin - useModeration
+- **Source:** `src/pages/portal/admin/moderation/scripts/useModeration.ts`
+- **Purpose:** Manages flagged projects and student appeals.
+- **Key Features:**
+    - State: `flaggedProjects`, `appeals`
+    - Functions: `toggleProjectStatus`, `acceptAppeal`, `rejectAppeal`
+
 ### 5. Employer - useCompanyProfile
 - **Source:** `src/pages/portal/employer/profile/scripts/useCompanyProfile.ts`
 - **Purpose:** Manages employer company profile data with CRUD operations.

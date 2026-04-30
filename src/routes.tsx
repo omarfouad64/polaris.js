@@ -16,6 +16,7 @@ import AdminPage from './pages/portal/admin/AdminPage.tsx'
 import UserDirectoryPage from './pages/portal/admin/users/UserDirectoryPage.tsx'
 import CourseDirectoryPage from './pages/portal/admin/courses/CourseDirectoryPage.tsx'
 import EmployerVerificationPage from './pages/portal/admin/verification/EmployerVerificationPage.tsx'
+import ContentModerationPage from './pages/portal/admin/moderation/ContentModerationPage.tsx'
 import ErrorPage from './pages/error/ErrorPage.tsx'
 
 // Employer Sub-Sections
@@ -121,7 +122,7 @@ export const router = createBrowserRouter([
           { path: 'verification', element: <EmployerVerificationPage /> },
           { path: 'users', element: <UserDirectoryPage /> },
           { path: 'courses', element: <CourseDirectoryPage /> },
-          { path: 'moderation', element: <div className="text-on-surface">Content Moderation Section</div> }
+          { path: 'moderation', element: <ContentModerationPage /> }
         ]
       }
     ]
