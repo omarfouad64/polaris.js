@@ -59,7 +59,7 @@ This document lists and describes the reusable UI components implemented for the
 ### Employer Components
 - **EmployerLayout:** (`src/pages/portal/employer/EmployerLayout.tsx`) — Layout shell with sub-navigation tabs: Dashboard, Company Profile, Internships, Favorites, Communications.
 - **EmployerDashboardPage:** (`src/pages/portal/employer/dashboard/EmployerDashboardPage.tsx`) — Statistics cards (internships offered, students placed) and placements-over-time bar chart. Req 71.
-- **CompanyProfilePage:** (`src/pages/portal/employer/profile/CompanyProfilePage.tsx`) — Company info CRUD with Details/Location/Documents tabs. Includes Google Maps placeholder and PDF upload. Req 10, 11, 13.
+- **CompanyProfilePage:** (`src/pages/portal/employer/profile/CompanyProfilePage.tsx`) — Company info CRUD with Details/Location/Documents tabs. Includes OSM map picker with Nominatim reverse geocoding and real PDF uploads. Req 10, 11, 13.
 - **InternshipManagementPage:** (`src/pages/portal/employer/internships/InternshipManagementPage.tsx`) — Internship CRUD with Active/Archived tabs, hiring status toggle, archive control, and create/edit modal. Req 74, 77, 78, 85, 86.
 - **ApplicantReviewPage:** (`src/pages/portal/employer/applicants/ApplicantReviewPage.tsx`) — Candidates/Suggested Matches tabs, applicant cards with status selector (Nominated/Accepted/Rejected), cover letter preview, sort by top contributors. Req 75, 76, 87, 88.
 

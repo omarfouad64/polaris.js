@@ -9,6 +9,7 @@ export interface CompanyProfile {
   logoUrl: string
   approvalStatus: 'Pending' | 'Approved' | 'Rejected'
   location: { lat: number; lng: number } | null
+  locationAddress?: string | null
   documents: DocumentFile[]
 }
 
@@ -16,6 +17,7 @@ export interface DocumentFile {
   id: string
   name: string
   type: string
+  size: number
   uploadedAt: string
 }
 

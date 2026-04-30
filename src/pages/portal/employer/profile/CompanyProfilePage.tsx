@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import useCompanyProfile from './scripts/useCompanyProfile'
 import Button from '../../../../components/Button'
 import Input from '../../../../components/Input'
+import OsmMapPicker from './components/OsmMapPicker'
 
 /**
  * CompanyProfilePage — employer company profile management with Details and Location tabs.
@@ -12,12 +13,19 @@ export default function CompanyProfilePage(): React.JSX.Element {
   const { profile, updateProfile, setLocation, uploadDocument, removeDocument } = useCompanyProfile()
   const [activeTab, setActiveTab] = useState<'details' | 'location' | 'documents'>('details')
   const [isEditing, setIsEditing] = useState(false)
+  const [pendingLocation, setPendingLocation] = useState(profile.location)
+  const [pendingAddress, setPendingAddress] = useState<string | null>(profile.locationAddress ?? null)
+  const [addressStatus, setAddressStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+  const [documentError, setDocumentError] = useState('')
   const [form, setForm] = useState({
     biography: profile.biography,
     address: profile.address,
     contactEmail: profile.contactEmail,
     phone: profile.phone
   })
+  const documentInputRef = useRef<HTMLInputElement>(null)
+  const reverseGeocodeRequestId = useRef(0)
+  const maxPdfSize = 5 * 1024 * 1024
 
   const handleSave = (): void => {
     updateProfile(form)
@@ -34,10 +42,72 @@ export default function CompanyProfilePage(): React.JSX.Element {
     setIsEditing(false)
   }
 
-  const handleMapClick = (): void => {
-    const lat = 30.0131 + (Math.random() - 0.5) * 0.01
-    const lng = 31.4089 + (Math.random() - 0.5) * 0.01
-    setLocation(lat, lng)
+  const reverseGeocode = async (lat: number, lng: number): Promise<string | null> => {
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), 5000)
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
+        {
+          signal: controller.signal,
+          headers: { Accept: 'application/json', 'Accept-Language': 'en' }
+        }
+      )
+      if (!response.ok) {
+        return null
+      }
+      const data = (await response.json()) as { display_name?: string }
+      return data.display_name ?? null
+    } catch {
+      return null
+    } finally {
+      window.clearTimeout(timeoutId)
+    }
+  }
+
+  const handleLocationChange = async (location: { lat: number; lng: number }): Promise<void> => {
+    setPendingLocation(location)
+    setPendingAddress(null)
+    setAddressStatus('loading')
+    const requestId = (reverseGeocodeRequestId.current += 1)
+    const address = await reverseGeocode(location.lat, location.lng)
+
+    if (requestId !== reverseGeocodeRequestId.current) return
+
+    if (address) {
+      setPendingAddress(address)
+      setAddressStatus('idle')
+    } else {
+      setPendingAddress(null)
+      setAddressStatus('error')
+    }
+  }
+
+  const handleSaveLocation = (): void => {
+    if (!pendingLocation) return
+    setLocation(pendingLocation.lat, pendingLocation.lng, pendingAddress ?? null)
+  }
+
+  const handleDocumentUpload = (file: File): void => {
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+    if (!isPdf) {
+      setDocumentError('Please upload a PDF document.')
+      return
+    }
+    if (file.size > maxPdfSize) {
+      setDocumentError('PDF must be 5MB or smaller.')
+      return
+    }
+
+    setDocumentError('')
+    uploadDocument(file)
+  }
+
+  const formatFileSize = (size: number): string => {
+    if (size < 1024) return `${size} B`
+    if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`
   }
 
   const statusColors = {
@@ -152,32 +222,40 @@ export default function CompanyProfilePage(): React.JSX.Element {
           className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/40 space-y-4"
           style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}
         >
-          <button
-            onClick={handleMapClick}
-            className="w-full min-h-[320px] bg-surface-container rounded-xl border border-outline-variant/40 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-surface-container-low transition-colors focus-visible:ring-2 focus-visible:ring-secondary"
-            aria-label="Click to set company location on map"
-          >
-            <span className="material-symbols-outlined text-[48px] text-primary/40">map</span>
-            <span className="font-lexend text-on-surface-variant">Click to set your company location</span>
-            <span className="text-xs font-lexend text-outline">(Google Maps integration placeholder)</span>
-          </button>
-          {profile.location && (
-            <div className="flex items-center gap-3 p-4 bg-surface-container-low rounded-xl">
+          <OsmMapPicker
+            value={pendingLocation}
+            onChange={handleLocationChange}
+            onAddressChange={setPendingAddress}
+          />
+          {(pendingLocation ?? profile.location) && (
+            <div className="flex items-start gap-3 p-4 bg-surface-container-low rounded-xl">
               <span className="material-symbols-outlined text-secondary">location_on</span>
               <div>
                 <p className="font-jakarta font-semibold text-on-surface text-sm">Selected Location</p>
-                <p className="font-lexend text-on-surface-variant text-sm">
-                  Lat: {profile.location.lat.toFixed(4)}, Lng: {profile.location.lng.toFixed(4)}
-                </p>
+                {(pendingLocation ? pendingAddress : profile.locationAddress) ? (
+                  <p className="font-lexend text-on-surface-variant text-sm">
+                    {pendingLocation ? pendingAddress : profile.locationAddress}
+                  </p>
+                ) : (
+                  <p className="font-lexend text-on-surface-variant text-sm">
+                    Lat: {(pendingLocation ?? profile.location)?.lat.toFixed(4)}, Lng: {(pendingLocation ?? profile.location)?.lng.toFixed(4)}
+                  </p>
+                )}
+                {addressStatus === 'loading' && (
+                  <p className="font-lexend text-xs text-outline mt-1">Fetching address...</p>
+                )}
+                {addressStatus === 'error' && (
+                  <p className="font-lexend text-xs text-outline mt-1">Unable to fetch address. Showing coordinates only.</p>
+                )}
               </div>
             </div>
           )}
-          {!profile.location && (
+          {!pendingLocation && !profile.location && (
             <p className="font-lexend text-on-surface-variant text-sm text-center py-2">
               No location set yet. Click on the map to set your company&apos;s location.
             </p>
           )}
-          <Button onClick={() => profile.location && setLocation(profile.location.lat, profile.location.lng)}>
+          <Button onClick={handleSaveLocation} disabled={!pendingLocation}>
             Save Location
           </Button>
         </div>
@@ -194,12 +272,30 @@ export default function CompanyProfilePage(): React.JSX.Element {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => uploadDocument(`document_${Date.now()}.pdf`)}
+              onClick={() => documentInputRef.current?.click()}
             >
               <span className="material-symbols-outlined text-[18px]">upload_file</span>
               Upload PDF
             </Button>
           </div>
+          <input
+            ref={documentInputRef}
+            type="file"
+            accept=".pdf,application/pdf"
+            className="hidden"
+            onChange={event => {
+              const file = event.target.files?.[0]
+              event.target.value = ''
+              if (file) {
+                handleDocumentUpload(file)
+              }
+            }}
+          />
+          {documentError && (
+            <p className="text-sm font-lexend text-error bg-error/5 p-3 rounded-lg border border-error/20">
+              {documentError}
+            </p>
+          )}
 
           {profile.documents.length === 0 ? (
             <div className="text-center py-8">
@@ -214,7 +310,9 @@ export default function CompanyProfilePage(): React.JSX.Element {
                   <span className="material-symbols-outlined text-error">picture_as_pdf</span>
                   <div className="flex-1 min-w-0">
                     <p className="font-jakarta font-semibold text-sm text-on-surface truncate">{doc.name}</p>
-                    <p className="font-lexend text-xs text-on-surface-variant">Uploaded {doc.uploadedAt}</p>
+                    <p className="font-lexend text-xs text-on-surface-variant">
+                      Uploaded {doc.uploadedAt} · {formatFileSize(doc.size)}
+                    </p>
                   </div>
                   <button
                     onClick={() => removeDocument(doc.id)}

@@ -11,7 +11,7 @@ interface SignupFormProps {
   setRole: (role: UserRole) => void
 }
 
-export default function SignupForm({ role, setRole }: SignupFormProps) {
+export default function SignupForm({ role, setRole }: SignupFormProps): React.JSX.Element {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -19,6 +19,7 @@ export default function SignupForm({ role, setRole }: SignupFormProps) {
   const [companyName, setCompanyName] = useState('')
   const [taxCertificate, setTaxCertificate] = useState<File | null>(null)
   const [error, setError] = useState('')
+  const maxPdfSize = 5 * 1024 * 1024
   
   const { login } = useGlobalContext()
   const { registerUser } = useUsers()
@@ -42,6 +43,18 @@ export default function SignupForm({ role, setRole }: SignupFormProps) {
     if (role === 'Employer' && !taxCertificate) {
       setError('Please upload your Tax Certificate PDF')
       return
+    }
+
+    if (role === 'Employer' && taxCertificate) {
+      const isPdf = taxCertificate.type === 'application/pdf' || taxCertificate.name.toLowerCase().endsWith('.pdf')
+      if (!isPdf) {
+        setError('Please upload a valid PDF document')
+        return
+      }
+      if (taxCertificate.size > maxPdfSize) {
+        setError('PDF must be 5MB or smaller')
+        return
+      }
     }
 
     registerUser(email, role, password)
@@ -136,8 +149,30 @@ export default function SignupForm({ role, setRole }: SignupFormProps) {
                 type="file" 
                 ref={fileInputRef} 
                 className="hidden" 
-                accept=".pdf"
-                onChange={(e) => setTaxCertificate(e.target.files?.[0] || null)}
+                accept=".pdf,application/pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  e.target.value = ''
+                  if (!file) {
+                    setTaxCertificate(null)
+                    return
+                  }
+
+                  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+                  if (!isPdf) {
+                    setTaxCertificate(null)
+                    setError('Please upload a valid PDF document')
+                    return
+                  }
+                  if (file.size > maxPdfSize) {
+                    setTaxCertificate(null)
+                    setError('PDF must be 5MB or smaller')
+                    return
+                  }
+
+                  setError('')
+                  setTaxCertificate(file)
+                }}
               />
               <span className="material-symbols-outlined text-primary text-5xl group-hover:scale-110 transition-transform">
                 {taxCertificate ? 'check_circle' : 'upload_file'}

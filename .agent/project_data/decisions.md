@@ -42,10 +42,10 @@ This document records key architectural and design decisions made during the imp
 - **Rationale:** Favorites and Communications pages have identical UI for both Students and Employers. Sharing components avoids duplication while keeping the code DRY.
 - **Impact:** Both Student and Employer routes reference the same `FavoritesPage` and `CommunicationsPage` components.
 
-## 12. Google Maps Integration Placeholder
-- **Decision:** Implemented a clickable placeholder for the map location picker in the Company Profile page.
-- **Rationale:** No Google Maps API key is available in the dummy-data context. The placeholder simulates location selection and stores lat/lng coordinates.
-- **Impact:** When a real API key is available, the placeholder can be swapped for a real map component without changing the data model.
+## 12. OSM Map Picker with Nominatim
+- **Decision:** Replaced the Company Profile map placeholder with a React Leaflet OSM map picker and Nominatim reverse geocoding.
+- **Rationale:** Avoids API key requirements while still enabling real map interaction and address lookup.
+- **Impact:** Employer profile locations store coordinates plus an optional formatted address, with a fallback to lat/lng when Nominatim fails.
 
 ## 13. Internship Application Flow
 - **Decision:** Student internship applications use a modal overlay with a cover letter textarea.
