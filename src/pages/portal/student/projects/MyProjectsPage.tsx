@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useStudentProjects, { ProjectData } from '../scripts/useStudentProjects';
-import ProjectList from '../components/ProjectList';
-import Button from 'src/components/Button';
+import useStudentProjects, { type ProjectData } from './scripts/useStudentProjects';
+import ProjectList from './components/ProjectList';
+import Button from '../../../../components/Button';
 
 /**
  * MyProjectsPage — Displays student's project list with CRUD controls.

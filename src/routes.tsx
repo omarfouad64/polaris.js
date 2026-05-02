@@ -28,6 +28,7 @@ import ApplicantReviewPage from './pages/portal/employer/applicants/ApplicantRev
 
 // Student Sub-Sections
 import InternshipExplorerPage from './pages/portal/student/internships/InternshipExplorerPage.tsx'
+import MyProjectsPage from './pages/portal/student/projects/MyProjectsPage.tsx'
 
 // Shared Pages
 import FavoritesPage from './pages/portal/shared/favorites/FavoritesPage.tsx'
@@ -37,11 +38,11 @@ import CommunicationsPage from './pages/portal/shared/communications/Communicati
 function RoleSwitcher() {
   const { user } = useGlobalContext()
   let rolePath = 'student'
-  
+
   if (user?.role === 'Course Instructor') rolePath = 'instructor'
   else if (user?.role === 'Administrator') rolePath = 'administrator'
   else if (user?.role === 'Employer') rolePath = 'employer'
-  
+
   return <Navigate to={`/portal/${rolePath}`} replace />
 }
 
@@ -83,7 +84,7 @@ export const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: 'projects', element: <div className="text-on-surface">Student Projects</div> },
+          { path: 'projects', element: <MyProjectsPage /> },
           { path: 'explorer', element: <ExplorerPage /> },
           { path: 'internships', element: <InternshipExplorerPage /> },
           { path: 'portfolio', element: <div className="text-on-surface">Student Portfolio</div> },
