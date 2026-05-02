@@ -1,4 +1,4 @@
-import useCourses from 'src/hooks/useCourses';
+import useCourses from '../../../../../hooks/useCourses';
 
 interface CourseSelectorProps {
   selectedCourse: string;

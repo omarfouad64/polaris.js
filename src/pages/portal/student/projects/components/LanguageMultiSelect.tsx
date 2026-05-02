@@ -1,4 +1,4 @@
-import useAvailableProgrammingLanguages from 'src/hooks/useAvailableProgrammingLanguages';
+import useAvailableProgrammingLanguages from '../../../../../hooks/useAvailableProgrammingLanguages';
 
 interface LanguageMultiSelectProps {
   selectedLanguages: string[];
@@ -35,11 +35,10 @@ export default function LanguageMultiSelect({
           <button
             key={lang}
             onClick={() => handleToggleLanguage(lang)}
-            className={`text-sm font-jakarta font-semibold px-3 py-1.5 rounded-full transition-all duration-150 ${
-              selectedLanguages.includes(lang)
+            className={`text-sm font-jakarta font-semibold px-3 py-1.5 rounded-full transition-all duration-150 ${selectedLanguages.includes(lang)
                 ? 'bg-primary text-on-primary'
                 : 'bg-surface text-on-surface border border-outline-variant hover:bg-surface-container'
-            }`}
+              }`}
           >
             {lang}
           </button>

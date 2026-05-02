@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import useStudentProjects, { ProjectData } from '../scripts/useStudentProjects';
-import useCourses from 'src/hooks/useCourses';
+import useStudentProjects, { type ProjectData } from '../scripts/useStudentProjects';
+import useCourses from '../../../../../hooks/useCourses';
 import CourseSelector from './CourseSelector';
 import LanguageMultiSelect from './LanguageMultiSelect';
 import VideoUploader from './VideoUploader';
-import Button from 'src/components/Button';
+import Button from '../../../../../components/Button';
 
 interface ProjectEditorProps {
   projectId?: string;
@@ -144,11 +144,11 @@ export default function ProjectEditor({
         isEditMode && projectId
           ? { ...existingProject, ...formData } as ProjectData
           : ({
-              ...formData,
-              id: `proj-${Date.now()}`,
-              createdDate: new Date().toISOString().split('T')[0],
-              updatedDate: new Date().toISOString().split('T')[0],
-            } as ProjectData)
+            ...formData,
+            id: `proj-${Date.now()}`,
+            createdDate: new Date().toISOString().split('T')[0],
+            updatedDate: new Date().toISOString().split('T')[0],
+          } as ProjectData)
       );
     } finally {
       setIsSubmitting(false);
@@ -185,11 +185,10 @@ export default function ProjectEditor({
           onChange={handleInputChange}
           placeholder="e.g., E-Commerce Platform"
           maxLength={200}
-          className={`w-full bg-surface-container-low border rounded-lg px-4 py-3 text-base font-lexend text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 transition-colors duration-150 ${
-            errors.title
-              ? 'border-error focus:border-error focus:ring-error/20'
-              : 'border-outline-variant focus:border-secondary focus:ring-secondary/20'
-          }`}
+          className={`w-full bg-surface-container-low border rounded-lg px-4 py-3 text-base font-lexend text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 transition-colors duration-150 ${errors.title
+            ? 'border-error focus:border-error focus:ring-error/20'
+            : 'border-outline-variant focus:border-secondary focus:ring-secondary/20'
+            }`}
         />
         {errors.title && (
           <p className="text-sm text-error mt-1 font-lexend">{errors.title}</p>
@@ -224,11 +223,10 @@ export default function ProjectEditor({
           value={formData.githubLink}
           onChange={handleInputChange}
           placeholder="https://github.com/your-username/repo-name"
-          className={`w-full bg-surface-container-low border rounded-lg px-4 py-3 text-base font-lexend text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 transition-colors duration-150 ${
-            errors.githubLink
-              ? 'border-error focus:border-error focus:ring-error/20'
-              : 'border-outline-variant focus:border-secondary focus:ring-secondary/20'
-          }`}
+          className={`w-full bg-surface-container-low border rounded-lg px-4 py-3 text-base font-lexend text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 transition-colors duration-150 ${errors.githubLink
+            ? 'border-error focus:border-error focus:ring-error/20'
+            : 'border-outline-variant focus:border-secondary focus:ring-secondary/20'
+            }`}
         />
         {errors.githubLink && (
           <p className="text-sm text-error mt-1 font-lexend">
@@ -260,11 +258,10 @@ export default function ProjectEditor({
           placeholder="Describe your project, its purpose, implementation details, and outcomes..."
           maxLength={5000}
           rows={6}
-          className={`w-full bg-surface-container-low border rounded-lg px-4 py-3 text-base font-lexend text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 transition-colors duration-150 resize-none ${
-            errors.projectReport
-              ? 'border-error focus:border-error focus:ring-error/20'
-              : 'border-outline-variant focus:border-secondary focus:ring-secondary/20'
-          }`}
+          className={`w-full bg-surface-container-low border rounded-lg px-4 py-3 text-base font-lexend text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 transition-colors duration-150 resize-none ${errors.projectReport
+            ? 'border-error focus:border-error focus:ring-error/20'
+            : 'border-outline-variant focus:border-secondary focus:ring-secondary/20'
+            }`}
         />
         {errors.projectReport && (
           <p className="text-sm text-error mt-1 font-lexend">

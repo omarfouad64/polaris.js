@@ -1,4 +1,4 @@
-import { ProjectData } from '../scripts/useStudentProjects';
+import type { ProjectData } from '../scripts/useStudentProjects';
 import ProjectCard from './ProjectCard';
 
 interface ProjectListProps {
