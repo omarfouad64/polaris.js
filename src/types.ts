@@ -1,5 +1,18 @@
 export type UserRole = 'Student' | 'Employer' | 'Course Instructor' | 'Administrator'
 
+export interface StudentPortfolio {
+  studentId: string
+  name: string
+  email: string
+  major: string
+  skills: string[]
+  linkedinUrl: string
+  bio: string
+  profilePicture: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface CompanyProfile {
   companyName: string
   biography: string
