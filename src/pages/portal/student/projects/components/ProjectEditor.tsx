@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import useStudentProjects, { type ProjectData } from '../scripts/useStudentProjects';
+import useStudentProjects, { type ProjectData, type ThesisDraft } from '../scripts/useStudentProjects';
 import useCourses from '../../../../../hooks/useCourses';
 import CourseSelector from './CourseSelector';
 import LanguageMultiSelect from './LanguageMultiSelect';
 import VideoUploader from './VideoUploader';
+import ThesisDraftUploader from './ThesisDraftUploader';
 import Button from '../../../../../components/Button';
 
 interface ProjectEditorProps {
@@ -39,6 +40,7 @@ export default function ProjectEditor({
     projectReport: existingProject?.projectReport || '',
     languages: existingProject?.languages || [],
     demoVideoUrl: existingProject?.demoVideoUrl || '',
+    thesisDrafts: existingProject?.thesisDrafts || [],
     isPublic: existingProject?.isPublic ?? true,
   });
 
@@ -122,6 +124,10 @@ export default function ProjectEditor({
 
   const handleVideoRemove = () => {
     setFormData((prev) => ({ ...prev, demoVideoUrl: '' }));
+  };
+
+  const handleThesisDraftsChange = (thesisDrafts: ThesisDraft[]) => {
+    setFormData((prev) => ({ ...prev, thesisDrafts }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -279,6 +285,14 @@ export default function ProjectEditor({
           </p>
         )}
       </div>
+      
+      {/* Thesis Drafts (Bachelor Project only) */}
+      {formData.course === 'course-001' && (
+        <ThesisDraftUploader
+          drafts={formData.thesisDrafts}
+          onDraftsChange={handleThesisDraftsChange}
+        />
+      )}
 
       {/* Visibility Toggle */}
       <div className="mb-8 p-4 bg-surface-container rounded-lg border border-outline-variant/40">

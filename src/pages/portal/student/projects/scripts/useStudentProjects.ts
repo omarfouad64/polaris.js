@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 
+export interface ThesisDraft {
+  id: string;
+  name: string;
+  uploadDate: string;
+  isFinal: boolean;
+}
+
 export interface ProjectData {
   id: string;
   title: string;
@@ -8,6 +15,7 @@ export interface ProjectData {
   projectReport: string;
   languages: string[];
   demoVideoUrl?: string;
+  thesisDrafts: ThesisDraft[];
   createdDate: string;
   updatedDate: string;
   isPublic: boolean;
@@ -22,6 +30,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
     projectReport: 'Built a full-stack e-commerce platform with React frontend and Node.js backend. Implemented shopping cart, payment integration, and admin dashboard.',
     languages: ['TypeScript', 'React', 'Node.js', 'MongoDB'],
     demoVideoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    thesisDrafts: [],
     createdDate: '2026-01-15',
     updatedDate: '2026-02-10',
     isPublic: true,
@@ -34,6 +43,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
     projectReport: 'Developed a machine learning classifier for image recognition using convolutional neural networks. Achieved 94% accuracy on test dataset.',
     languages: ['Python', 'TensorFlow', 'Scikit-learn'],
     demoVideoUrl: 'https://www.youtube.com/embed/jNQXAC9IVRw',
+    thesisDrafts: [],
     createdDate: '2025-09-01',
     updatedDate: '2026-03-20',
     isPublic: true,
@@ -46,6 +56,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
     projectReport: 'Cross-platform chat application with real-time messaging, user authentication, and push notifications.',
     languages: ['React Native', 'Firebase', 'JavaScript'],
     demoVideoUrl: undefined,
+    thesisDrafts: [],
     createdDate: '2026-02-01',
     updatedDate: '2026-02-28',
     isPublic: false,
