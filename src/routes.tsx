@@ -30,6 +30,8 @@ import ApplicantReviewPage from './pages/portal/employer/applicants/ApplicantRev
 import InstructorLayout from './pages/portal/instructor/InstructorLayout.tsx'
 import InstructorProfilePage from './pages/portal/instructor/profile/InstructorProfilePage.tsx'
 import MyCourses from './pages/portal/instructor/courses/MyCourses.tsx'
+import InstructorDirectory from './pages/portal/explorer/InstructorDirectory.tsx'
+
 
 // Student Sub-Sections
 import InternshipExplorerPage from './pages/portal/student/internships/InternshipExplorerPage.tsx'
@@ -130,6 +132,11 @@ export const router = createBrowserRouter([
           { path: 'courses', element: <CourseDirectoryPage /> },
           { path: 'moderation', element: <ContentModerationPage /> }
         ]
+      },
+      {
+        path: 'explorer',
+        element: <InstructorDirectory />,
+        children: []
       }
     ]
   }
