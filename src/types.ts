@@ -145,3 +145,36 @@ export interface CourseLink {
   status: 'linked' | 'pending' | 'rejected'
   linkedAt: string
 }
+
+export interface ProjectCollaborator {
+  collaboratorId: string
+  name: string
+  email: string
+  role: 'owner' | 'collaborator' | 'instructor'
+  invitationStatus: 'pending' | 'accepted' | 'rejected'
+  invitedAt: string
+  respondedAt?: string
+  profilePicture?: string | null
+}
+
+export interface ProjectInvitation {
+  id: string
+  projectId: string
+  projectTitle: string
+  senderName: string
+  senderId: string
+  recipientEmail: string
+  recipientName: string
+  invitationStatus: 'pending' | 'accepted' | 'rejected'
+  createdAt: string
+  respondedAt?: string
+}
+
+export interface CollaborationSearchResult {
+  userId: string
+  name: string
+  email: string
+  role: 'Student' | 'Course Instructor'
+  profilePicture?: string | null
+  isAlreadyCollaborator: boolean
+}

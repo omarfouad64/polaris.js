@@ -32,11 +32,12 @@ import InstructorProfilePage from './pages/portal/instructor/profile/InstructorP
 import MyCourses from './pages/portal/instructor/courses/MyCourses.tsx'
 import InstructorDirectory from './pages/portal/explorer/InstructorDirectory.tsx'
 
-
 // Student Sub-Sections
 import InternshipExplorerPage from './pages/portal/student/internships/InternshipExplorerPage.tsx'
 import MyProjectsPage from './pages/portal/student/projects/MyProjectsPage.tsx'
 import StudentPortfolioPage from './pages/portal/student/portfolio/StudentPortfolioPage.tsx'
+import ProjectCollaboration from './pages/portal/student/projects/ProjectCollaboration.tsx'
+
 
 
 // Shared Pages
@@ -98,7 +99,8 @@ export const router = createBrowserRouter([
           { path: 'internships', element: <InternshipExplorerPage /> },
           { path: 'portfolio', element: <StudentPortfolioPage /> },
           { path: 'favorites', element: <FavoritesPage /> },
-          { path: 'communications', element: <CommunicationsPage /> }
+          { path: 'communications', element: <CommunicationsPage /> },
+          { path: 'projects/:id/collaboration', element: <ProjectCollaboration /> }
         ]
       },
       {
