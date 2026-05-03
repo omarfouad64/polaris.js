@@ -35,6 +35,7 @@ import InstructorDirectory from './pages/portal/explorer/InstructorDirectory.tsx
 // Student Sub-Sections
 import InternshipExplorerPage from './pages/portal/student/internships/InternshipExplorerPage.tsx'
 import MyProjectsPage from './pages/portal/student/projects/MyProjectsPage.tsx'
+import ProjectEditorPage from './pages/portal/student/projects/ProjectEditorPage.tsx'
 import StudentPortfolioPage from './pages/portal/student/portfolio/StudentPortfolioPage.tsx'
 import ProjectCollaboration from './pages/portal/student/projects/ProjectCollaboration.tsx'
 import ProjectInvitationsPage from './pages/portal/student/invitations/ProjectInvitationsPage.tsx'
@@ -97,6 +98,8 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardPage /> },
           { path: 'projects', element: <MyProjectsPage /> },
+          { path: 'projects/:id', element: <ProjectEditorPage /> },
+          { path: 'projects/new', element: <ProjectEditorPage /> },
           { path: 'explorer', element: <ExplorerPage /> },
           { path: 'internships', element: <InternshipExplorerPage /> },
           { path: 'portfolio', element: <StudentPortfolioPage /> },

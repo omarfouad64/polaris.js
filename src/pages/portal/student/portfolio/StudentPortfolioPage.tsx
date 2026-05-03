@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio'
+import useStudentProjects from '../projects/scripts/useStudentProjects'
+import ProjectList from '../projects/components/ProjectList'
+import { useNavigate } from 'react-router-dom'
 
 interface PortfolioSection {
-  id: 'profile' | 'skills' | 'contact'
+  id: 'profile' | 'skills' | 'projects' | 'contact'
   label: string
 }
 
 const PORTFOLIO_SECTIONS: PortfolioSection[] = [
   { id: 'profile', label: 'Profile Info' },
   { id: 'skills', label: 'Skills' },
+  { id: 'projects', label: 'Projects' },
   { id: 'contact', label: 'Contact & Links' }
 ]
 
@@ -18,8 +22,9 @@ const PORTFOLIO_SECTIONS: PortfolioSection[] = [
  * Allows users to add, view, update, and remove portfolio information.
  */
 export default function StudentPortfolioPage() {
+  const navigate = useNavigate()
   // State management
-  const [activeSection, setActiveSection] = useState<'profile' | 'skills' | 'contact'>('profile')
+  const [activeSection, setActiveSection] = useState<'profile' | 'skills' | 'projects' | 'contact'>('profile')
   const [newSkill, setNewSkill] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [editMajor, setEditMajor] = useState('')
@@ -35,6 +40,24 @@ export default function StudentPortfolioPage() {
     addSkill,
     removeSkill
   } = useStudentPortfolio()
+
+  const { projects, deleteProject, isLoading: projectsLoading } = useStudentProjects()
+
+  // Project Handlers
+  const handleEditProject = (id: string) => {
+    navigate(`/portal/student/projects/${id}`)
+  }
+
+  const handleDeleteProject = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this project?')) {
+      deleteProject(id)
+    }
+  }
+
+  const handleViewProject = (id: string) => {
+    console.log('View project:', id)
+    // Future: navigate to public project view
+  }
 
   // Handler: Start editing mode
   const handleEditStart = () => {
@@ -270,7 +293,49 @@ export default function StudentPortfolioPage() {
             </div>
           )}
 
-          {/* SECTION 3: Contact & Links Tab */}
+          {/* SECTION 3: Projects Tab */}
+          {activeSection === 'projects' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center mb-4">
+                <p className="text-sm font-jakarta font-semibold text-on-surface-variant">Your Showcase Projects</p>
+                <button 
+                  onClick={() => navigate('/portal/student/projects/new')}
+                  className="text-sm font-jakarta font-semibold text-primary hover:underline"
+                >
+                  + Add Project
+                </button>
+              </div>
+              
+              {projects.length > 0 ? (
+                <ProjectList
+                  projects={projects.filter(p => p.isPublic)}
+                  onEdit={handleEditProject}
+                  onDelete={handleDeleteProject}
+                  onView={handleViewProject}
+                  isLoading={projectsLoading}
+                />
+              ) : (
+                <div className="text-center py-12 bg-surface-container-low rounded-xl border border-dashed border-outline-variant">
+                  <p className="text-on-surface-variant font-lexend mb-4">No public projects in your portfolio yet.</p>
+                  <button
+                    onClick={() => navigate('/portal/student/projects')}
+                    className="px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
+                  >
+                    Manage Projects
+                  </button>
+                </div>
+              )}
+
+              {projects.some(p => !p.isPublic) && (
+                <p className="text-xs text-on-surface-variant font-lexend mt-4 italic">
+                  Note: Some of your projects are set to private and are not shown here. 
+                  Manage them in the <button onClick={() => navigate('/portal/student/projects')} className="text-primary hover:underline">Projects Dashboard</button>.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* SECTION 4: Contact & Links Tab */}
           {activeSection === 'contact' && (
             <div className="space-y-6">
               {isEditing ? (

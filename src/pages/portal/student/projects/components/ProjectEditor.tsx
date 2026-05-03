@@ -134,22 +134,15 @@ export default function ProjectEditor({
     setIsSubmitting(true);
 
     try {
+      let savedProject: ProjectData;
       if (isEditMode && projectId) {
         updateProject(projectId, formData);
+        savedProject = { ...existingProject, ...formData, id: projectId, updatedDate: new Date().toISOString().split('T')[0] } as ProjectData;
       } else {
-        createProject(formData);
+        savedProject = createProject(formData);
       }
 
-      onSave?.(
-        isEditMode && projectId
-          ? { ...existingProject, ...formData } as ProjectData
-          : ({
-            ...formData,
-            id: `proj-${Date.now()}`,
-            createdDate: new Date().toISOString().split('T')[0],
-            updatedDate: new Date().toISOString().split('T')[0],
-          } as ProjectData)
-      );
+      onSave?.(savedProject);
     } finally {
       setIsSubmitting(false);
     }
