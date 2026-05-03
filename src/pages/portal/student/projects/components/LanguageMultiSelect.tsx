@@ -34,6 +34,7 @@ export default function LanguageMultiSelect({
         {languages.map((lang) => (
           <button
             key={lang}
+            type="button"
             onClick={() => handleToggleLanguage(lang)}
             className={`text-sm font-jakarta font-semibold px-3 py-1.5 rounded-full transition-all duration-150 ${selectedLanguages.includes(lang)
                 ? 'bg-primary text-on-primary'

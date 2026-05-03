@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface ProjectData {
   id: string;
@@ -17,7 +17,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
   {
     id: 'proj-001',
     title: 'E-Commerce Platform',
-    course: 'Web Development',
+    course: 'course-002',
     githubLink: 'https://github.com/student/ecommerce',
     projectReport: 'Built a full-stack e-commerce platform with React frontend and Node.js backend. Implemented shopping cart, payment integration, and admin dashboard.',
     languages: ['TypeScript', 'React', 'Node.js', 'MongoDB'],
@@ -29,7 +29,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
   {
     id: 'proj-002',
     title: 'Machine Learning Classification',
-    course: 'Bachelor Project',
+    course: 'course-001',
     githubLink: 'https://github.com/student/ml-classifier',
     projectReport: 'Developed a machine learning classifier for image recognition using convolutional neural networks. Achieved 94% accuracy on test dataset.',
     languages: ['Python', 'TensorFlow', 'Scikit-learn'],
@@ -41,7 +41,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
   {
     id: 'proj-003',
     title: 'Mobile Chat App',
-    course: 'Mobile Development',
+    course: 'course-003',
     githubLink: 'https://github.com/student/chat-app',
     projectReport: 'Cross-platform chat application with real-time messaging, user authentication, and push notifications.',
     languages: ['React Native', 'Firebase', 'JavaScript'],
@@ -59,8 +59,15 @@ const DUMMY_PROJECTS: ProjectData[] = [
  * @returns Project management functions and state.
  */
 export default function useStudentProjects() {
-  const [projects, setProjects] = useState<ProjectData[]>(DUMMY_PROJECTS);
+  const [projects, setProjects] = useState<ProjectData[]>(() => {
+    const saved = localStorage.getItem('polaris_projects');
+    return saved ? JSON.parse(saved) : DUMMY_PROJECTS;
+  });
   const [isLoading] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('polaris_projects', JSON.stringify(projects));
+  }, [projects]);
 
   const createProject = (project: Omit<ProjectData, 'id' | 'createdDate' | 'updatedDate'>) => {
     const newProject: ProjectData = {

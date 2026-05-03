@@ -13,6 +13,8 @@
  * @param onView - Callback when view button is clicked.
  */
 
+import useCourses from '../../../../../hooks/useCourses';
+
 interface ProjectCardProps {
   id: string;
   title: string;
@@ -38,6 +40,8 @@ export default function ProjectCard({
   onDelete,
   onView,
 }: ProjectCardProps) {
+  const { getCourseById } = useCourses();
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', {
@@ -46,6 +50,9 @@ export default function ProjectCard({
       day: 'numeric',
     });
   };
+
+  const courseData = getCourseById(course);
+  const courseName = courseData ? `${courseData.name} (${courseData.code})` : course;
 
   return (
     <div
@@ -70,7 +77,7 @@ export default function ProjectCard({
             </span>
           )}
         </div>
-        <p className="text-sm font-lexend text-on-surface-variant">{course}</p>
+        <p className="text-sm font-lexend text-on-surface-variant">{courseName}</p>
       </div>
 
       {/* Languages */}
