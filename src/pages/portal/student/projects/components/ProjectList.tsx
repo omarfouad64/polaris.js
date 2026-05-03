@@ -6,6 +6,7 @@ interface ProjectListProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onView: (id: string) => void;
+  onToggleVisibility: (id: string) => void;
   isLoading?: boolean;
 }
 
@@ -23,11 +24,12 @@ export default function ProjectList({
   onEdit,
   onDelete,
   onView,
+  onToggleVisibility,
   isLoading = false,
 }: ProjectListProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
           <div
             key={i}
@@ -39,7 +41,7 @@ export default function ProjectList({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {projects.map((project) => (
         <ProjectCard
           key={project.id}
@@ -47,6 +49,7 @@ export default function ProjectList({
           onEdit={onEdit}
           onDelete={onDelete}
           onView={onView}
+          onToggleVisibility={onToggleVisibility}
         />
       ))}
     </div>
