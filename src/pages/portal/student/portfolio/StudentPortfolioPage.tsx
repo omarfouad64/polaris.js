@@ -1,0 +1,343 @@
+import { useState } from 'react'
+import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio'
+
+interface PortfolioSection {
+  id: 'profile' | 'skills' | 'contact'
+  label: string
+}
+
+const PORTFOLIO_SECTIONS: PortfolioSection[] = [
+  { id: 'profile', label: 'Profile Info' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'contact', label: 'Contact & Links' }
+]
+
+/**
+ * StudentPortfolioPage – main interface for students to manage their portfolio.
+ * Displays portfolio information with tabs for profile, skills, and contact details.
+ * Allows users to add, view, update, and remove portfolio information.
+ */
+export default function StudentPortfolioPage() {
+  // State management
+  const [activeSection, setActiveSection] = useState<'profile' | 'skills' | 'contact'>('profile')
+  const [newSkill, setNewSkill] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editMajor, setEditMajor] = useState('')
+  const [editBio, setEditBio] = useState('')
+  const [editLinkedin, setEditLinkedin] = useState('')
+
+  // Hook for portfolio data
+  const {
+    portfolio,
+    updateMajor,
+    updateBio,
+    updateLinkedinUrl,
+    addSkill,
+    removeSkill
+  } = useStudentPortfolio()
+
+  // Handler: Start editing mode
+  const handleEditStart = () => {
+    setEditMajor(portfolio.major)
+    setEditBio(portfolio.bio)
+    setEditLinkedin(portfolio.linkedinUrl)
+    setIsEditing(true)
+  }
+
+  // Handler: Save changes
+  const handleSaveChanges = () => {
+    updateMajor(editMajor)
+    updateBio(editBio)
+    updateLinkedinUrl(editLinkedin)
+    setIsEditing(false)
+  }
+
+  // Handler: Add skill
+  const handleAddSkill = () => {
+    if (newSkill.trim()) {
+      addSkill(newSkill.trim())
+      setNewSkill('')
+    }
+  }
+
+  // Handler: Remove skill
+  const handleRemoveSkill = (skill: string) => {
+    removeSkill(skill)
+  }
+
+  // Handler: Upload profile picture
+  const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const pictureUrl = e.target?.result as string
+        // updateProfilePicture(pictureUrl)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background p-6 lg:p-8">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-jakarta font-bold text-on-surface mb-2">My Portfolio</h1>
+        <p className="text-body-md text-on-surface-variant">Manage your professional profile and showcase your skills</p>
+      </div>
+
+      {/* Profile Card */}
+      <div className="bg-surface-container-lowest rounded-xl border border-surface-container-high shadow-sm mb-8 overflow-hidden">
+        <div className="p-6 lg:p-8">
+          {/* Profile Header Section */}
+          <div className="flex flex-col sm:flex-row gap-6 mb-8 pb-8 border-b border-surface-container-high">
+            {/* Profile Picture */}
+            <div className="flex-shrink-0">
+              <div className="w-24 h-24 rounded-full bg-primary-container flex items-center justify-center text-primary text-3xl font-jakarta font-bold overflow-hidden">
+                {portfolio.profilePicture ? (
+                  <img src={portfolio.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <span>{portfolio.name.charAt(0)}</span>
+                )}
+              </div>
+              <label className="mt-4 block">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePictureUpload}
+                  className="hidden"
+                  aria-label="Upload profile picture"
+                />
+                <button
+                  onClick={() => document.querySelector('input[type="file"]')?.click()}
+                  className="w-full px-3 py-2 text-sm font-jakarta font-semibold text-primary hover:bg-primary-container/20 rounded-lg transition-colors"
+                >
+                  Change Photo
+                </button>
+              </label>
+            </div>
+
+            {/* Profile Info */}
+            <div className="flex-1">
+              <h2 className="text-2xl font-jakarta font-bold text-on-surface mb-1">{portfolio.name}</h2>
+              <p className="text-body-md text-on-surface-variant mb-4">{portfolio.email}</p>
+              <p className="text-body-sm text-on-surface-variant mb-6">
+                Last updated: {new Date(portfolio.updatedAt).toLocaleDateString()}
+              </p>
+              <button
+                onClick={handleEditStart}
+                className="px-4 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
+              >
+                {isEditing ? 'Editing' : 'Edit Profile'}
+              </button>
+            </div>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex gap-2 mb-6 border-b border-surface-container-high">
+            {PORTFOLIO_SECTIONS.map(section => (
+              <button
+                key={section.id}
+                onClick={() => setActiveSection(section.id)}
+                className={`px-4 py-3 font-jakarta font-semibold text-sm transition-all border-b-2 ${
+                  activeSection === section.id
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                {section.label}
+              </button>
+            ))}
+          </div>
+
+          {/* SECTION 1: Profile Info Tab */}
+          {activeSection === 'profile' && (
+            <div className="space-y-6">
+              {isEditing ? (
+                // Edit Mode
+                <div className="space-y-6">
+                  {/* Major Input */}
+                  <div>
+                    <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
+                      Major
+                    </label>
+                    <input
+                      type="text"
+                      value={editMajor}
+                      onChange={(e) => setEditMajor(e.target.value)}
+                      className="w-full px-4 py-2 border border-outline rounded-lg bg-surface text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                      placeholder="e.g., Computer Science"
+                    />
+                  </div>
+
+                  {/* Bio Textarea */}
+                  <div>
+                    <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
+                      Biography
+                    </label>
+                    <textarea
+                      value={editBio}
+                      onChange={(e) => setEditBio(e.target.value)}
+                      rows={4}
+                      className="w-full px-4 py-2 border border-outline rounded-lg bg-surface text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                      placeholder="Tell us about yourself..."
+                    />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleSaveChanges}
+                      className="px-6 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
+                    >
+                      Save Changes
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="px-6 py-2 border border-outline text-on-surface rounded-lg font-jakarta font-semibold hover:bg-surface-container transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // View Mode
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-jakarta font-semibold text-on-surface-variant mb-1">Major</p>
+                    <p className="text-body-md text-on-surface">{portfolio.major}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-jakarta font-semibold text-on-surface-variant mb-1">Biography</p>
+                    <p className="text-body-md text-on-surface">{portfolio.bio}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SECTION 2: Skills Tab */}
+          {activeSection === 'skills' && (
+            <div className="space-y-6">
+              {/* Skills Display */}
+              <div>
+                <p className="text-sm font-jakarta font-semibold text-on-surface-variant mb-4">Your Skills</p>
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {portfolio.skills.length > 0 ? (
+                    portfolio.skills.map(skill => (
+                      <div
+                        key={skill}
+                        className="flex items-center gap-2 px-3 py-1 bg-secondary-container rounded-full"
+                      >
+                        <span className="text-sm font-lexend text-on-secondary-container">{skill}</span>
+                        <button
+                          onClick={() => handleRemoveSkill(skill)}
+                          className="text-on-secondary-container hover:opacity-70 transition-opacity"
+                          aria-label={`Remove ${skill} skill`}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-body-sm text-on-surface-variant">No skills added yet. Add your first skill below!</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Add Skill Input */}
+              <div>
+                <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
+                  Add a Skill
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
+                    className="flex-1 px-4 py-2 border border-outline rounded-lg bg-surface text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                    placeholder="e.g., React, TypeScript"
+                  />
+                  <button
+                    onClick={handleAddSkill}
+                    className="px-6 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 3: Contact & Links Tab */}
+          {activeSection === 'contact' && (
+            <div className="space-y-6">
+              {isEditing ? (
+                // Edit LinkedIn
+                <div>
+                  <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
+                    LinkedIn URL
+                  </label>
+                  <input
+                    type="url"
+                    value={editLinkedin}
+                    onChange={(e) => setEditLinkedin(e.target.value)}
+                    className="w-full px-4 py-2 border border-outline rounded-lg bg-surface text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                    placeholder="https://linkedin.com/in/your-profile"
+                  />
+                  <p className="text-xs text-on-surface-variant mt-2">This URL acts as your CV/resume link</p>
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={handleSaveChanges}
+                      className="px-6 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
+                    >
+                      Save Changes
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="px-6 py-2 border border-outline text-on-surface rounded-lg font-jakarta font-semibold hover:bg-surface-container transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // View Contact Info
+                <div>
+                  <p className="text-sm font-jakarta font-semibold text-on-surface-variant mb-2">Email</p>
+                  <p className="text-body-md text-on-surface mb-6">{portfolio.email}</p>
+
+                  <p className="text-sm font-jakarta font-semibold text-on-surface-variant mb-2">LinkedIn</p>
+                  {portfolio.linkedinUrl ? (
+                    <a
+                      href={portfolio.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-body-md text-secondary hover:text-secondary-container transition-colors"
+                    >
+                      {portfolio.linkedinUrl}
+                    </a>
+                  ) : (
+                    <p className="text-body-md text-on-surface-variant">No LinkedIn URL provided</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Info Box / Tips */}
+      <div className="bg-surface-container rounded-xl p-6 border border-surface-container-high">
+        <h3 className="font-jakarta font-semibold text-on-surface mb-2">💡 Portfolio Tips</h3>
+        <ul className="text-body-sm text-on-surface-variant space-y-1">
+          <li>• Keep your profile information up to date</li>
+          <li>• Add relevant skills that match your expertise</li>
+          <li>• Link your LinkedIn profile to showcase your professional experience</li>
+          <li>• Your portfolio is visible to employers and course instructors</li>
+        </ul>
+      </div>
+    </div>
+  )
+}

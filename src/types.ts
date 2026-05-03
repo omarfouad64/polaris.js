@@ -104,3 +104,16 @@ export interface CompletedInternship {
   duration: string
   completedAt: string
 }
+
+export interface StudentPortfolio {
+  studentId: string;
+  name: string;
+  email: string;
+  major: string;
+  skills: string[];
+  linkedinUrl: string;
+  bio: string;
+  profilePicture: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
