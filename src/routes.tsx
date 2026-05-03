@@ -41,8 +41,6 @@ import ProjectCollaboration from './pages/portal/student/projects/ProjectCollabo
 import ProjectInvitationsPage from './pages/portal/student/invitations/ProjectInvitationsPage.tsx'
 import InvitationNotificationsCenter from './pages/portal/student/invitations/InvitationNotificationsCenter.tsx'
 
-
-
 // Shared Pages
 import FavoritesPage from './pages/portal/shared/favorites/FavoritesPage.tsx'
 import CommunicationsPage from './pages/portal/shared/communications/CommunicationsPage.tsx'

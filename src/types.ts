@@ -178,3 +178,72 @@ export interface CollaborationSearchResult {
   profilePicture?: string | null
   isAlreadyCollaborator: boolean
 }
+
+export interface TaskFeedback {
+  id: string
+  taskId: string
+  instructorId: string
+  instructorName: string
+  comment: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProjectFeedback {
+  id: string
+  projectId: string
+  instructorId: string
+  instructorName: string
+  feedbackType: 'general' | 'thesis_draft'
+  comment: string
+  relatedThesisDraftId?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProjectRating {
+  id: string
+  projectId: string
+  instructorId: string
+  instructorName: string
+  rating: number // 1-5
+  comment?: string
+  createdAt: string
+}
+
+export interface FlaggedProject {
+  id: string
+  projectId: string
+  projectTitle: string
+  projectOwnerId: string
+  projectOwnerName: string
+  flaggedBy: string
+  flaggedByName: string
+  reason: string
+  description?: string
+  flaggedAt: string
+  status: 'flagged' | 'appealed' | 'resolved'
+}
+
+export interface ProjectAppeal {
+  id: string
+  flaggedProjectId: string
+  projectId: string
+  studentId: string
+  studentName: string
+  appealMessage: string
+  attachedEvidence?: string[]
+  submittedAt: string
+  status: 'pending' | 'approved' | 'rejected'
+  adminResponse?: string
+  respondedAt?: string
+}
+
+export interface FeedbackNotification extends Notification {
+  type: 'feedback' | 'flag' | 'appeal_response'
+  projectId: string
+  projectTitle: string
+  feedbackType?: 'task' | 'project' | 'rating'
+  instructorName?: string
+  flagReason?: string
+}
