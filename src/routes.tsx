@@ -37,6 +37,8 @@ import InternshipExplorerPage from './pages/portal/student/internships/Internshi
 import MyProjectsPage from './pages/portal/student/projects/MyProjectsPage.tsx'
 import StudentPortfolioPage from './pages/portal/student/portfolio/StudentPortfolioPage.tsx'
 import ProjectCollaboration from './pages/portal/student/projects/ProjectCollaboration.tsx'
+import ProjectInvitationsPage from './pages/portal/student/invitations/ProjectInvitationsPage.tsx'
+import InvitationNotificationsCenter from './pages/portal/student/invitations/InvitationNotificationsCenter.tsx'
 
 
 
@@ -100,7 +102,9 @@ export const router = createBrowserRouter([
           { path: 'portfolio', element: <StudentPortfolioPage /> },
           { path: 'favorites', element: <FavoritesPage /> },
           { path: 'communications', element: <CommunicationsPage /> },
-          { path: 'projects/:id/collaboration', element: <ProjectCollaboration /> }
+          { path: 'projects/:id/collaboration', element: <ProjectCollaboration /> },
+          { path: 'invitations', element: <ProjectInvitationsPage /> },
+          { path: 'notifications', element: <InvitationNotificationsCenter /> }
         ]
       },
       {
