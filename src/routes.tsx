@@ -29,6 +29,8 @@ import ApplicantReviewPage from './pages/portal/employer/applicants/ApplicantRev
 // Student Sub-Sections
 import InternshipExplorerPage from './pages/portal/student/internships/InternshipExplorerPage.tsx'
 import MyProjectsPage from './pages/portal/student/projects/MyProjectsPage.tsx'
+import StudentPortfolioPage from './pages/portal/student/portfolio/StudentPortfolioPage.tsx'
+
 
 // Shared Pages
 import FavoritesPage from './pages/portal/shared/favorites/FavoritesPage.tsx'
@@ -87,7 +89,7 @@ export const router = createBrowserRouter([
           { path: 'projects', element: <MyProjectsPage /> },
           { path: 'explorer', element: <ExplorerPage /> },
           { path: 'internships', element: <InternshipExplorerPage /> },
-          { path: 'portfolio', element: <div className="text-on-surface">Student Portfolio</div> },
+          { path: 'portfolio', element: <StudentPortfolioPage /> },
           { path: 'favorites', element: <FavoritesPage /> },
           { path: 'communications', element: <CommunicationsPage /> }
         ]
