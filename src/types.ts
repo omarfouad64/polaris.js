@@ -117,3 +117,31 @@ export interface CompletedInternship {
   duration: string
   completedAt: string
 }
+
+export interface InstructorProfile {
+  instructorId: string
+  name: string
+  email: string
+  biography: string
+  researchInterests: string[]
+  educationBackground: string
+  linkedCourses: string[] // Array of course IDs
+  profilePicture: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Course {
+  id: string
+  name: string
+  code: string
+  semester: string
+  description: string
+}
+
+export interface CourseLink {
+  instructorId: string
+  courseId: string
+  status: 'linked' | 'pending' | 'rejected'
+  linkedAt: string
+}

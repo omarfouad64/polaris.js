@@ -26,6 +26,11 @@ import CompanyProfilePage from './pages/portal/employer/profile/CompanyProfilePa
 import InternshipManagementPage from './pages/portal/employer/internships/InternshipManagementPage.tsx'
 import ApplicantReviewPage from './pages/portal/employer/applicants/ApplicantReviewPage.tsx'
 
+// Instructor Sub-Sections
+import InstructorLayout from './pages/portal/instructor/InstructorLayout.tsx'
+import InstructorProfilePage from './pages/portal/instructor/profile/InstructorProfilePage.tsx'
+import MyCourses from './pages/portal/instructor/courses/MyCourses.tsx'
+
 // Student Sub-Sections
 import InternshipExplorerPage from './pages/portal/student/internships/InternshipExplorerPage.tsx'
 import MyProjectsPage from './pages/portal/student/projects/MyProjectsPage.tsx'
@@ -108,14 +113,12 @@ export const router = createBrowserRouter([
       },
       {
         path: 'instructor',
-        element: <div className="space-y-6">
-          <h1 className="text-3xl font-jakarta font-bold text-on-surface">Instructor Dashboard</h1>
-          <div className="grid grid-cols-3 gap-6">
-            <div className="h-48 bg-primary-container/20 rounded-xl border border-primary/10 flex items-center justify-center text-primary">Grades</div>
-            <div className="h-48 bg-secondary-container/20 rounded-xl border border-secondary/10 flex items-center justify-center text-secondary">Projects</div>
-            <div className="h-48 bg-surface-container rounded-xl border border-surface-container flex items-center justify-center text-on-surface-variant">Class Chat</div>
-          </div>
-        </div>
+        element: <InstructorLayout />,
+        children: [
+          { index: true, element: <InstructorProfilePage /> },
+          { path: 'profile', element: <InstructorProfilePage /> },
+          { path: 'courses', element: <MyCourses /> }
+      ]
       },
       {
         path: 'administrator',
