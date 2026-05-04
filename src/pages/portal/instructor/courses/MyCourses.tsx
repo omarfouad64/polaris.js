@@ -95,7 +95,7 @@ export default function MyCourses() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     {course.id !== 'bachelor-project' && (
                       <button
                         onClick={() => unlinkCourse(course.id)}
@@ -145,7 +145,7 @@ export default function MyCourses() {
                   </div>
 
                   {/* Action */}
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <button
                       onClick={() => linkCourse(course.id)}
                       className="px-4 py-2 text-sm font-jakarta font-semibold bg-secondary text-on-secondary hover:bg-secondary-container rounded-lg transition-colors"

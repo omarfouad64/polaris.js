@@ -96,7 +96,7 @@ export interface Conversation {
 
 export interface Notification {
   id: string
-  type: 'message' | 'internship_status' | 'project_invitation' | 'feedback' | 'flag' | 'admin'
+  type: 'message' | 'internship_status' | 'project_invitation' | 'feedback' | 'flag' | 'admin' | 'appeal_response'
   title: string
   body: string
   timestamp: string

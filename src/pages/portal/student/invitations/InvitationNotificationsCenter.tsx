@@ -71,7 +71,7 @@ export default function InvitationNotificationsCenter() {
                         </h3>
                       </div>
                       {!notification.read && (
-                        <span className="flex-shrink-0 w-3 h-3 rounded-full bg-secondary animate-pulse" />
+                        <span className="shrink-0 w-3 h-3 rounded-full bg-secondary animate-pulse" />
                       )}
                     </div>
 
@@ -97,7 +97,7 @@ export default function InvitationNotificationsCenter() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-col gap-2 flex-shrink-0">
+                  <div className="flex flex-col gap-2 shrink-0">
                     {!notification.read && (
                       <button
                         onClick={() => handleMarkAsRead(notification.id)}

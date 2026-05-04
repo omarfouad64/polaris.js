@@ -56,7 +56,7 @@ export default function CollaboratorList({
               <div className="flex items-start justify-between gap-4">
                 {/* Collaborator Info */}
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-primary font-jakarta font-bold text-sm flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-primary font-jakarta font-bold text-sm shrink-0">
                     {collaborator.profilePicture ? (
                       <img
                         src={collaborator.profilePicture}
@@ -116,7 +116,7 @@ export default function CollaboratorList({
 
                 {/* Actions */}
                 {isOwner && collaborator.role !== 'owner' && (
-                  <div className="flex flex-col gap-2 flex-shrink-0">
+                  <div className="flex flex-col gap-2 shrink-0">
                     {collaborator.invitationStatus === 'pending' ? (
                       <button
                         onClick={() => handleCancelInvitation(collaborator.email)}

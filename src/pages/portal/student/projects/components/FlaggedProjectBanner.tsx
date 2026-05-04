@@ -15,7 +15,6 @@ interface FlaggedProjectBannerProps {
  */
 export default function FlaggedProjectBanner({
   projectId,
-  projectTitle,
   studentId,
   studentName
 }: FlaggedProjectBannerProps) {
@@ -34,7 +33,7 @@ export default function FlaggedProjectBanner({
       <div className="bg-error/15 border-2 border-error rounded-xl p-6 mb-6">
         <div className="flex items-start gap-4">
           {/* Icon */}
-          <div className="text-3xl flex-shrink-0">⚠️</div>
+          <div className="text-3xl shrink-0">⚠️</div>
 
           {/* Content */}
           <div className="flex-1">

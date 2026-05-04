@@ -1,11 +1,8 @@
 import { useState } from 'react'
 import { useInstructorFeedback } from '../../../../../hooks/useInstructorFeedback'
-import TaskFeedbackForm from './TaskFeedbackForm'
-import ProjectRatingComponent from './ProjectRatingComponent'
 
 interface ProjectFeedbackSectionProps {
   projectId: string
-  projectTitle: string
 }
 
 /**
@@ -14,22 +11,12 @@ interface ProjectFeedbackSectionProps {
  * Allows instructors to add/edit feedback.
  */
 export default function ProjectFeedbackSection({
-  projectId,
-  projectTitle
+  projectId
 }: ProjectFeedbackSectionProps) {
   const [activeTab, setActiveTab] = useState<'feedback' | 'rating'>('feedback')
-  const [isTaskFeedbackModalOpen, setIsTaskFeedbackModalOpen] = useState(false)
-
-  // For demo purposes
-  const instructorId = 'instructor-001'
-  const instructorName = 'Dr. Fatima Al-Mansouri'
 
   const { taskFeedback, projectFeedback, projectRatings, averageRating } =
     useInstructorFeedback(projectId)
-
-  const handleFeedbackRefresh = () => {
-    // Trigger any necessary refresh
-  }
 
   return (
     <div className="space-y-6">
@@ -197,8 +184,8 @@ export default function ProjectFeedbackSection({
                           <p className="text-body-sm text-on-surface">{rating.comment}</p>
                         )}
                       </div>
-                      <div className="text-4xl flex-shrink-0">⭐</div>
-                      <span className="text-2xl font-jakarta font-bold text-primary flex-shrink-0">
+                      <div className="text-4xl shrink-0">⭐</div>
+                      <span className="text-2xl font-jakarta font-bold text-primary shrink-0">
                         {rating.rating}
                       </span>
                     </div>

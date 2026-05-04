@@ -6,7 +6,7 @@ interface ProjectListProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onView: (id: string) => void;
-  onToggleVisibility: (id: string) => void;
+  onToggleVisibility?: (id: string) => void;
   isLoading?: boolean;
 }
 
@@ -17,6 +17,7 @@ interface ProjectListProps {
  * @param onEdit - Callback when edit button is clicked.
  * @param onDelete - Callback when delete button is clicked.
  * @param onView - Callback when view button is clicked.
+ * @param onToggleVisibility - Optional callback when visibility toggle is clicked.
  * @param isLoading - Optional loading state indicator.
  */
 export default function ProjectList({

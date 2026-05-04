@@ -10,7 +10,7 @@ export interface ProjectInvitationItem {
   senderEmail: string
   invitedAt: string
   status: 'pending' | 'accepted' | 'rejected'
-  projectImage?: string
+  projectImage?: string | null
 }
 
 // Dummy pending invitations
@@ -76,7 +76,7 @@ const DUMMY_ACCEPTED_INVITATIONS: ProjectInvitationItem[] = [
  * @param currentUserId - The ID of the current user
  * @returns Object containing invitations, filtering, and action functions.
  */
-export function useProjectInvitationsList(currentUserId: string) {
+export function useProjectInvitationsList() {
   const [pendingInvitations, setPendingInvitations] = useState<ProjectInvitationItem[]>(
     DUMMY_PENDING_INVITATIONS
   )

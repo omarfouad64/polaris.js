@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useProjectInvitations } from '../../../../hooks/useProjectInvitations'
 import ProjectCollaborationPage from './components/ProjectCollaborationPage'
 

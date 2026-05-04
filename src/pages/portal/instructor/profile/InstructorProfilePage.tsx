@@ -33,7 +33,8 @@ export default function InstructorProfilePage() {
     updateBiography,
     updateEducationBackground,
     addResearchInterest,
-    removeResearchInterest
+    removeResearchInterest,
+    updateProfilePicture
   } = useInstructorProfile()
 
   // Handler: Start editing mode
@@ -70,7 +71,7 @@ export default function InstructorProfilePage() {
       const reader = new FileReader()
       reader.onload = (e) => {
         const pictureUrl = e.target?.result as string
-        // updateProfilePicture(pictureUrl)
+        updateProfilePicture(pictureUrl)
       }
       reader.readAsDataURL(file)
     }
@@ -94,7 +95,7 @@ export default function InstructorProfilePage() {
           {/* Profile Header Section */}
           <div className="flex flex-col sm:flex-row gap-6 mb-8 pb-8 border-b border-surface-container-high">
             {/* Profile Picture */}
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-24 h-24 rounded-full bg-primary-container flex items-center justify-center text-primary text-3xl font-jakarta font-bold overflow-hidden">
                 {profile.profilePicture ? (
                   <img src={profile.profilePicture} alt="Profile" className="w-full h-full object-cover" />
@@ -111,7 +112,7 @@ export default function InstructorProfilePage() {
                   aria-label="Upload profile picture"
                 />
                 <button
-                  onClick={() => document.querySelector('input[type="file"]')?.click()}
+                  onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
                   className="w-full px-3 py-2 text-sm font-jakarta font-semibold text-primary hover:bg-primary-container/20 rounded-lg transition-colors"
                 >
                   Change Photo

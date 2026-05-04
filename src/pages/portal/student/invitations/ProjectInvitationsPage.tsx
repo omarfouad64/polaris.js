@@ -15,7 +15,7 @@ export default function ProjectInvitationsPage() {
   const [expandedInvitationId, setExpandedInvitationId] = useState<string | null>(null)
 
   // For demo purposes, using hardcoded user ID
-  const currentUserId = 'student-001'
+  // const currentUserId = 'student-001'
 
   // Hooks
   const { markAsRead } = useProjectNotifications()
@@ -26,7 +26,7 @@ export default function ProjectInvitationsPage() {
     stats,
     acceptInvitation,
     rejectInvitation
-  } = useProjectInvitationsList(currentUserId)
+  } = useProjectInvitationsList()
 
   // Handler: Accept invitation
   const handleAcceptInvitation = (invitationId: string) => {
@@ -164,7 +164,7 @@ export default function ProjectInvitationsPage() {
 
                 {/* Expand Arrow */}
                 <div
-                  className={`text-2xl text-on-surface-variant transition-transform flex-shrink-0 ml-4 ${
+                  className={`text-2xl text-on-surface-variant transition-transform shrink-0 ml-4 ${
                     expandedInvitationId === invitation.id ? 'rotate-180' : ''
                   }`}
                 >

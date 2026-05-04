@@ -24,10 +24,10 @@ export default function ProjectRatingComponent({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  const { rateProject, getInstructorRating, averageRating } = useInstructorFeedback(projectId)
+  const { rateProject, averageRating } = useInstructorFeedback(projectId)
 
   // Initialize with existing rating if available
-  const existingRating = getInstructorRating(instructorId)
+  // const existingRating = getInstructorRating(instructorId)
 
   const handleSubmitRating = async () => {
     if (rating === null) return

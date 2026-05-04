@@ -28,7 +28,7 @@ interface ProjectCardProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onView: (id: string) => void;
-  onToggleVisibility: (id: string) => void;
+  onToggleVisibility?: (id: string) => void;
 }
 
 export default function ProjectCard({
@@ -71,7 +71,7 @@ export default function ProjectCard({
           <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
             {isPublic !== undefined && (
               <button
-                onClick={() => onToggleVisibility(id)}
+                onClick={() => onToggleVisibility?.(id)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 ${isPublic ? 'bg-secondary' : 'bg-outline-variant'
                   }`}
                 aria-label={isPublic ? 'Make private' : 'Make public'}

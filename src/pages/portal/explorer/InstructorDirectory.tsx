@@ -10,7 +10,7 @@ export default function InstructorDirectory() {
   const [searchInputValue, setSearchInputValue] = useState('')
   
   const {
-    searchQuery,
+    // searchQuery,
     selectedCourse,
     selectedInstructor,
     filteredResults,
@@ -257,7 +257,7 @@ function InstructorDetailModal({
         <div className="p-6 space-y-6">
           {/* Profile Header */}
           <div className="flex gap-6">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-24 h-24 rounded-full bg-primary-container flex items-center justify-center text-primary text-3xl font-jakarta font-bold">
                 {instructor.profilePicture ? (
                   <img

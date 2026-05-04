@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useProjectInvitations } from '../../../../../hooks/useProjectInvitations'
+import type { CollaborationSearchResult } from '../../../../../types'
 
 interface SearchCollaboratorModalProps {
   projectId: string
@@ -21,7 +22,7 @@ export default function SearchCollaboratorModal({
   onInvitationSent
 }: SearchCollaboratorModalProps) {
   const [searchInputValue, setSearchInputValue] = useState('')
-  const [selectedUser, setSelectedUser] = useState<any | null>(null)
+  const [selectedUser, setSelectedUser] = useState<CollaborationSearchResult | null>(null)
   const [invitationSent, setInvitationSent] = useState(false)
 
   const { setSearchQuery, searchCollaborators, sendInvitation } = useProjectInvitations(
@@ -32,9 +33,8 @@ export default function SearchCollaboratorModal({
   // Get search results
   const searchResults = useMemo(() => {
     if (!searchInputValue.trim()) return []
-    setSearchQuery(searchInputValue)
     return searchCollaborators(searchInputValue)
-  }, [searchInputValue, searchCollaborators, setSearchQuery])
+  }, [searchInputValue, searchCollaborators])
 
   // Handler: Send invitation
   const handleSendInvitation = () => {
@@ -84,7 +84,10 @@ export default function SearchCollaboratorModal({
                 <input
                   type="text"
                   value={searchInputValue}
-                  onChange={(e) => setSearchInputValue(e.target.value)}
+                  onChange={(e) => {
+                    setSearchInputValue(e.target.value)
+                    setSearchQuery(e.target.value)
+                  }}
                   placeholder="e.g., Fatima or fatima@guc.edu.eg"
                   className="w-full px-4 py-2 border border-outline rounded-lg bg-surface text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
                   autoFocus

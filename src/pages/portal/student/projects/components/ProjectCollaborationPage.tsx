@@ -21,11 +21,11 @@ export default function ProjectCollaborationPage({
   isOwner
 }: ProjectCollaborationPageProps) {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
+  // const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleInvitationSent = () => {
     // Trigger list refresh
-    setRefreshTrigger(prev => prev + 1)
+    // setRefreshTrigger(prev => prev + 1)
     setIsSearchModalOpen(false)
   }
 
