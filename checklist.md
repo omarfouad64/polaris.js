@@ -13,26 +13,26 @@ Legend: [x] implemented, [ ] not implemented
 - [x] Req 9 (Role: Student/Administrator/Employer/Course Instructor) - Goal: Select and view course instructor profile with linked courses.
 - [x] Req 10 (Role: Employer) - Goal: Add/view/update/remove company info (bio, address, contact info).
 - [x] Req 11 (Role: Employer) - Goal: Choose company location on map and set it in profile.
-- [ ] Req 12 (Role: Student/Employer/Course Instructor) - Goal: Upload a profile picture.
+- [x] Req 12 (Role: Student/Employer/Course Instructor) - Goal: Upload a profile picture.
 - [x] Req 13 (Role: Employer) - Goal: Upload PDF documents such as tax certificate.
 - [x] Req 14 (Role: Administrator) - Goal: View a list of employers applying to use the platform.
 - [x] Req 15 (Role: Administrator) - Goal: View details of each employer company with uploaded documents.
 - [x] Req 16 (Role: Administrator) - Goal: View any uploaded documents.
 - [x] Req 17 (Role: Administrator) - Goal: Download any uploaded documents.
 - [x] Req 18 (Role: Administrator) - Goal: Accept/reject companies applying to use the platform.
-- [ ] Req 19 (Role: Student) - Goal: Create/view/update/delete a project with title, course, GitHub link, report, languages, demo video.
+- [x] Req 19 (Role: Student) - Goal: Create/view/update/delete a project with title, course, GitHub link, report, languages, demo video.
 - [x] Req 20 (Role: Student) - Goal: Set my project's visibility on my portfolio. !! DEP MISSING: Req 19
 - [x] Req 21 (Role: Student) - Goal: View a list of all my projects. !! DEP MISSING: Req 19
 - [x] Req 22 (Role: Student) - Goal: Select the projects I want visible on my portfolio.
-- [ ] Req 23 (Role: Student) - Goal: Upload a thesis draft.
-- [ ] Req 24 (Role: Student) - Goal: Select a thesis draft as the Final Draft.
+- [x] Req 23 (Role: Student) - Goal: Upload a thesis draft.
+- [x] Req 24 (Role: Student) - Goal: Select a thesis draft as the Final Draft.
 - [x] Req 25 (Role: Student) - Goal: Search collaborators/instructors by email or name. !! DEP MISSING: Req 19
-- [x] Req 26 (Role: Student) - Goal: Send/cancel project invitations to collaborators/instructors.
-- [x] Req 27 (Role: Student) - Goal: View collaborators with invitation status.
+- [ ] Req 26 (Role: Student) - Goal: Send/cancel project invitations to collaborators/instructors.
+- [ ] Req 27 (Role: Student) - Goal: View collaborators with invitation status.
 - [x] Req 28 (Role: Student/Course Instructor) - Goal: Receive notifications for project invitations.
 - [x] Req 29 (Role: Student/Course Instructor) - Goal: View list of invitations to different projects.
 - [x] Req 30 (Role: Student/Course Instructor) - Goal: Accept/reject project invitations.
-- [x] Req 31 (Role: Student) - Goal: Remove a collaborator from a project.
+- [ ] Req 31 (Role: Student) - Goal: Remove a collaborator from a project.
 - [ ] Req 32 (Role: Student) - Goal: Create/view/edit/delete a task with description, assignee, status, deadline.
 - [ ] Req 33 (Role: Student) - Goal: View task list with details.
 - [ ] Req 34 (Role: Student) - Goal: Reorder tasks by importance.
@@ -43,16 +43,16 @@ Legend: [x] implemented, [ ] not implemented
 - [ ] Req 39 (Role: Course Instructor) - Goal: Rate the entire project.
 - [ ] Req 40 (Role: Student) - Goal: View comments left by instructors on tasks/project.
 - [ ] Req 41 (Role: Student) - Goal: Receive notification for instructor feedback/comments.
-- [x] Req 42 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Search for a specific project by title.
-- [x] Req 43 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Filter project titles by course/instructor/creation date.
+- [ ] Req 42 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Search for a specific project by title.
+- [ ] Req 43 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Filter project titles by course/instructor/creation date.
 - [x] Req 44 (Role: Student/Employer/Course Instructor/Administrator) - Goal: View project titles based on search/filter results.
 - [x] Req 45 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Sort project titles by creation date or rating.
 - [x] Req 46 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Select and view project with details.
 - [ ] Req 47 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Search for a portfolio by student name or email.
-- [ ] Req 48 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Filter portfolios by major or skills.
-- [ ] Req 49 (Role: Student/Employer/Course Instructor/Administrator) - Goal: View portfolios based on search/filter results.
+- [x] Req 48 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Filter portfolios by major or skills.
+- [x] Req 49 (Role: Student/Employer/Course Instructor/Administrator) - Goal: View portfolios based on search/filter results.
 - [ ] Req 50 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Sort portfolios based on number of projects.
-- [ ] Req 51 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Select and view portfolio with details.
+- [x] Req 51 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Select and view portfolio with details.
 - [x] Req 52 (Role: Administrator) - Goal: View a list of all users with full name, email, and role.
 - [x] Req 53 (Role: Administrator) - Goal: Create admin accounts using username and password.
 - [x] Req 54 (Role: Administrator) - Goal: Activate/deactivate any account.
@@ -87,7 +87,7 @@ Legend: [x] implemented, [ ] not implemented
 - [x] Req 83 (Role: Student) - Goal: View and select an internship from results.
 - [x] Req 84 (Role: Student) - Goal: Apply for an internship with cover letter.
 - [x] Req 85 (Role: Employer) - Goal: View a list of internships offered by company.
-- [ ] Req 86 (Role: Employer) - Goal: Select an internship from the list.
+- [x] Req 86 (Role: Employer) - Goal: Select an internship from the list.
 - [x] Req 87 (Role: Employer) - Goal: View a list of student applicants. !! DEP MISSING: Req 86
 - [x] Req 88 (Role: Employer) - Goal: Select a status for each applicant.
 - [x] Req 89 (Role: Student) - Goal: Receive notification once accepted/rejected for an internship.
