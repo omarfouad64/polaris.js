@@ -13,7 +13,8 @@ const roleTabs: Record<UserRole, Tab[]> = {
   Student: [
     { name: 'Dashboard', path: '/portal/student', icon: 'dashboard' },
     { name: 'My Projects', path: '/portal/student/projects', icon: 'list_alt' },
-    { name: 'Explorer', path: '/portal/student/explorer', icon: 'explore' },
+    { name: 'Invitations', path: '/portal/student/invitations', icon: 'mail' },
+    { name: 'Search', path: '/portal/student/search', icon: 'search' },
     { name: 'Internships', path: '/portal/student/internships', icon: 'work' },
     { name: 'Portfolio', path: '/portal/student/portfolio', icon: 'person' },
     { name: 'Favorites', path: '/portal/student/favorites', icon: 'favorite' },
@@ -23,18 +24,22 @@ const roleTabs: Record<UserRole, Tab[]> = {
     { name: 'Dashboard', path: '/portal/employer', icon: 'dashboard' },
     { name: 'Company Profile', path: '/portal/employer/profile', icon: 'business' },
     { name: 'Internships', path: '/portal/employer/internships', icon: 'work' },
+    { name: 'Search', path: '/portal/employer/search', icon: 'search' },
     { name: 'Favorites', path: '/portal/employer/favorites', icon: 'favorite' },
     { name: 'Communications', path: '/portal/employer/communications', icon: 'chat' }
   ],
   'Course Instructor': [
-    { name: 'Course Dashboard', path: '/portal/instructor', icon: 'school' },
+    { name: 'Profile', path: '/portal/instructor', icon: 'person' },
+    { name: 'Courses', path: '/portal/instructor/courses', icon: 'menu_book' },
+    { name: 'Invitations', path: '/portal/instructor/invitations', icon: 'mail' },
+    { name: 'Search', path: '/portal/instructor/search', icon: 'search' },
     { name: 'Gradebook', path: '/portal/instructor/grades', icon: 'grade' },
     { name: 'Project Oversight', path: '/portal/instructor/oversight', icon: 'visibility' },
     { name: 'Communications', path: '/portal/instructor/communications', icon: 'chat' }
   ],
   Administrator: [
-    { name: 'Admin Control', path: '/portal/administrator', icon: 'admin_panel_settings' },
-    { name: 'User Management', path: '/portal/administrator/users', icon: 'manage_accounts' }
+    { name: 'Admin Dashboard', path: '/portal/administrator', icon: 'admin_panel_settings' },
+    { name: 'Search', path: '/portal/administrator/search', icon: 'search' }
   ]
 }
 
@@ -54,6 +59,12 @@ export default function Sidebar(): React.JSX.Element {
   const tabs = roleTabs[user?.role || 'Student']
 
   const isActive = (path: string): boolean => {
+    // Special handling for Administrator Dashboard to highlight for all sub-routes except search
+    if (path === '/portal/administrator') {
+      return location.pathname.startsWith(path) && !location.pathname.includes('/search')
+    }
+
+    // Default behavior: portal root matches exactly, other paths match if they start with the path
     if (path === `/portal/${location.pathname.split('/')[2]}`) {
       return location.pathname === path
     }
@@ -70,17 +81,16 @@ export default function Sidebar(): React.JSX.Element {
           <span className="font-jakarta text-xl font-extrabold text-on-surface tracking-tight">Project Polaris</span>
         </div>
       </div>
-      
+
       <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
         {tabs.map((tab) => (
           <button
             key={tab.name}
             onClick={() => navigate(tab.path)}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-jakarta font-semibold rounded-xl transition-all ${
-              isActive(tab.path)
-                ? 'bg-primary text-on-primary shadow-md'
-                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-jakarta font-semibold rounded-xl transition-all ${isActive(tab.path)
+              ? 'bg-primary text-on-primary shadow-md'
+              : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+              }`}
           >
             <span className={`material-symbols-outlined text-[20px] ${isActive(tab.path) ? '' : 'text-outline-variant'}`}>
               {tab.icon}
@@ -100,8 +110,8 @@ export default function Sidebar(): React.JSX.Element {
             <p className="text-xs text-on-surface-variant truncate lowercase">{user?.role}</p>
           </div>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full justify-start gap-2 border-error/20 text-error hover:bg-error/5 hover:border-error/40"
           onClick={handleLogout}
         >

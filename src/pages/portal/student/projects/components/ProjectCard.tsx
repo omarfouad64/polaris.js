@@ -25,6 +25,8 @@ interface ProjectCardProps {
   rating?: number;
   isPublic?: boolean;
   createdDate: string;
+  status?: 'active' | 'flagged';
+  flagReason?: string;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onView: (id: string) => void;
@@ -39,6 +41,8 @@ export default function ProjectCard({
   rating,
   isPublic,
   createdDate,
+  status = 'active',
+  flagReason,
   onEdit,
   onDelete,
   onView,
@@ -56,20 +60,32 @@ export default function ProjectCard({
   };
 
   const courseData = getCourseById(course);
+  const isFlagged = status === 'flagged';
 
   return (
     <div
-      className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/40 hover:shadow-raised hover:scale-[1.01] transition-all duration-300 cursor-pointer group relative"
+      className={`bg-surface-container-lowest rounded-xl p-6 border transition-all duration-300 cursor-pointer group relative ${
+        isFlagged ? 'border-error/40 bg-error/5' : 'border-outline-variant/40 hover:shadow-raised hover:scale-[1.01]'
+      }`}
       onClick={() => onView(id)}
     >
       {/* Header */}
       <div className="mb-4">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="text-xl font-jakarta font-semibold text-on-background group-hover:text-primary transition-colors duration-150 line-clamp-2">
-            {title}
-          </h3>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-xl font-jakarta font-semibold text-on-background group-hover:text-primary transition-colors duration-150 line-clamp-2">
+                {title}
+              </h3>
+              {isFlagged && (
+                <span className="px-2 py-0.5 bg-error text-on-error rounded-full text-[10px] font-jakarta font-bold uppercase tracking-wider">
+                  Flagged
+                </span>
+              )}
+            </div>
+          </div>
           <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-            {isPublic !== undefined && (
+            {isPublic !== undefined && !isFlagged && (
               <button
                 onClick={() => onToggleVisibility(id)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 ${isPublic ? 'bg-secondary' : 'bg-outline-variant'
@@ -91,6 +107,14 @@ export default function ProjectCard({
           <p className="text-sm font-lexend text-on-surface-variant line-clamp-1">{courseData?.name || course}</p>
         </div>
       </div>
+
+      {isFlagged && flagReason && (
+        <div className="mb-4 p-3 bg-error/10 border border-error/20 rounded-lg">
+          <p className="text-xs font-lexend text-error leading-relaxed">
+            <span className="font-bold">Reason:</span> {flagReason}
+          </p>
+        </div>
+      )}
 
       {/* Languages */}
       <div className="mb-4">
@@ -125,20 +149,32 @@ export default function ProjectCard({
 
       {/* Actions */}
       <div className="flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
-        <button
-          onClick={() => onEdit(id)}
-          className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/10 shadow-sm flex items-center justify-center gap-2"
-        >
-          <span className="material-symbols-outlined text-lg">edit</span>
-          Edit
-        </button>
-        <button
-          onClick={() => onDelete(id)}
-          className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg border border-error/30 text-error hover:bg-error hover:text-on-error transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
-        >
-          <span className="material-symbols-outlined text-lg">delete</span>
-          Delete
-        </button>
+        {isFlagged ? (
+          <button
+            onClick={() => {}} // TODO: Handle appeal (Req 61)
+            className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-error text-on-error hover:opacity-90 transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
+          >
+            <span className="material-symbols-outlined text-lg">campaign</span>
+            Appeal Unflagging
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={() => onEdit(id)}
+              className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/10 shadow-sm flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-lg">edit</span>
+              Edit
+            </button>
+            <button
+              onClick={() => onDelete(id)}
+              className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg border border-error/30 text-error hover:bg-error hover:text-on-error transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-lg">delete</span>
+              Delete
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,16 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
+import { useGlobalContext } from '../../../globalContext'
 
 export default function Header() {
   const location = useLocation()
+  const { user } = useGlobalContext()
+
+  // Determine role path for notifications link
+  let rolePath = 'student'
+  if (user?.role === 'Course Instructor') rolePath = 'instructor'
+  else if (user?.role === 'Administrator') rolePath = 'administrator'
+  else if (user?.role === 'Employer') rolePath = 'employer'
   
   // Extract page name from path (e.g., /portal/student/projects -> Projects)
   const pathParts = location.pathname.split('/').filter(Boolean)
@@ -17,9 +25,12 @@ export default function Header() {
         {pageName}
       </h2>
       <div className="flex items-center gap-4">
-        <button className="p-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors">
+        <Link 
+          to={`/portal/${rolePath}/notifications`}
+          className="p-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors"
+        >
           <span className="material-symbols-outlined">notifications</span>
-        </button>
+        </Link>
         <div className="h-8 w-px bg-surface-container mx-2"></div>
         <div className="w-10 h-10 rounded-full bg-surface-container-high border-2 border-surface-container"></div>
       </div>

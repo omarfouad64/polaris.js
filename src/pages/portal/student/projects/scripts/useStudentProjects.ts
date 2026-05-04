@@ -19,6 +19,8 @@ export interface ProjectData {
   createdDate: string;
   updatedDate: string;
   isPublic: boolean;
+  status: 'active' | 'flagged';
+  flagReason?: string;
 }
 
 const DUMMY_PROJECTS: ProjectData[] = [
@@ -34,6 +36,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
     createdDate: '2026-01-15',
     updatedDate: '2026-02-10',
     isPublic: true,
+    status: 'active',
   },
   {
     id: 'proj-002',
@@ -47,6 +50,8 @@ const DUMMY_PROJECTS: ProjectData[] = [
     createdDate: '2025-09-01',
     updatedDate: '2026-03-20',
     isPublic: true,
+    status: 'flagged',
+    flagReason: 'Copyrighted material detected in documentation.',
   },
   {
     id: 'proj-003',
@@ -60,6 +65,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
     createdDate: '2026-02-01',
     updatedDate: '2026-02-28',
     isPublic: false,
+    status: 'active',
   },
 ];
 
