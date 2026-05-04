@@ -1,0 +1,95 @@
+# Project Requirements Checklist
+
+Legend: [x] implemented, [ ] not implemented
+
+- [x] Req 1 (Role: Student/Administrator/Employer/Course Instructor) - Goal: Login using my email and password / log out.
+- [x] Req 2 (Role: Student/Course Instructor) - Goal: Register using first name, last name, email, and password.
+- [x] Req 3 (Role: Employer) - Goal: Register using company name, company email, and password.
+- [x] Req 4 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Update forgotten password using an OTP.
+- [x] Req 5 (Role: Student) - Goal: Add/view/update/remove portfolio info (major, skills, LinkedIn link).
+- [x] Req 6 (Role: Course Instructor) - Goal: Add/view/update/remove profile info (bio, research interests, education).
+- [x] Req 7 (Role: Course Instructor) - Goal: Link/unlink to the course(s) I am teaching.
+- [x] Req 8 (Role: Student/Administrator/Employer/Course Instructor) - Goal: Search for course instructors by name or course.
+- [x] Req 9 (Role: Student/Administrator/Employer/Course Instructor) - Goal: Select and view course instructor profile with linked courses.
+- [x] Req 10 (Role: Employer) - Goal: Add/view/update/remove company info (bio, address, contact info).
+- [x] Req 11 (Role: Employer) - Goal: Choose company location on map and set it in profile.
+- [ ] Req 12 (Role: Student/Employer/Course Instructor) - Goal: Upload a profile picture.
+- [x] Req 13 (Role: Employer) - Goal: Upload PDF documents such as tax certificate.
+- [x] Req 14 (Role: Administrator) - Goal: View a list of employers applying to use the platform.
+- [x] Req 15 (Role: Administrator) - Goal: View details of each employer company with uploaded documents.
+- [x] Req 16 (Role: Administrator) - Goal: View any uploaded documents.
+- [x] Req 17 (Role: Administrator) - Goal: Download any uploaded documents.
+- [x] Req 18 (Role: Administrator) - Goal: Accept/reject companies applying to use the platform.
+- [ ] Req 19 (Role: Student) - Goal: Create/view/update/delete a project with title, course, GitHub link, report, languages, demo video.
+- [x] Req 20 (Role: Student) - Goal: Set my project's visibility on my portfolio. !! DEP MISSING: Req 19
+- [x] Req 21 (Role: Student) - Goal: View a list of all my projects. !! DEP MISSING: Req 19
+- [x] Req 22 (Role: Student) - Goal: Select the projects I want visible on my portfolio.
+- [ ] Req 23 (Role: Student) - Goal: Upload a thesis draft.
+- [ ] Req 24 (Role: Student) - Goal: Select a thesis draft as the Final Draft.
+- [x] Req 25 (Role: Student) - Goal: Search collaborators/instructors by email or name. !! DEP MISSING: Req 19
+- [x] Req 26 (Role: Student) - Goal: Send/cancel project invitations to collaborators/instructors.
+- [x] Req 27 (Role: Student) - Goal: View collaborators with invitation status.
+- [x] Req 28 (Role: Student/Course Instructor) - Goal: Receive notifications for project invitations.
+- [x] Req 29 (Role: Student/Course Instructor) - Goal: View list of invitations to different projects.
+- [x] Req 30 (Role: Student/Course Instructor) - Goal: Accept/reject project invitations.
+- [x] Req 31 (Role: Student) - Goal: Remove a collaborator from a project.
+- [ ] Req 32 (Role: Student) - Goal: Create/view/edit/delete a task with description, assignee, status, deadline.
+- [ ] Req 33 (Role: Student) - Goal: View task list with details.
+- [ ] Req 34 (Role: Student) - Goal: Reorder tasks by importance.
+- [x] Req 35 (Role: Student/Employer/Course Instructor/Administrator) - Goal: View a list of all my notifications.
+- [x] Req 36 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Mark notifications as read/unread.
+- [ ] Req 37 (Role: Course Instructor) - Goal: Add/edit/remove feedback on each task.
+- [ ] Req 38 (Role: Course Instructor) - Goal: Add/edit/remove feedback on the project in general.
+- [ ] Req 39 (Role: Course Instructor) - Goal: Rate the entire project.
+- [ ] Req 40 (Role: Student) - Goal: View comments left by instructors on tasks/project.
+- [ ] Req 41 (Role: Student) - Goal: Receive notification for instructor feedback/comments.
+- [x] Req 42 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Search for a specific project by title.
+- [x] Req 43 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Filter project titles by course/instructor/creation date.
+- [x] Req 44 (Role: Student/Employer/Course Instructor/Administrator) - Goal: View project titles based on search/filter results.
+- [x] Req 45 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Sort project titles by creation date or rating.
+- [x] Req 46 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Select and view project with details.
+- [ ] Req 47 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Search for a portfolio by student name or email.
+- [ ] Req 48 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Filter portfolios by major or skills.
+- [ ] Req 49 (Role: Student/Employer/Course Instructor/Administrator) - Goal: View portfolios based on search/filter results.
+- [ ] Req 50 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Sort portfolios based on number of projects.
+- [ ] Req 51 (Role: Student/Employer/Course Instructor/Administrator) - Goal: Select and view portfolio with details.
+- [x] Req 52 (Role: Administrator) - Goal: View a list of all users with full name, email, and role.
+- [x] Req 53 (Role: Administrator) - Goal: Create admin accounts using username and password.
+- [x] Req 54 (Role: Administrator) - Goal: Activate/deactivate any account.
+- [x] Req 55 (Role: Administrator) - Goal: Create/view/edit/delete a course with name and code.
+- [x] Req 56 (Role: Administrator/Course Instructor) - Goal: View a list of all courses with name and code.
+- [x] Req 57 (Role: Administrator) - Goal: Accept/reject link/unlink requests from instructors.
+- [ ] Req 58 (Role: Administrator) - Goal: Receive notification of link/unlink requests.
+- [x] Req 59 (Role: Administrator/Course Instructor) - Goal: Flag inappropriate projects with a reason.
+- [x] Req 60 (Role: Student) - Goal: Receive notification that my project was flagged with reason.
+- [x] Req 61 (Role: Student) - Goal: Send an appeal to unflag the project with explanation.
+- [x] Req 62 (Role: Administrator) - Goal: View a list of flagged projects.
+- [x] Req 63 (Role: Administrator) - Goal: View a list of appeals sent by students.
+- [x] Req 64 (Role: Administrator) - Goal: Activate/deactivate any project.
+- [x] Req 65 (Role: Student/Employer) - Goal: Save/remove projects and portfolios to favorites.
+- [x] Req 66 (Role: Student/Employer) - Goal: View favorite projects and portfolios lists.
+- [x] Req 67 (Role: Student/Employer/Course Instructor) - Goal: View a list of recommended projects.
+- [x] Req 68 (Role: Student/Employer/Course Instructor) - Goal: View a list of all messages.
+- [x] Req 69 (Role: Student/Employer/Course Instructor) - Goal: Send and receive private messages. !! DEP MISSING: Req 46, Req 51, Req 87
+- [x] Req 70 (Role: Student/Employer/Course Instructor) - Goal: Receive notification for private messages.
+- [x] Req 71 (Role: Employer/Administrator) - Goal: View employer statistics over time.
+- [ ] Req 72 (Role: Student) - Goal: View student project stats, language distribution, top collaborators.
+- [x] Req 73 (Role: Administrator) - Goal: View platform usage statistics.
+- [x] Req 74 (Role: Employer) - Goal: View/add/edit/delete internships with full details.
+- [x] Req 75 (Role: Employer) - Goal: Sort student applications by top contributors.
+- [x] Req 76 (Role: Employer) - Goal: View top suggested applications based on favorites.
+- [x] Req 77 (Role: Employer) - Goal: Set internship as hiring or filled. !! DEP MISSING: Req 86
+- [x] Req 78 (Role: Employer) - Goal: Archive/unarchive internships. !! DEP MISSING: Req 86
+- [x] Req 79 (Role: Student) - Goal: Search internships by title and company.
+- [x] Req 80 (Role: Student) - Goal: Filter internships by company and duration.
+- [x] Req 81 (Role: Student) - Goal: View internships based on search/filter.
+- [x] Req 82 (Role: Student) - Goal: Sort internships by date posted.
+- [x] Req 83 (Role: Student) - Goal: View and select an internship from results.
+- [x] Req 84 (Role: Student) - Goal: Apply for an internship with cover letter.
+- [x] Req 85 (Role: Employer) - Goal: View a list of internships offered by company.
+- [ ] Req 86 (Role: Employer) - Goal: Select an internship from the list.
+- [x] Req 87 (Role: Employer) - Goal: View a list of student applicants. !! DEP MISSING: Req 86
+- [x] Req 88 (Role: Employer) - Goal: Select a status for each applicant.
+- [x] Req 89 (Role: Student) - Goal: Receive notification once accepted/rejected for an internship.
+- [x] Req 90 (Role: Student) - Goal: View a list of completed internships in my portfolio.
+- [ ] Req 91 (Role: Student/Employer/Course Instructor) - Goal: Turn off all notifications.

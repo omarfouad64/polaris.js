@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import type { FavoriteItem } from '../types'
 
 const dummyFavorites: FavoriteItem[] = [
@@ -18,11 +18,17 @@ const dummyRecommended: FavoriteItem[] = [
 
 /**
  * useFavorites — manages saved projects and portfolios, and provides recommended projects.
- *
- * @returns favorite items split by type, add/remove functions, and recommended list.
+ * Persists data to localStorage to ensure favorites are shared across components.
  */
 export default function useFavorites() {
-  const [favorites, setFavorites] = useState<FavoriteItem[]>(dummyFavorites)
+  const [favorites, setFavorites] = useState<FavoriteItem[]>(() => {
+    const saved = localStorage.getItem('polaris_favorites')
+    return saved ? JSON.parse(saved) : dummyFavorites
+  })
+
+  useEffect(() => {
+    localStorage.setItem('polaris_favorites', JSON.stringify(favorites))
+  }, [favorites])
 
   const favoriteProjects = useMemo(() =>
     favorites.filter(f => f.type === 'project'), [favorites]
@@ -33,11 +39,20 @@ export default function useFavorites() {
   )
 
   const addFavorite = (item: Omit<FavoriteItem, 'savedAt'>): void => {
-    setFavorites(prev => [...prev, { ...item, savedAt: new Date().toISOString().split('T')[0] }])
+    const newItem = { ...item, savedAt: new Date().toISOString().split('T')[0] }
+    setFavorites(prev => {
+      const updated = [...prev, newItem]
+      localStorage.setItem('polaris_favorites', JSON.stringify(updated))
+      return updated
+    })
   }
 
   const removeFavorite = (id: string): void => {
-    setFavorites(prev => prev.filter(f => f.id !== id))
+    setFavorites(prev => {
+      const updated = prev.filter(f => f.id !== id)
+      localStorage.setItem('polaris_favorites', JSON.stringify(updated))
+      return updated
+    })
   }
 
   const isFavorite = (id: string): boolean => {

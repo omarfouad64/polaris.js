@@ -1,6 +1,9 @@
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useLocation } from 'react-router-dom'
 
 export default function AdminLayout() {
+  const location = useLocation()
+  const showTabs = !location.pathname.includes('/search')
+
   const tabs = [
     { name: 'Stats', path: '/portal/administrator', end: true },
     { name: 'Verification', path: '/portal/administrator/verification' },
@@ -17,20 +20,22 @@ export default function AdminLayout() {
       </div>
 
       {/* Admin Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-surface-container overflow-x-auto scrollbar-hide">
-        {tabs.map((tab) => (
-          <NavLink 
-            key={tab.name}
-            to={tab.path} 
-            end={tab.end}
-            className={({ isActive }) => `px-6 py-3 text-sm font-jakarta font-bold border-b-2 transition-all whitespace-nowrap ${
-              isActive ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            {tab.name}
-          </NavLink>
-        ))}
-      </div>
+      {showTabs && (
+        <div className="flex items-center gap-2 border-b border-surface-container overflow-x-auto scrollbar-hide">
+          {tabs.map((tab) => (
+            <NavLink 
+              key={tab.name}
+              to={tab.path} 
+              end={tab.end}
+              className={({ isActive }) => `px-6 py-3 text-sm font-jakarta font-bold border-b-2 transition-all whitespace-nowrap ${
+                isActive ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              {tab.name}
+            </NavLink>
+          ))}
+        </div>
+      )}
 
       {/* Content Area */}
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">

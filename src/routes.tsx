@@ -10,7 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute.tsx'
 // Portal Sub-Sections
 import DashboardLayout from './pages/portal/dashboard/DashboardLayout.tsx'
 import DashboardPage from './pages/portal/dashboard/DashboardPage.tsx'
-import ExplorerPage from './pages/portal/explorer/ExplorerPage.tsx'
+import SearchHubPage from './pages/portal/explorer/SearchHubPage.tsx'
 import AdminLayout from './pages/portal/admin/AdminLayout.tsx'
 import AdminPage from './pages/portal/admin/AdminPage.tsx'
 import UserDirectoryPage from './pages/portal/admin/users/UserDirectoryPage.tsx'
@@ -39,11 +39,12 @@ import ProjectEditorPage from './pages/portal/student/projects/ProjectEditorPage
 import StudentPortfolioPage from './pages/portal/student/portfolio/StudentPortfolioPage.tsx'
 import ProjectCollaboration from './pages/portal/student/projects/ProjectCollaboration.tsx'
 import ProjectInvitationsPage from './pages/portal/student/invitations/ProjectInvitationsPage.tsx'
-import InvitationNotificationsCenter from './pages/portal/student/invitations/InvitationNotificationsCenter.tsx'
+import NotificationCenter from './pages/portal/shared/notifications/NotificationCenter.tsx'
 
 // Shared Pages
 import FavoritesPage from './pages/portal/shared/favorites/FavoritesPage.tsx'
 import CommunicationsPage from './pages/portal/shared/communications/CommunicationsPage.tsx'
+import ProjectDetailsPage from './pages/portal/shared/projects/ProjectDetailsPage.tsx'
 
 // Role Switcher Component
 function RoleSwitcher() {
@@ -98,14 +99,15 @@ export const router = createBrowserRouter([
           { path: 'projects', element: <MyProjectsPage /> },
           { path: 'projects/:id', element: <ProjectEditorPage /> },
           { path: 'projects/new', element: <ProjectEditorPage /> },
-          { path: 'explorer', element: <ExplorerPage /> },
+          { path: 'search', element: <SearchHubPage /> },
           { path: 'internships', element: <InternshipExplorerPage /> },
           { path: 'portfolio', element: <StudentPortfolioPage /> },
           { path: 'favorites', element: <FavoritesPage /> },
           { path: 'communications', element: <CommunicationsPage /> },
           { path: 'projects/:id/collaboration', element: <ProjectCollaboration /> },
           { path: 'invitations', element: <ProjectInvitationsPage /> },
-          { path: 'notifications', element: <InvitationNotificationsCenter /> }
+                    { path: 'notifications', element: <NotificationCenter /> },
+          { path: 'projects/:id/view', element: <ProjectDetailsPage /> }
         ]
       },
       {
@@ -116,8 +118,11 @@ export const router = createBrowserRouter([
           { path: 'profile', element: <CompanyProfilePage /> },
           { path: 'internships', element: <InternshipManagementPage /> },
           { path: 'internships/:id/applicants', element: <ApplicantReviewPage /> },
+          { path: 'search', element: <SearchHubPage /> },
           { path: 'favorites', element: <FavoritesPage /> },
-          { path: 'communications', element: <CommunicationsPage /> }
+          { path: 'communications', element: <CommunicationsPage /> },
+                    { path: 'notifications', element: <NotificationCenter /> },
+          { path: 'projects/:id/view', element: <ProjectDetailsPage /> }
         ]
       },
       {
@@ -126,7 +131,12 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <InstructorProfilePage /> },
           { path: 'profile', element: <InstructorProfilePage /> },
-          { path: 'courses', element: <MyCourses /> }
+          { path: 'courses', element: <MyCourses /> },
+          { path: 'search', element: <SearchHubPage /> },
+          { path: 'communications', element: <CommunicationsPage /> },
+          { path: 'notifications', element: <NotificationCenter /> },
+          { path: 'projects/:id/view', element: <ProjectDetailsPage /> },
+          { path: 'invitations', element: <ProjectInvitationsPage /> }
       ]
       },
       {
@@ -137,14 +147,12 @@ export const router = createBrowserRouter([
           { path: 'verification', element: <EmployerVerificationPage /> },
           { path: 'users', element: <UserDirectoryPage /> },
           { path: 'courses', element: <CourseDirectoryPage /> },
-          { path: 'moderation', element: <ContentModerationPage /> }
+          { path: 'moderation', element: <ContentModerationPage /> },
+          { path: 'search', element: <SearchHubPage /> },
+                    { path: 'notifications', element: <NotificationCenter /> },
+          { path: 'projects/:id/view', element: <ProjectDetailsPage /> }
         ]
       },
-      {
-        path: 'explorer',
-        element: <InstructorDirectory />,
-        children: []
-      }
     ]
   }
 ])

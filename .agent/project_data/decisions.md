@@ -51,3 +51,8 @@ This document records key architectural and design decisions made during the imp
 - **Decision:** Student internship applications use a modal overlay with a cover letter textarea.
 - **Rationale:** Keeps the user in context (the internship listing) while providing a focused application form. Cover letter is limited to 500 characters per Req 84.
 - **Impact:** Applications are tracked in the student's "My Applications" tab and appear in the employer's "Applicant Review" page.
+
+## 14. Unified Search Hub
+- **Decision:** Consolidated search-related experiences into a single Search tab per role, with tabbed sub-views for search types.
+- **Rationale:** Reduces sidebar clutter and groups discovery workflows in one consistent location.
+- **Impact:** Role-specific routes under `/portal/<role>/search` render a shared SearchHubPage with tabbed sections.

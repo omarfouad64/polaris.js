@@ -36,8 +36,7 @@ export default function MyProjectsPage() {
   };
 
   const handleView = (id: string) => {
-    // TODO: Navigate to project detail view (Req 46)
-    console.log('View project:', id);
+    navigate(`/portal/student/projects/${id}/view`);
   };
 
   const handleToggleVisibility = (id: string) => {

@@ -36,6 +36,7 @@ The application uses a nested layout pattern with `<Outlet />` to manage shared 
 - **Parent:** `PortalLayout` (Provides Sidebar and Top Header)
   - `/portal/student` -> DashboardLayout (Sub-tabs: Overview, Projects, etc.)
     - `/portal/student/internships` -> InternshipExplorerPage
+    - `/portal/student/search` -> SearchHubPage
     - `/portal/student/favorites` -> FavoritesPage (shared)
     - `/portal/student/communications` -> CommunicationsPage (shared)
   - `/portal/employer` -> EmployerLayout (Sub-tabs: Dashboard, Profile, Internships, Favorites, Communications)
@@ -43,10 +44,13 @@ The application uses a nested layout pattern with `<Outlet />` to manage shared 
     - `/portal/employer/profile` -> CompanyProfilePage
     - `/portal/employer/internships` -> InternshipManagementPage
     - `/portal/employer/internships/:id/applicants` -> ApplicantReviewPage
+    - `/portal/employer/search` -> SearchHubPage
     - `/portal/employer/favorites` -> FavoritesPage (shared)
     - `/portal/employer/communications` -> CommunicationsPage (shared)
   - `/portal/instructor` -> Instructor-specific views
+    - `/portal/instructor/search` -> SearchHubPage
   - `/portal/admin` -> AdminPage (Control Center)
+    - `/portal/administrator/search` -> SearchHubPage
 
 ## 3. Communication Patterns
 - **Layout to Child:** Use `useOutletContext` for state that needs to be shared between a Layout and its nested routes (e.g., sharing the active role in Signup).

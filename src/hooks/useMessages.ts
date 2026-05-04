@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import type { Conversation, Message } from '../types'
 
 const dummyConversations: Conversation[] = [
@@ -26,13 +26,39 @@ const dummyMessages: Record<string, Message[]> = {
 
 /**
  * useMessages — provides messaging data and operations for private conversations.
- *
- * @returns conversations list, messages for active conversation, and send function.
+ * Persists data to localStorage to ensure conversations stay active across navigations.
  */
 export default function useMessages() {
-  const [conversations, setConversations] = useState<Conversation[]>(dummyConversations)
-  const [messages, setMessages] = useState<Record<string, Message[]>>(dummyMessages)
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
+  const [conversations, setConversations] = useState<Conversation[]>(() => {
+    const saved = localStorage.getItem('polaris_conversations')
+    return saved ? JSON.parse(saved) : dummyConversations
+  })
+
+  const [messages, setMessages] = useState<Record<string, Message[]>>(() => {
+    const saved = localStorage.getItem('polaris_messages')
+    return saved ? JSON.parse(saved) : dummyMessages
+  })
+
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(() => {
+    return localStorage.getItem('polaris_active_conv')
+  })
+
+  // Persist to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem('polaris_conversations', JSON.stringify(conversations))
+  }, [conversations])
+
+  useEffect(() => {
+    localStorage.setItem('polaris_messages', JSON.stringify(messages))
+  }, [messages])
+
+  useEffect(() => {
+    if (activeConversationId) {
+      localStorage.setItem('polaris_active_conv', activeConversationId)
+    } else {
+      localStorage.removeItem('polaris_active_conv')
+    }
+  }, [activeConversationId])
 
   const activeMessages = useMemo(() =>
     activeConversationId ? (messages[activeConversationId] ?? []) : [],
@@ -84,12 +110,47 @@ export default function useMessages() {
     [conversations]
   )
 
+  const startConversation = (participantId: string, name: string, avatar: string): string => {
+    const existing = conversations.find(c => c.participantId === participantId)
+    if (existing) {
+      setActiveConversationId(existing.id)
+      localStorage.setItem('polaris_active_conv', existing.id)
+      return existing.id
+    }
+
+    const newId = `conv-${Date.now()}`
+    const newConv: Conversation = {
+      id: newId,
+      participantId,
+      participantName: name,
+      participantAvatar: avatar,
+      lastMessage: 'Start of your conversation',
+      lastTimestamp: new Date().toISOString(),
+      unreadCount: 0
+    }
+
+    const updatedConversations = [newConv, ...conversations]
+    const updatedMessages = { ...messages, [newId]: [] }
+
+    setConversations(updatedConversations)
+    setMessages(updatedMessages)
+    setActiveConversationId(newId)
+
+    // Manual sync for immediate navigation safety
+    localStorage.setItem('polaris_conversations', JSON.stringify(updatedConversations))
+    localStorage.setItem('polaris_messages', JSON.stringify(updatedMessages))
+    localStorage.setItem('polaris_active_conv', newId)
+
+    return newId
+  }
+
   return {
     conversations,
     activeConversation,
     activeMessages,
     activeConversationId,
     sendMessage,
+    startConversation,
     selectConversation,
     totalUnread
   }
