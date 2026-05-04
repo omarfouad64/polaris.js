@@ -100,10 +100,15 @@ export function useProjectInvitationsList() {
       const invitation = prev.find(inv => inv.id === invitationId)
       if (!invitation) return prev
 
-      setAcceptedInvitations(prevAccepted => [
-        ...prevAccepted,
-        { ...invitation, status: 'accepted' }
-      ])
+      setAcceptedInvitations(prevAccepted => {
+        const exists = prevAccepted.some(inv => inv.id === invitationId)
+        if (exists) return prevAccepted
+        return [...prevAccepted, { ...invitation, status: 'accepted' }]
+      })
+
+      setRejectedInvitations(prevRejected =>
+        prevRejected.filter(inv => inv.id !== invitationId)
+      )
 
       return prev.filter(inv => inv.id !== invitationId)
     })
@@ -115,10 +120,15 @@ export function useProjectInvitationsList() {
       const invitation = prev.find(inv => inv.id === invitationId)
       if (!invitation) return prev
 
-      setRejectedInvitations(prevRejected => [
-        ...prevRejected,
-        { ...invitation, status: 'rejected' }
-      ])
+      setRejectedInvitations(prevRejected => {
+        const exists = prevRejected.some(inv => inv.id === invitationId)
+        if (exists) return prevRejected
+        return [...prevRejected, { ...invitation, status: 'rejected' }]
+      })
+
+      setAcceptedInvitations(prevAccepted =>
+        prevAccepted.filter(inv => inv.id !== invitationId)
+      )
 
       return prev.filter(inv => inv.id !== invitationId)
     })

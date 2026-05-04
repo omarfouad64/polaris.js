@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import type { Notification } from '../types'
+
+const STORAGE_KEY = 'polaris_notifications'
 
 const dummyNotifications: Notification[] = [
   { id: 'n-1', type: 'message', title: 'New Message', body: 'Ahmed Hassan sent you a message.', timestamp: '2026-04-30T10:30:00Z', read: false },
@@ -16,8 +18,25 @@ const dummyNotifications: Notification[] = [
  *
  * @returns notifications list, mark-read functions, and unread count.
  */
+const loadNotifications = (): Notification[] => {
+  if (typeof window === 'undefined') return dummyNotifications
+  const saved = window.localStorage.getItem(STORAGE_KEY)
+  if (!saved) return dummyNotifications
+  try {
+    const parsed = JSON.parse(saved)
+    return Array.isArray(parsed) ? parsed : dummyNotifications
+  } catch {
+    return dummyNotifications
+  }
+}
+
 export default function useNotifications() {
-  const [notifications, setNotifications] = useState<Notification[]>(dummyNotifications)
+  const [notifications, setNotifications] = useState<Notification[]>(loadNotifications)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications))
+  }, [notifications])
 
   const unreadCount = useMemo(() =>
     notifications.filter(n => !n.read).length,
@@ -34,5 +53,18 @@ export default function useNotifications() {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
   }
 
-  return { notifications, unreadCount, toggleRead, markAllRead }
+  const addNotification = useCallback(
+    (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+      const newNotification: Notification = {
+        ...notification,
+        id: `notif-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        read: false
+      }
+      setNotifications(prev => [newNotification, ...prev])
+    },
+    []
+  )
+
+  return { notifications, unreadCount, toggleRead, markAllRead, addNotification }
 }

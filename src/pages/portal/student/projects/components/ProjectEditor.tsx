@@ -6,6 +6,7 @@ import LanguageMultiSelect from './LanguageMultiSelect';
 import VideoUploader from './VideoUploader';
 import ThesisDraftUploader from './ThesisDraftUploader';
 import Button from '../../../../../components/Button';
+import ConfirmationDialog from '../../../../../components/ConfirmationDialog';
 
 interface ProjectEditorProps {
   projectId?: string;
@@ -46,6 +47,7 @@ export default function ProjectEditor({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showEditConfirm, setShowEditConfirm] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -130,13 +132,7 @@ export default function ProjectEditor({
     setFormData((prev) => ({ ...prev, thesisDrafts }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+  const saveProject = async () => {
     setIsSubmitting(true);
 
     try {
@@ -152,6 +148,21 @@ export default function ProjectEditor({
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    if (isEditMode) {
+      setShowEditConfirm(true);
+      return;
+    }
+
+    await saveProject();
   };
 
   const courseName = formData.course
@@ -338,6 +349,18 @@ export default function ProjectEditor({
               : 'Create Project'}
         </Button>
       </div>
+      <ConfirmationDialog
+        isOpen={showEditConfirm}
+        title="Confirm Project Updates"
+        message="Save these changes to your project? The updated details will replace the existing information."
+        confirmLabel="Save Changes"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          setShowEditConfirm(false)
+          void saveProject()
+        }}
+        onCancel={() => setShowEditConfirm(false)}
+      />
     </form>
   );
 }

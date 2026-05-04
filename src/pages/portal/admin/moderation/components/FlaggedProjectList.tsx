@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { type FlaggedProject } from '../scripts/useModeration'
+import ConfirmationDialog from '../../../../../components/ConfirmationDialog'
 
 interface FlaggedProjectListProps {
   projects: FlaggedProject[]
@@ -7,6 +9,11 @@ interface FlaggedProjectListProps {
 }
 
 export default function FlaggedProjectList({ projects, onDeactivate, onActivate }: FlaggedProjectListProps) {
+  const [pendingAction, setPendingAction] = useState<{
+    project: FlaggedProject
+    action: 'activate' | 'deactivate'
+  } | null>(null)
+
   if (projects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 text-center">
@@ -18,58 +25,81 @@ export default function FlaggedProjectList({ projects, onDeactivate, onActivate 
   }
 
   return (
-    <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
-      {projects.map(project => (
-        <div 
-          key={project.id} 
-          className="flex flex-col md:flex-row md:items-start justify-between p-6 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl gap-6 shadow-sm"
-        >
-          <div className="flex items-start gap-4 flex-1">
-            <div className="w-12 h-12 rounded-full bg-error/10 text-error flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-2xl">flag</span>
+    <>
+      <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
+        {projects.map(project => (
+          <div 
+            key={project.id} 
+            className="flex flex-col md:flex-row md:items-start justify-between p-6 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl gap-6 shadow-sm"
+          >
+            <div className="flex items-start gap-4 flex-1">
+              <div className="w-12 h-12 rounded-full bg-error/10 text-error flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-2xl">flag</span>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${project.status === 'active' ? 'text-primary' : 'text-error'}`}>
+                    {project.status === 'active' ? 'Active' : 'Deactivated'}
+                  </span>
+                  <span className="text-xs font-lexend text-outline">&bull; Flagged on {project.dateFlagged}</span>
+                </div>
+                <h4 className="font-jakarta text-on-surface font-bold text-lg mb-1">
+                  {project.title}
+                </h4>
+                <p className="font-lexend text-sm text-on-surface-variant mb-4">
+                  by {project.studentName} ({project.course})
+                </p>
+                
+                <div className="bg-error/5 border border-error/20 rounded-xl p-4">
+                  <p className="text-xs font-bold text-error mb-1">Flagged by: {project.flaggedBy}</p>
+                  <p className="text-sm font-lexend text-on-surface">{project.reason}</p>
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs font-bold uppercase tracking-wider ${project.status === 'active' ? 'text-primary' : 'text-error'}`}>
-                  {project.status === 'active' ? 'Active' : 'Deactivated'}
-                </span>
-                <span className="text-xs font-lexend text-outline">&bull; Flagged on {project.dateFlagged}</span>
-              </div>
-              <h4 className="font-jakarta text-on-surface font-bold text-lg mb-1">
-                {project.title}
-              </h4>
-              <p className="font-lexend text-sm text-on-surface-variant mb-4">
-                by {project.studentName} ({project.course})
-              </p>
-              
-              <div className="bg-error/5 border border-error/20 rounded-xl p-4">
-                <p className="text-xs font-bold text-error mb-1">Flagged by: {project.flaggedBy}</p>
-                <p className="text-sm font-lexend text-on-surface">{project.reason}</p>
-              </div>
+            
+            <div className="flex items-center gap-3 shrink-0 mt-2 md:mt-0">
+              {project.status === 'active' ? (
+                <button
+                  onClick={() => setPendingAction({ project, action: 'deactivate' })}
+                  className="px-4 py-2 font-jakarta font-semibold text-sm text-error bg-error/10 hover:bg-error/20 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">block</span>
+                  Deactivate
+                </button>
+              ) : (
+                <button
+                  onClick={() => setPendingAction({ project, action: 'activate' })}
+                  className="px-4 py-2 font-jakarta font-semibold text-sm text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                  Activate
+                </button>
+              )}
             </div>
           </div>
-          
-          <div className="flex items-center gap-3 shrink-0 mt-2 md:mt-0">
-            {project.status === 'active' ? (
-              <button
-                onClick={() => onDeactivate(project.id)}
-                className="px-4 py-2 font-jakarta font-semibold text-sm text-error bg-error/10 hover:bg-error/20 rounded-lg transition-colors flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-[18px]">block</span>
-                Deactivate
-              </button>
-            ) : (
-              <button
-                onClick={() => onActivate(project.id)}
-                className="px-4 py-2 font-jakarta font-semibold text-sm text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                Activate
-              </button>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      <ConfirmationDialog
+        isOpen={!!pendingAction}
+        title={pendingAction?.action === 'activate' ? 'Activate Project?' : 'Deactivate Project?'}
+        message={pendingAction
+          ? `This will ${pendingAction.action === 'activate' ? 'activate' : 'deactivate'} ${pendingAction.project.title}.`
+          : ''
+        }
+        confirmLabel={pendingAction?.action === 'activate' ? 'Activate Project' : 'Deactivate Project'}
+        cancelLabel="Cancel"
+        tone={pendingAction?.action === 'deactivate' ? 'danger' : 'primary'}
+        onConfirm={() => {
+          if (!pendingAction) return
+          if (pendingAction.action === 'activate') {
+            onActivate(pendingAction.project.id)
+          } else {
+            onDeactivate(pendingAction.project.id)
+          }
+          setPendingAction(null)
+        }}
+        onCancel={() => setPendingAction(null)}
+      />
+    </>
   )
 }

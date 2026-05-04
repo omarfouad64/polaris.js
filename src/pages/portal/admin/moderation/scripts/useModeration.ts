@@ -74,12 +74,10 @@ export function useModeration() {
     setFlaggedProjects(flaggedProjects.map(p => 
       p.id === projectId ? { ...p, status: 'active' } : p
     ))
-    alert('Appeal accepted. Project has been activated.')
   }
 
   const rejectAppeal = (appealId: string) => {
     setAppeals(appeals.map(a => a.id === appealId ? { ...a, status: 'rejected' } : a))
-    alert('Appeal rejected.')
   }
 
   return {

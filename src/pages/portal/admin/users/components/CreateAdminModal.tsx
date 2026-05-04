@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ConfirmationDialog from '../../../../../components/ConfirmationDialog'
 
 interface CreateAdminModalProps {
   isOpen: boolean
@@ -10,16 +11,14 @@ export default function CreateAdminModal({ isOpen, onClose, onSubmit }: CreateAd
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('') // Handled purely locally for the dummy form
+  const [showConfirm, setShowConfirm] = useState(false)
 
   if (!isOpen) return null
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim() || !email.trim() || !password.trim()) return
-    onSubmit({ name, email })
-    setName('')
-    setEmail('')
-    setPassword('')
+    setShowConfirm(true)
   }
 
   return (
@@ -98,6 +97,21 @@ export default function CreateAdminModal({ isOpen, onClose, onSubmit }: CreateAd
           </div>
         </form>
       </div>
+      <ConfirmationDialog
+        isOpen={showConfirm}
+        title="Create Administrator?"
+        message={`This will create an admin account for ${name || 'this user'} (${email || 'email not set'}).`}
+        confirmLabel="Create Admin"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          onSubmit({ name, email })
+          setName('')
+          setEmail('')
+          setPassword('')
+          setShowConfirm(false)
+        }}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   )
 }

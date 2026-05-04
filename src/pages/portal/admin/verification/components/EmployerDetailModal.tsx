@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { type EmployerApplication } from '../scripts/useEmployerApplications'
+import ConfirmationDialog from '../../../../../components/ConfirmationDialog'
 
 interface EmployerDetailModalProps {
   isOpen: boolean
@@ -10,6 +12,7 @@ interface EmployerDetailModalProps {
 }
 
 export default function EmployerDetailModal({ isOpen, application, onClose, onAccept, onReject, onDownload }: EmployerDetailModalProps) {
+  const [pendingAction, setPendingAction] = useState<'accept' | 'reject' | null>(null)
   if (!isOpen || !application) return null
 
   return (
@@ -96,23 +99,13 @@ export default function EmployerDetailModal({ isOpen, application, onClose, onAc
         {application.status === 'Pending' && (
           <div className="p-6 border-t border-outline-variant/30 bg-surface/50 sm:rounded-b-2xl flex items-center gap-4">
             <button
-              onClick={() => {
-                if (confirm(`Are you sure you want to reject ${application.companyName}?`)) {
-                  onReject(application.id)
-                  onClose()
-                }
-              }}
+              onClick={() => setPendingAction('reject')}
               className="flex-1 py-3 border-2 border-error text-error font-jakarta font-bold text-sm rounded-xl hover:bg-error/5 transition-colors focus:ring-2 focus:ring-error outline-none"
             >
               Reject Company
             </button>
             <button
-              onClick={() => {
-                if (confirm(`Are you sure you want to approve ${application.companyName}?`)) {
-                  onAccept(application.id)
-                  onClose()
-                }
-              }}
+              onClick={() => setPendingAction('accept')}
               className="flex-1 py-3 bg-secondary text-on-secondary font-jakarta font-bold text-sm rounded-xl hover:bg-secondary/90 hover:-translate-y-0.5 shadow-[0_2px_10px_rgba(0,106,97,0.2)] transition-all focus:ring-2 focus:ring-secondary outline-none"
             >
               Accept Company
@@ -120,6 +113,24 @@ export default function EmployerDetailModal({ isOpen, application, onClose, onAc
           </div>
         )}
       </div>
+      <ConfirmationDialog
+        isOpen={pendingAction !== null}
+        title={pendingAction === 'accept' ? 'Approve Employer?' : 'Reject Employer?'}
+        message={`This will ${pendingAction === 'accept' ? 'approve' : 'reject'} ${application.companyName}'s registration request.`}
+        confirmLabel={pendingAction === 'accept' ? 'Approve Company' : 'Reject Company'}
+        cancelLabel="Cancel"
+        tone={pendingAction === 'reject' ? 'danger' : 'primary'}
+        onConfirm={() => {
+          if (pendingAction === 'accept') {
+            onAccept(application.id)
+          } else if (pendingAction === 'reject') {
+            onReject(application.id)
+          }
+          setPendingAction(null)
+          onClose()
+        }}
+        onCancel={() => setPendingAction(null)}
+      />
     </div>
   )
 }

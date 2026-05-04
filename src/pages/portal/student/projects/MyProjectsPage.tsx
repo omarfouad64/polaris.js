@@ -4,6 +4,7 @@ import useStudentProjects, { type ProjectData } from './scripts/useStudentProjec
 import ProjectList from './components/ProjectList';
 import ProjectFilters from './components/ProjectFilters';
 import Button from '../../../../components/Button';
+import ConfirmationDialog from '../../../../components/ConfirmationDialog';
 
 /**
  * MyProjectsPage — Displays student's project list with CRUD controls.
@@ -56,6 +57,10 @@ export default function MyProjectsPage() {
 
     return matchesSearch && matchesVisibility;
   });
+
+  const deletingProject = showDeleteConfirm
+    ? projects.find(project => project.id === showDeleteConfirm)
+    : null
 
   return (
     <div className="min-h-screen bg-background p-[--spacing-polaris-md] md:p-[--spacing-polaris-lg]">
@@ -124,34 +129,20 @@ export default function MyProjectsPage() {
           </div>
         )}
 
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-on-background/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-surface-container-lowest rounded-xl p-8 w-full max-w-lg shadow-floating">
-              <h2 className="text-2xl font-jakarta font-semibold text-on-background mb-4">
-                Delete Project?
-              </h2>
-              <p className="text-base font-lexend text-on-surface mb-6">
-                This action cannot be undone. Your project and all associated data will be permanently deleted.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteConfirm(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={confirmDelete}
-                  className="bg-error hover:opacity-90"
-                >
-                  Delete Project
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        <ConfirmationDialog
+          isOpen={!!showDeleteConfirm}
+          title="Delete Project?"
+          message={
+            deletingProject
+              ? `This will permanently delete "${deletingProject.title}" and all associated data.`
+              : 'This action cannot be undone. Your project and all associated data will be permanently deleted.'
+          }
+          confirmLabel="Delete Project"
+          cancelLabel="Cancel"
+          tone="danger"
+          onConfirm={confirmDelete}
+          onCancel={() => setShowDeleteConfirm(null)}
+        />
       </div>
     </div>
   );

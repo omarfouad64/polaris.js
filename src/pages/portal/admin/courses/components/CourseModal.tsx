@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { type Course } from '../scripts/useCourses'
+import ConfirmationDialog from '../../../../../components/ConfirmationDialog'
 
 interface CourseModalProps {
   isOpen: boolean
@@ -11,6 +12,7 @@ interface CourseModalProps {
 export default function CourseModal({ isOpen, initialData, onClose, onSubmit }: CourseModalProps) {
   const [code, setCode] = useState('')
   const [name, setName] = useState('')
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -24,7 +26,7 @@ export default function CourseModal({ isOpen, initialData, onClose, onSubmit }: 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!code.trim() || !name.trim()) return
-    onSubmit({ code, name })
+    setShowConfirm(true)
   }
 
   return (
@@ -93,6 +95,21 @@ export default function CourseModal({ isOpen, initialData, onClose, onSubmit }: 
           </div>
         </form>
       </div>
+      <ConfirmationDialog
+        isOpen={showConfirm}
+        title={initialData ? 'Save Course Changes?' : 'Create Course?'}
+        message={initialData
+          ? `This will update ${initialData.code} - ${initialData.name} to ${code} - ${name}.`
+          : `This will add ${code} - ${name} to the course directory.`
+        }
+        confirmLabel={initialData ? 'Save Changes' : 'Create Course'}
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          setShowConfirm(false)
+          onSubmit({ code, name })
+        }}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   )
 }

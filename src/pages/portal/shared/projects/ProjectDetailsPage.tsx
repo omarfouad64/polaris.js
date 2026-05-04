@@ -7,6 +7,7 @@ import useNotifications from '../../../../hooks/useNotifications'
 import useFavorites from '../../../../hooks/useFavorites'
 import useMessages from '../../../../hooks/useMessages'
 import Button from '../../../../components/Button'
+import FeedbackDialog from '../../../../components/FeedbackDialog'
 
 /**
  * FlagModal — handles the reasoning for flagging a project.
@@ -93,6 +94,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
   const [project, setProject] = useState<any>(null)
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false)
   const [isAppealModalOpen, setIsAppealModalOpen] = useState(false)
+  const [showAppealFeedback, setShowAppealFeedback] = useState(false)
 
   const handleToggleFavorite = () => {
     if (!project) return
@@ -143,7 +145,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
       type: 'admin'
     })
     setIsAppealModalOpen(false)
-    alert('Appeal submitted successfully.')
+    setShowAppealFeedback(true)
   }
 
   if (!project) {
@@ -218,6 +220,13 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             isOpen={isAppealModalOpen} 
             onClose={() => setIsAppealModalOpen(false)} 
             onConfirm={handleAppeal} 
+          />
+          <FeedbackDialog
+            isOpen={showAppealFeedback}
+            title="Appeal Submitted"
+            message="Your appeal has been submitted and will be reviewed by an administrator within 48 hours."
+            actionLabel="OK"
+            onClose={() => setShowAppealFeedback(false)}
           />
           <button 
             onClick={handleToggleFavorite}
