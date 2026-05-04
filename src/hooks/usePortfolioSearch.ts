@@ -8,6 +8,7 @@ interface PortfolioFilters {
   query: string
   major: string
   skill: string
+  sortBy: 'updated_desc' | 'projects_desc' | 'projects_asc'
 }
 
 const DUMMY_PORTFOLIOS: StudentPortfolio[] = [
@@ -16,6 +17,8 @@ const DUMMY_PORTFOLIOS: StudentPortfolio[] = [
     name: 'Ahmed Hassan',
     email: 'ahmed.hassan@student.guc.edu.eg',
     major: 'Computer Science',
+    year: 'Senior',
+    projectCount: 12,
     skills: ['React', 'TypeScript', 'Tailwind CSS', 'Node.js'],
     linkedinUrl: 'https://linkedin.com/in/ahmed-hassan',
     bio: 'Focused on building modern web apps and strong UI systems.',
@@ -28,6 +31,8 @@ const DUMMY_PORTFOLIOS: StudentPortfolio[] = [
     name: 'Mariam Khalil',
     email: 'mariam.khalil@student.guc.edu.eg',
     major: 'Computer Engineering',
+    year: 'Junior',
+    projectCount: 8,
     skills: ['Python', 'Machine Learning', 'Data Analysis'],
     linkedinUrl: 'https://linkedin.com/in/mariam-khalil',
     bio: 'Interested in applied machine learning and data-driven products.',
@@ -40,6 +45,8 @@ const DUMMY_PORTFOLIOS: StudentPortfolio[] = [
     name: 'Omar Ibrahim',
     email: 'omar.ibrahim@student.guc.edu.eg',
     major: 'Information Systems',
+    year: 'Senior',
+    projectCount: 15,
     skills: ['SQL', 'System Design', 'Project Management'],
     linkedinUrl: 'https://linkedin.com/in/omar-ibrahim',
     bio: 'System analyst with a focus on structured data and workflows.',
@@ -52,6 +59,8 @@ const DUMMY_PORTFOLIOS: StudentPortfolio[] = [
     name: 'Sara Ali',
     email: 'sara.ali@student.guc.edu.eg',
     major: 'Computer Science',
+    year: 'Sophomore',
+    projectCount: 5,
     skills: ['UI Design', 'Figma', 'Front-End Development'],
     linkedinUrl: 'https://linkedin.com/in/sara-ali',
     bio: 'Designing expressive interfaces with accessible front-end code.',
@@ -65,7 +74,8 @@ export default function usePortfolioSearch() {
   const [filters, setFilters] = useState<PortfolioFilters>({
     query: '',
     major: 'all',
-    skill: 'all'
+    skill: 'all',
+    sortBy: 'updated_desc'
   })
 
   const portfolios = useMemo(() => {
@@ -88,6 +98,18 @@ export default function usePortfolioSearch() {
     if (filters.skill !== 'all') {
       result = result.filter(portfolio => portfolio.skills.includes(filters.skill))
     }
+
+    // Sorting
+    result.sort((a, b) => {
+      if (filters.sortBy === 'projects_desc') {
+        return b.projectCount - a.projectCount
+      }
+      if (filters.sortBy === 'projects_asc') {
+        return a.projectCount - b.projectCount
+      }
+      // default: updated_desc
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    })
 
     return result
   }, [filters])

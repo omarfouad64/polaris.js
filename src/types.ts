@@ -5,6 +5,8 @@ export interface StudentPortfolio {
   name: string
   email: string
   major: string
+  year: string
+  projectCount: number
   skills: string[]
   linkedinUrl: string
   bio: string

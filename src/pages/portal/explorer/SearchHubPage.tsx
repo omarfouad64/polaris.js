@@ -56,7 +56,8 @@ export default function SearchHubPage(): React.JSX.Element {
     !projectFilters.dateTo &&
     projectFilters.sortBy === 'date_desc' &&
     portfolioFilters.major === 'all' &&
-    portfolioFilters.skill === 'all'
+    portfolioFilters.skill === 'all' &&
+    portfolioFilters.sortBy === 'updated_desc'
 
   const recommendedInstructors = useMemo(() => {
     return [...allInstructors]
@@ -192,7 +193,17 @@ export default function SearchHubPage(): React.JSX.Element {
           </div>
 
           <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 space-y-4" style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}>
-            <h3 className="text-sm font-jakarta font-semibold text-on-surface">Portfolio Filters</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-jakarta font-semibold text-on-surface">Portfolio Filters</h3>
+              {(portfolioFilters.major !== 'all' || portfolioFilters.skill !== 'all' || portfolioFilters.sortBy !== 'updated_desc') && (
+                <button
+                  onClick={() => updatePortfolioFilters({ major: 'all', skill: 'all', sortBy: 'updated_desc' })}
+                  className="text-[10px] font-jakarta font-bold text-primary hover:text-secondary transition-colors uppercase tracking-wider"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
             <div>
               <label className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">
                 Major
@@ -225,6 +236,20 @@ export default function SearchHubPage(): React.JSX.Element {
                     {skill}
                   </option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">
+                Sort By
+              </label>
+              <select
+                value={portfolioFilters.sortBy}
+                onChange={(e) => updatePortfolioFilters({ sortBy: e.target.value as any })}
+                className="w-full mt-1 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm font-lexend text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary/20"
+              >
+                <option value="updated_desc">Recently Updated</option>
+                <option value="projects_desc">Most Projects</option>
+                <option value="projects_asc">Fewest Projects</option>
               </select>
             </div>
           </div>
@@ -351,9 +376,39 @@ export default function SearchHubPage(): React.JSX.Element {
                 {isDefaultSearch ? 'Recommended student portfolios for you.' : `Found ${portfolioResults.length} portfolios.`}
               </p>
             </div>
+
+            {/* Active Portfolio Filters */}
+            {(portfolioFilters.major !== 'all' || portfolioFilters.skill !== 'all') && (
+              <div className="flex flex-wrap gap-2 items-center py-2">
+                <span className="text-[10px] font-jakarta font-bold text-on-surface-variant uppercase tracking-widest mr-1">Active Filters:</span>
+                {portfolioFilters.major !== 'all' && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-lexend font-semibold border border-primary/20">
+                    Major: {portfolioFilters.major}
+                    <button onClick={() => updatePortfolioFilters({ major: 'all' })} className="hover:text-secondary">
+                      <span className="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </span>
+                )}
+                {portfolioFilters.skill !== 'all' && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-secondary/10 text-secondary rounded-full text-xs font-lexend font-semibold border border-secondary/20">
+                    Skill: {portfolioFilters.skill}
+                    <button onClick={() => updatePortfolioFilters({ skill: 'all' })} className="hover:text-secondary">
+                      <span className="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
+
             {portfolioResults.length === 0 ? (
-              <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-8 text-center" style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}>
-                <p className="text-sm font-lexend text-on-surface-variant">No portfolios match your filters.</p>
+              <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-12 text-center" style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}>
+                <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="material-symbols-outlined text-outline text-3xl">person_search</span>
+                </div>
+                <h3 className="text-lg font-jakarta font-bold text-on-surface mb-2">No portfolios found</h3>
+                <p className="text-sm font-lexend text-on-surface-variant max-w-xs mx-auto">
+                  We couldn't find any portfolios matching "{searchQuery}". Try searching by student name or email.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -361,39 +416,48 @@ export default function SearchHubPage(): React.JSX.Element {
                   <div
                     key={portfolio.studentId}
                     onClick={() => setActivePortfolio(portfolio)}
-                    className="group bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm hover:shadow-raised hover:scale-[1.01] transition-all duration-300 cursor-pointer flex flex-col h-full"
+                    className="group bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm hover:shadow-raised hover:scale-[1.01] transition-all duration-300 cursor-pointer flex flex-col h-full relative overflow-hidden"
                   >
+                    {/* Top Gradient Bar */}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary opacity-70"></div>
+
                     <div className="mb-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-secondary text-sm font-jakarta font-bold overflow-hidden">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="w-14 h-14 rounded-full bg-secondary-container flex items-center justify-center text-secondary text-xl font-jakarta font-bold overflow-hidden border-2 border-white shadow-sm">
                           {portfolio.profilePicture ? (
                             <img src={portfolio.profilePicture} alt={portfolio.name} className="w-full h-full object-cover" />
                           ) : (
                             <span>{portfolio.name.charAt(0)}</span>
                           )}
                         </div>
-                        <div>
-                          <p className="text-[10px] font-lexend text-outline uppercase tracking-wider">Portfolio</p>
-                          <p className="text-base font-jakarta font-bold text-on-surface group-hover:text-primary transition-colors">
-                            {portfolio.name}
-                          </p>
+                        <div className="flex items-center gap-1.5 bg-surface-container/50 px-3 py-1.5 rounded-xl text-[11px] font-jakarta font-bold text-on-surface-variant border border-outline-variant/20 backdrop-blur-sm">
+                          <span className="material-symbols-outlined text-[16px] text-primary">folder_open</span>
+                          <span>{portfolio.projectCount} Projects</span>
                         </div>
                       </div>
-                      <p className="text-xs font-lexend text-on-surface-variant">
-                        {portfolio.major}
-                      </p>
+
+                      <div>
+                        <h3 className="text-lg font-jakarta font-bold text-on-surface group-hover:text-primary transition-colors leading-tight mb-1">
+                          {portfolio.name}
+                        </h3>
+                        <p className="text-xs font-lexend text-primary font-semibold">
+                          {portfolio.major}, {portfolio.year}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-sm font-lexend text-on-surface-variant line-clamp-2 mb-6 flex-1">
+
+                    <p className="text-sm font-lexend text-on-surface-variant mb-6 flex-1 leading-relaxed">
                       {portfolio.bio}
                     </p>
-                    <div className="flex flex-wrap gap-2">
+
+                    <div className="flex flex-wrap gap-2 mb-6">
                       {portfolio.skills.slice(0, 3).map(skill => (
-                        <span key={skill} className="px-2 py-1 bg-surface-container text-[10px] font-lexend font-bold text-on-surface-variant rounded-md border border-outline-variant/20">
+                        <span key={skill} className="px-2.5 py-1 bg-surface-container text-[10px] font-lexend font-bold text-on-surface-variant rounded-lg border border-outline-variant/20">
                           {skill}
                         </span>
                       ))}
                       {portfolio.skills.length > 3 && (
-                        <span className="text-[10px] font-lexend text-outline px-2 py-1">+{portfolio.skills.length - 3}</span>
+                        <span className="text-[10px] font-lexend text-outline px-2 py-1 bg-surface-container/30 rounded-lg">+{portfolio.skills.length - 3}</span>
                       )}
                     </div>
                   </div>
