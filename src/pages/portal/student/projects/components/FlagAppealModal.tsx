@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { useProjectModeration } from '../../../../../hooks/useProjectModeration'
-
 interface FlagAppealModalProps {
   projectId: string
   flagId: string
@@ -11,6 +9,13 @@ interface FlagAppealModalProps {
   isOpen: boolean
   onClose: () => void
   onAppealSubmitted: () => void
+  onSubmitAppeal: (
+    flagId: string,
+    projectId: string,
+    studentId: string,
+    studentName: string,
+    appealMessage: string
+  ) => void
 }
 
 /**
@@ -26,13 +31,12 @@ export default function FlagAppealModal({
   studentName,
   isOpen,
   onClose,
-  onAppealSubmitted
+  onAppealSubmitted,
+  onSubmitAppeal
 }: FlagAppealModalProps) {
   const [appealMessage, setAppealMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-
-  const { submitAppeal } = useProjectModeration()
 
   const handleSubmitAppeal = async () => {
     if (!appealMessage.trim()) return
@@ -41,18 +45,18 @@ export default function FlagAppealModal({
     try {
       await new Promise(resolve => setTimeout(resolve, 500))
 
-      submitAppeal(flagId, projectId, studentId, studentName, appealMessage.trim())
+      onSubmitAppeal(flagId, projectId, studentId, studentName, appealMessage.trim())
       setSubmitted(true)
-
-      setTimeout(() => {
-        setSubmitted(false)
-        setAppealMessage('')
-        onAppealSubmitted()
-        onClose()
-      }, 1500)
+      onAppealSubmitted()
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleClose = () => {
+    setSubmitted(false)
+    setAppealMessage('')
+    onClose()
   }
 
   if (!isOpen) return null
@@ -71,7 +75,7 @@ export default function FlagAppealModal({
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-on-surface-variant hover:text-on-surface text-2xl"
             aria-label="Close modal"
           >
@@ -137,16 +141,16 @@ export default function FlagAppealModal({
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
                 <button
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="flex-1 px-4 py-2 border border-outline text-on-surface rounded-lg font-jakarta font-semibold hover:bg-surface-container transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmitAppeal}
-                  disabled={appealMessage.length < 20 || isSubmitting}
+                  disabled={!appealMessage.trim() || isSubmitting}
                   className={`flex-1 px-4 py-2 rounded-lg font-jakarta font-semibold transition-colors ${
-                    appealMessage.length >= 20 && !isSubmitting
+                    appealMessage.trim().length > 0 && !isSubmitting
                       ? 'bg-secondary text-on-secondary hover:bg-secondary-container'
                       : 'bg-surface-container text-on-surface-variant cursor-not-allowed'
                   }`}
@@ -168,6 +172,12 @@ export default function FlagAppealModal({
               <p className="text-xs text-on-surface-variant">
                 You will receive a notification when the appeal is resolved.
               </p>
+              <button
+                onClick={handleClose}
+                className="mt-6 px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
+              >
+                Close
+              </button>
             </div>
           )}
         </div>

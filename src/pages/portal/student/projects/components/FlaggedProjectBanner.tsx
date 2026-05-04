@@ -20,7 +20,7 @@ export default function FlaggedProjectBanner({
 }: FlaggedProjectBannerProps) {
   const [isAppealModalOpen, setIsAppealModalOpen] = useState(false)
 
-  const { flaggedProjects, getAppealForProject } = useProjectModeration()
+  const { flaggedProjects, getAppealForProject, submitAppeal } = useProjectModeration()
 
   const flaggedProject = flaggedProjects.find(f => f.projectId === projectId)
   const appeal = getAppealForProject(projectId)
@@ -127,6 +127,7 @@ export default function FlaggedProjectBanner({
         onAppealSubmitted={() => {
           setIsAppealModalOpen(false)
         }}
+        onSubmitAppeal={submitAppeal}
       />
     </>
   )
