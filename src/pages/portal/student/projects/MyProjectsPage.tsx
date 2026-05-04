@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useStudentProjects, { type ProjectData } from './scripts/useStudentProjects';
+import useStudentProjects from './scripts/useStudentProjects';
 import ProjectList from './components/ProjectList';
 import ProjectFilters from './components/ProjectFilters';
 import Button from '../../../../components/Button';

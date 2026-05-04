@@ -56,6 +56,14 @@ export default function Sidebar(): React.JSX.Element {
     navigate('/auth/login')
   }
 
+  const handleNavigate = (path: string): void => {
+    if (location.pathname.includes('/search')) {
+      window.location.assign(path)
+      return
+    }
+    navigate(path)
+  }
+
   const tabs = roleTabs[user?.role || 'Student']
 
   const isActive = (path: string): boolean => {
@@ -72,7 +80,7 @@ export default function Sidebar(): React.JSX.Element {
   }
 
   return (
-    <aside className="w-72 bg-surface-container-lowest border-r border-surface-container flex flex-col shadow-sm">
+    <aside className="w-72 bg-surface-container-lowest border-r border-surface-container flex flex-col shadow-sm relative z-20">
       <div className="h-24 flex items-center px-8 border-b border-surface-container bg-surface-container-low/20">
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 p-2.5 rounded-xl border border-primary/20 shadow-sm">
@@ -86,7 +94,7 @@ export default function Sidebar(): React.JSX.Element {
         {tabs.map((tab) => (
           <button
             key={tab.name}
-            onClick={() => navigate(tab.path)}
+            onClick={() => handleNavigate(tab.path)}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-jakarta font-semibold rounded-xl transition-all ${isActive(tab.path)
               ? 'bg-primary text-on-primary shadow-md'
               : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'

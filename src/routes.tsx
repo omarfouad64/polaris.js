@@ -11,6 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute.tsx'
 import DashboardLayout from './pages/portal/dashboard/DashboardLayout.tsx'
 import DashboardPage from './pages/portal/dashboard/DashboardPage.tsx'
 import SearchHubPage from './pages/portal/explorer/SearchHubPage.tsx'
+import InstructorProfileViewPage from './pages/portal/explorer/InstructorProfileViewPage.tsx'
 import AdminLayout from './pages/portal/admin/AdminLayout.tsx'
 import AdminPage from './pages/portal/admin/AdminPage.tsx'
 import UserDirectoryPage from './pages/portal/admin/users/UserDirectoryPage.tsx'
@@ -30,7 +31,6 @@ import ApplicantReviewPage from './pages/portal/employer/applicants/ApplicantRev
 import InstructorLayout from './pages/portal/instructor/InstructorLayout.tsx'
 import InstructorProfilePage from './pages/portal/instructor/profile/InstructorProfilePage.tsx'
 import MyCourses from './pages/portal/instructor/courses/MyCourses.tsx'
-import InstructorDirectory from './pages/portal/explorer/InstructorDirectory.tsx'
 
 // Student Sub-Sections
 import InternshipExplorerPage from './pages/portal/student/internships/InternshipExplorerPage.tsx'
@@ -100,6 +100,7 @@ export const router = createBrowserRouter([
           { path: 'projects/:id', element: <ProjectEditorPage /> },
           { path: 'projects/new', element: <ProjectEditorPage /> },
           { path: 'search', element: <SearchHubPage /> },
+          { path: 'instructors/:id', element: <InstructorProfileViewPage /> },
           { path: 'internships', element: <InternshipExplorerPage /> },
           { path: 'portfolio', element: <StudentPortfolioPage /> },
           { path: 'favorites', element: <FavoritesPage /> },
@@ -119,6 +120,7 @@ export const router = createBrowserRouter([
           { path: 'internships', element: <InternshipManagementPage /> },
           { path: 'internships/:id/applicants', element: <ApplicantReviewPage /> },
           { path: 'search', element: <SearchHubPage /> },
+          { path: 'instructors/:id', element: <InstructorProfileViewPage /> },
           { path: 'favorites', element: <FavoritesPage /> },
           { path: 'communications', element: <CommunicationsPage /> },
                     { path: 'notifications', element: <NotificationCenter /> },
@@ -133,6 +135,7 @@ export const router = createBrowserRouter([
           { path: 'profile', element: <InstructorProfilePage /> },
           { path: 'courses', element: <MyCourses /> },
           { path: 'search', element: <SearchHubPage /> },
+          { path: 'instructors/:id', element: <InstructorProfileViewPage /> },
           { path: 'communications', element: <CommunicationsPage /> },
           { path: 'notifications', element: <NotificationCenter /> },
           { path: 'projects/:id/view', element: <ProjectDetailsPage /> },
@@ -149,6 +152,7 @@ export const router = createBrowserRouter([
           { path: 'courses', element: <CourseDirectoryPage /> },
           { path: 'moderation', element: <ContentModerationPage /> },
           { path: 'search', element: <SearchHubPage /> },
+          { path: 'instructors/:id', element: <InstructorProfileViewPage /> },
                     { path: 'notifications', element: <NotificationCenter /> },
           { path: 'projects/:id/view', element: <ProjectDetailsPage /> }
         ]

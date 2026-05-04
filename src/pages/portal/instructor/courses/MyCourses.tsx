@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useCourseLinks } from '../../../../hooks/useCourseLinks'
 import { useGlobalContext } from '../../../../globalContext'
 import FeedbackDialog from '../../../../components/FeedbackDialog'
+import ConfirmationDialog from '../../../../components/ConfirmationDialog'
 
 /**
  * MyCourses – allows instructors to view, link, and unlink courses.
@@ -12,6 +13,11 @@ export default function MyCourses() {
   // State management
   const [activeTab, setActiveTab] = useState<'linked' | 'available'>('linked')
   const [feedback, setFeedback] = useState<{ title: string; message: string } | null>(null)
+  const [pendingAction, setPendingAction] = useState<{
+    courseId: string
+    courseName: string
+    action: 'link' | 'unlink'
+  } | null>(null)
   
   // Get current user's ID (for demo purposes, using a fixed ID)
   const { user } = useGlobalContext()
@@ -100,13 +106,11 @@ export default function MyCourses() {
                   <div className="shrink-0">
                     {course.id !== 'bachelor-project' && (
                       <button
-                        onClick={() => {
-                          unlinkCourse(course.id)
-                          setFeedback({
-                            title: 'Course Unlinked',
-                            message: `"${course.name}" has been removed from your linked courses.`
-                          })
-                        }}
+                        onClick={() => setPendingAction({
+                          courseId: course.id,
+                          courseName: course.name,
+                          action: 'unlink'
+                        })}
                         className="px-4 py-2 text-sm font-jakarta font-semibold text-error hover:bg-error/10 rounded-lg transition-colors"
                       >
                         Unlink
@@ -155,13 +159,11 @@ export default function MyCourses() {
                   {/* Action */}
                   <div className="shrink-0">
                     <button
-                      onClick={() => {
-                        linkCourse(course.id)
-                        setFeedback({
-                          title: 'Course Linked',
-                          message: `"${course.name}" has been added to your linked courses.`
-                        })
-                      }}
+                      onClick={() => setPendingAction({
+                        courseId: course.id,
+                        courseName: course.name,
+                        action: 'link'
+                      })}
                       className="px-4 py-2 text-sm font-jakarta font-semibold bg-secondary text-on-secondary hover:bg-secondary-container rounded-lg transition-colors"
                     >
                       Link Course
@@ -195,6 +197,35 @@ export default function MyCourses() {
         message={feedback?.message ?? ''}
         actionLabel="OK"
         onClose={() => setFeedback(null)}
+      />
+      <ConfirmationDialog
+        isOpen={pendingAction !== null}
+        title={pendingAction?.action === 'link' ? 'Link Course?' : 'Unlink Course?'}
+        message={pendingAction
+          ? `This will ${pendingAction.action === 'link' ? 'link' : 'unlink'} "${pendingAction.courseName}".`
+          : ''
+        }
+        confirmLabel={pendingAction?.action === 'link' ? 'Link Course' : 'Unlink Course'}
+        cancelLabel="Cancel"
+        tone={pendingAction?.action === 'unlink' ? 'danger' : 'primary'}
+        onConfirm={() => {
+          if (!pendingAction) return
+          if (pendingAction.action === 'link') {
+            linkCourse(pendingAction.courseId)
+            setFeedback({
+              title: 'Course Linked',
+              message: `"${pendingAction.courseName}" has been added to your linked courses.`
+            })
+          } else {
+            unlinkCourse(pendingAction.courseId)
+            setFeedback({
+              title: 'Course Unlinked',
+              message: `"${pendingAction.courseName}" has been removed from your linked courses.`
+            })
+          }
+          setPendingAction(null)
+        }}
+        onCancel={() => setPendingAction(null)}
       />
     </div>
   )

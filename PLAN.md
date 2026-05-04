@@ -96,23 +96,23 @@ N/A.
 N/A.
 
 ## 10. Checklist (Acceptance Gate)
-- [ ] All affected requirements listed.
-- [ ] All affected pages/routes listed.
-- [ ] All new components have props interfaces.
-- [ ] All existing components' changes described.
-- [ ] All Context/state changes listed.
-- [ ] All new hooks listed with return types.
-- [ ] All new routes listed.
-- [ ] All edge cases listed.
-- [ ] Zero open questions remain.
+- [x] All affected requirements listed.
+- [x] All affected pages/routes listed.
+- [x] All new components have props interfaces.
+- [x] All existing components' changes described.
+- [x] All Context/state changes listed.
+- [x] All new hooks listed with return types.
+- [x] All new routes listed.
+- [x] All edge cases listed.
+- [x] Zero open questions remain.
 
 ## Workflow Checklist
 
-- [ ] 1. READ — All required documentation read.
-- [ ] 2. PLAN — PLAN.md complete; zero open questions.
+- [x] 1. READ — All required documentation read.
+- [x] 2. PLAN — PLAN.md complete; zero open questions.
 - [ ] 3. IMPLEMENT — All planned code written; TypeScript compiles.
 - [ ] 4. SELF-REVIEW — All review checklist items self-assessed as PASS.
 - [ ] 5. REVIEW — review_agent report: zero unresolved items.
 - [ ] 6. TEST — All test cases PASS; zero regressions.
-- [ ] 7. DOCUMENT — project_data/ updated.
+- [x] 7. DOCUMENT — project_data/ updated.
 - [ ] 8. DONE

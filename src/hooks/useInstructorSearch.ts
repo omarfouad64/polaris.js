@@ -6,6 +6,7 @@ export interface InstructorSearchResult {
   email: string
   biography: string
   researchInterests: string[]
+  educationBackground: string
   linkedCourses: string[]
   profilePicture: string | null
   rating?: number
@@ -19,6 +20,7 @@ const DUMMY_INSTRUCTORS: InstructorSearchResult[] = [
     email: 'fatima.mansouri@guc.edu.eg',
     biography: 'PhD in Computer Science from Cairo University. Specializing in software engineering and web technologies. Over 10 years of academic experience.',
     researchInterests: ['Web Development', 'Software Engineering', 'Cloud Computing'],
+    educationBackground: 'PhD in Computer Science (Cairo University), M.Sc. in Information Systems (AUC).',
     linkedCourses: ['course-001', 'course-002', 'bachelor-project'],
     profilePicture: null,
     rating: 4.8
@@ -29,6 +31,7 @@ const DUMMY_INSTRUCTORS: InstructorSearchResult[] = [
     email: 'ahmed.hassan@guc.edu.eg',
     biography: 'Expert in database systems and data science. Published numerous papers on distributed databases and big data analytics.',
     researchInterests: ['Database Systems', 'Data Science', 'Big Data'],
+    educationBackground: 'PhD in Computer Engineering (GUC), M.Sc. in Data Science (AUC).',
     linkedCourses: ['course-003', 'course-004', 'bachelor-project'],
     profilePicture: null,
     rating: 4.6
@@ -39,6 +42,7 @@ const DUMMY_INSTRUCTORS: InstructorSearchResult[] = [
     email: 'layla.ibrahim@guc.edu.eg',
     biography: 'Focused on cybersecurity and network security. Collaborates with industry leaders on cutting-edge security solutions.',
     researchInterests: ['Cybersecurity', 'Network Security', 'Encryption'],
+    educationBackground: 'PhD in Information Security (Cairo University), B.Sc. in Computer Science (GUC).',
     linkedCourses: ['course-005', 'bachelor-project'],
     profilePicture: null,
     rating: 4.7
@@ -49,6 +53,7 @@ const DUMMY_INSTRUCTORS: InstructorSearchResult[] = [
     email: 'mohammed.aziz@guc.edu.eg',
     biography: 'Passionate about AI and machine learning. Leads research group in deep learning applications for healthcare.',
     researchInterests: ['Artificial Intelligence', 'Machine Learning', 'Deep Learning'],
+    educationBackground: 'PhD in Artificial Intelligence (MIT), M.Sc. in Software Engineering (GUC).',
     linkedCourses: ['course-006', 'bachelor-project'],
     profilePicture: null,
     rating: 4.9
@@ -59,6 +64,7 @@ const DUMMY_INSTRUCTORS: InstructorSearchResult[] = [
     email: 'sarah.rashid@guc.edu.eg',
     biography: 'Specializes in mobile app development and user experience design. Industry experience with leading tech companies.',
     researchInterests: ['Mobile Development', 'UX Design', 'Human-Computer Interaction'],
+    educationBackground: 'PhD in HCI (TU Munich), B.Sc. in Computer Engineering (GUC).',
     linkedCourses: ['course-001', 'bachelor-project'],
     profilePicture: null,
     rating: 4.5

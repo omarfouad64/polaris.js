@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import useStudentProjects, { type ProjectData, type ThesisDraft } from '../scripts/useStudentProjects';
-import useCourses from '../../../../../hooks/useCourses';
 import CourseSelector from './CourseSelector';
 import LanguageMultiSelect from './LanguageMultiSelect';
 import VideoUploader from './VideoUploader';
@@ -27,7 +26,6 @@ export default function ProjectEditor({
   onCancel,
 }: ProjectEditorProps) {
   const { getProjectById, createProject, updateProject } = useStudentProjects();
-  const { getCourseById } = useCourses();
 
   const isEditMode = !!projectId && projectId !== 'new';
   const existingProject = isEditMode ? getProjectById(projectId) : undefined;
@@ -43,6 +41,8 @@ export default function ProjectEditor({
     demoVideoUrl: existingProject?.demoVideoUrl || '',
     thesisDrafts: existingProject?.thesisDrafts || [],
     isPublic: existingProject?.isPublic ?? true,
+    status: existingProject?.status ?? 'active',
+    flagReason: existingProject?.flagReason,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -164,10 +164,6 @@ export default function ProjectEditor({
 
     await saveProject();
   };
-
-  const courseName = formData.course
-    ? getCourseById(formData.course)?.name || ''
-    : '';
 
   return (
     <form

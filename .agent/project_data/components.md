@@ -36,6 +36,21 @@ This document lists and describes the reusable UI components implemented for the
 - **Description:** A layout-level component that guards routes based on authentication status.
 - **Functionality:** Redirects unauthenticated users to `/auth`.
 
+### 5. ConfirmationDialog
+- **Path:** `src/components/ConfirmationDialog.tsx`
+- **Description:** Modal dialog for confirming sensitive or irreversible actions.
+- **Key Features:**
+    - Configurable title, message, and action labels.
+    - Primary and danger confirm tones.
+    - Uses the shared Button component.
+
+### 6. FeedbackDialog
+- **Path:** `src/components/FeedbackDialog.tsx`
+- **Description:** Modal dialog for success or informational feedback with a single dismiss action.
+- **Key Features:**
+    - Configurable title and message.
+    - Uses the shared Button component.
+
 ---
 
 ## Page-Specific Components

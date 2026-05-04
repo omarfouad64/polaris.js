@@ -118,3 +118,11 @@ This document lists and describes the custom React hooks implemented to manage s
 - **Key Features:**
     - State: `internships`, `applications`, `completedInternships`, search/filter state
     - Functions: `applyForInternship`, `hasApplied`, filter/sort setters
+
+### 13. Global - usePortfolioSearch
+- **Source:** `src/hooks/usePortfolioSearch.ts`
+- **Purpose:** Provides portfolio search and filter functionality with dummy portfolio data.
+- **Key Features:**
+    - State: `filters`, `portfolios`, `recommendedPortfolios`
+    - Functions: `updateFilters`
+    - Metadata: `availableMajors`, `availableSkills`

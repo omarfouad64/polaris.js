@@ -141,7 +141,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
     // In a real app, this would send data to the useModeration hook/API
     addNotification({
       title: 'Appeal Submitted',
-      body: `Your appeal for "${project.title}" has been sent to the administrators.`,
+      body: `Your appeal for "${project.title}" has been sent to the administrators. Message: ${message}`,
       type: 'admin'
     })
     setIsAppealModalOpen(false)
