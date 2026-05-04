@@ -7,6 +7,14 @@ export interface ThesisDraft {
   isFinal: boolean;
 }
 
+export interface ProjectTask {
+  id: string;
+  description: string;
+  assigneeId: string;
+  status: 'pending' | 'post-poned' | 'completed';
+  deadline: string;
+}
+
 export interface ProjectData {
   id: string;
   title: string;
@@ -16,6 +24,7 @@ export interface ProjectData {
   languages: string[];
   demoVideoUrl?: string;
   thesisDrafts: ThesisDraft[];
+  tasks: ProjectTask[];
   createdDate: string;
   updatedDate: string;
   isPublic: boolean;
@@ -33,6 +42,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
     languages: ['TypeScript', 'React', 'Node.js', 'MongoDB'],
     demoVideoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     thesisDrafts: [],
+    tasks: [],
     createdDate: '2026-01-15',
     updatedDate: '2026-02-10',
     isPublic: true,
@@ -47,6 +57,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
     languages: ['Python', 'TensorFlow', 'Scikit-learn'],
     demoVideoUrl: 'https://www.youtube.com/embed/jNQXAC9IVRw',
     thesisDrafts: [],
+    tasks: [],
     createdDate: '2025-09-01',
     updatedDate: '2026-03-20',
     isPublic: true,
@@ -62,6 +73,7 @@ const DUMMY_PROJECTS: ProjectData[] = [
     languages: ['React Native', 'Firebase', 'JavaScript'],
     demoVideoUrl: undefined,
     thesisDrafts: [],
+    tasks: [],
     createdDate: '2026-02-01',
     updatedDate: '2026-02-28',
     isPublic: false,

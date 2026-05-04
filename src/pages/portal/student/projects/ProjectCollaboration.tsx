@@ -1,5 +1,9 @@
+import { useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { useProjectInvitations } from '../../../../hooks/useProjectInvitations'
+import useStudentProjects, { type ProjectData, type ProjectTask } from './scripts/useStudentProjects'
 import ProjectCollaborationPage from './components/ProjectCollaborationPage'
+import ProjectTaskManager from './components/ProjectTaskManager'
 
 /**
  * ProjectCollaboration – full page for project collaboration management.
@@ -7,13 +11,21 @@ import ProjectCollaborationPage from './components/ProjectCollaborationPage'
  * Shows current collaborators and allows management of team.
  */
 export default function ProjectCollaboration() {
-  // For demo purposes, using hardcoded project and user IDs
-  const projectId = 'proj-001'
-  const projectTitle = 'E-Commerce Platform'
-  const currentUserId = 'student-001'
-  const isOwner = true
+  const { id } = useParams<{ id: string }>()
+  const { getProjectById, updateProject } = useStudentProjects()
+  
+  const projectId = id || 'proj-001'
+  const project = getProjectById(projectId)
+  const projectTitle = project?.title || 'E-Commerce Platform'
+  const currentUserId = 'student-001' // In a real app, this would come from auth context
+  const isOwner = true // For demo, assuming the student is the owner
 
+  const [activeTab, setActiveTab] = useState<'team' | 'tasks'>('team')
   const { collaborators } = useProjectInvitations(projectId, currentUserId)
+
+  const handleTasksChange = (tasks: ProjectTask[]) => {
+    updateProject(projectId, { tasks })
+  }
 
   return (
     <div className="min-h-screen bg-background p-6 lg:p-8">
@@ -30,22 +42,46 @@ export default function ProjectCollaboration() {
       {/* Tabs */}
       <div className="mb-8 border-b border-surface-container-high">
         <div className="flex gap-4">
-          <button className="px-4 py-3 font-jakarta font-semibold text-sm border-b-2 border-primary text-primary">
+          <button
+            onClick={() => setActiveTab('team')}
+            className={`px-4 py-3 font-jakarta font-semibold text-sm border-b-2 transition-all ${
+              activeTab === 'team'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
             Collaborators
           </button>
-          <button className="px-4 py-3 font-jakarta font-semibold text-sm border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-colors">
-            Pending Invitations
+          <button
+            onClick={() => setActiveTab('tasks')}
+            className={`px-4 py-3 font-jakarta font-semibold text-sm border-b-2 transition-all ${
+              activeTab === 'tasks'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            Project Tasks
           </button>
         </div>
       </div>
 
       {/* Collaboration Content */}
-      <ProjectCollaborationPage
-        projectId={projectId}
-        projectTitle={projectTitle}
-        currentUserId={currentUserId}
-        isOwner={isOwner}
-      />
+      {activeTab === 'team' ? (
+        <ProjectCollaborationPage
+          projectId={projectId}
+          projectTitle={projectTitle}
+          currentUserId={currentUserId}
+          isOwner={isOwner}
+        />
+      ) : (
+        <ProjectTaskManager
+          projectId={projectId}
+          tasks={project?.tasks || []}
+          onTasksChange={handleTasksChange}
+          isOwner={isOwner}
+          currentUserId={currentUserId}
+        />
+      )}
 
       {/* Stats Card */}
       <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4">
