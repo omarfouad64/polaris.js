@@ -24,7 +24,7 @@ export default function ProjectCollaboration() {
   const isInstructor = user?.role === 'Course Instructor'
 
   const [activeTab, setActiveTab] = useState<'team' | 'tasks'>('team')
-  const { collaborators } = useProjectInvitations(projectId, currentUserId)
+  const { collaborators = [] } = useProjectInvitations(projectId, currentUserId)
 
   const handleTasksChange = (tasks: ProjectTask[]) => {
     updateProject(projectId, { tasks })

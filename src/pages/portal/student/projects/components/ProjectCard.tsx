@@ -31,6 +31,7 @@ interface ProjectCardProps {
   onDelete: (id: string) => void;
   onView: (id: string) => void;
   onToggleVisibility?: (id: string) => void;
+  onTasks?: (id: string) => void;
 }
 
 export default function ProjectCard({
@@ -47,6 +48,7 @@ export default function ProjectCard({
   onDelete,
   onView,
   onToggleVisibility,
+  onTasks,
 }: ProjectCardProps) {
   const { getCourseById } = useCourses();
 
@@ -64,9 +66,8 @@ export default function ProjectCard({
 
   return (
     <div
-      className={`bg-surface-container-lowest rounded-xl p-6 border transition-all duration-300 cursor-pointer group relative flex flex-col h-full ${
-        isFlagged ? 'border-error/40 bg-error/5' : 'border-outline-variant/40 hover:shadow-raised hover:scale-[1.01]'
-      }`}
+      className={`bg-surface-container-lowest rounded-xl p-6 border transition-all duration-300 cursor-pointer group relative flex flex-col h-full ${isFlagged ? 'border-error/40 bg-error/5' : 'border-outline-variant/40 hover:shadow-raised hover:scale-[1.01]'
+        }`}
       onClick={() => onView(id)}
     >
       {/* Header */}
@@ -89,11 +90,10 @@ export default function ProjectCard({
               {isPublic !== undefined && !isFlagged && (
                 <button
                   onClick={() => onToggleVisibility?.(id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-jakarta font-semibold transition-all duration-200 border ${
-                    isPublic
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-jakarta font-semibold transition-all duration-200 border ${isPublic
                       ? 'bg-secondary/10 text-secondary border-secondary/20 hover:bg-secondary/20'
                       : 'bg-surface-container text-on-surface-variant border-outline-variant/40 hover:bg-surface-container-high'
-                  }`}
+                    }`}
                   aria-label={isPublic ? 'Make private' : 'Make public'}
                   title={isPublic ? 'Public — visible on portfolio' : 'Private — hidden from portfolio'}
                 >
@@ -154,22 +154,33 @@ export default function ProjectCard({
       )}
 
       {!isFlagged && (
-        <div className="flex gap-2 mt-auto pt-4 border-t border-outline-variant/40" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={() => onEdit(id)}
-            className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/10 shadow-sm flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined text-lg">edit</span>
-            Edit
-          </button>
-
-          <button
-            onClick={() => onDelete(id)}
-            className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg border border-error/30 text-error hover:bg-error hover:text-on-error transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined text-lg">delete</span>
-            Delete
-          </button>
+        <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-outline-variant/40" onClick={(e) => e.stopPropagation()}>
+          {/* Tasks shortcut (Req 32) */}
+          {onTasks && (
+            <button
+              onClick={() => onTasks(id)}
+              className="w-full text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-primary/8 text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/20 shadow-sm flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-lg">task</span>
+              Task Board
+            </button>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => onEdit(id)}
+              className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/10 shadow-sm flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-lg">edit</span>
+              Edit
+            </button>
+            <button
+              onClick={() => onDelete(id)}
+              className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg border border-error/30 text-error hover:bg-error hover:text-on-error transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-lg">delete</span>
+              Delete
+            </button>
+          </div>
         </div>
       )}
     </div>
