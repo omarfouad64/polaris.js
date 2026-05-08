@@ -27,7 +27,7 @@ export default function FeedbackDialog({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-on-background/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-on-background/20 backdrop-blur-[2px] z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-surface-container-lowest rounded-xl p-8 w-full max-w-lg shadow-floating text-center">
         <h2 className="text-2xl font-jakarta font-semibold text-on-background mb-4">
           {title}

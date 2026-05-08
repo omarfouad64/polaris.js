@@ -86,6 +86,20 @@ export default function ProjectCard({
                 )}
               </div>
             </div>
+            {onToggleVisibility && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onToggleVisibility(id)
+                }}
+                className="p-1.5 rounded-lg hover:bg-primary/10 text-on-surface-variant hover:text-primary transition-all duration-200"
+                title={isPublic ? 'Project is Public' : 'Project is Private'}
+              >
+                <span className={`material-symbols-outlined text-[20px] ${isPublic ? 'fill-1' : ''}`}>
+                  {isPublic ? 'visibility' : 'visibility_off'}
+                </span>
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-jakarta font-bold">

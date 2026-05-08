@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { CompanyProfile } from '../../../../../types'
 
 const defaultProfile: CompanyProfile = {
@@ -17,6 +17,8 @@ const defaultProfile: CompanyProfile = {
   ]
 }
 
+const STORAGE_KEY = 'polaris_company_profile'
+
 /**
  * useCompanyProfile — provides company profile data and CRUD operations.
  *
@@ -29,7 +31,22 @@ export default function useCompanyProfile(): {
   uploadDocument: (file: File) => void
   removeDocument: (docId: string) => void
 } {
-  const [profile, setProfile] = useState<CompanyProfile>(defaultProfile)
+  const [profile, setProfile] = useState<CompanyProfile>(() => {
+    if (typeof window === 'undefined') return defaultProfile
+    const saved = window.localStorage.getItem(STORAGE_KEY)
+    if (!saved) return defaultProfile
+    try {
+      return JSON.parse(saved)
+    } catch {
+      return defaultProfile
+    }
+  })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
+    }
+  }, [profile])
 
   const updateProfile = (updates: Partial<CompanyProfile>): void => {
     setProfile(prev => ({ ...prev, ...updates }))

@@ -9,6 +9,7 @@ interface ProjectTaskSectionProps {
   projectId: string;
   tasks: ProjectTask[];
   currentUserId?: string;
+  readOnly?: boolean;
 }
 
 /**
@@ -18,6 +19,7 @@ export default function ProjectTaskSection({
   projectId,
   tasks = [],
   currentUserId = 'viewer',
+  readOnly = false,
 }: ProjectTaskSectionProps) {
   const { user } = useGlobalContext();
   const isInstructor = user?.role === 'Course Instructor';
@@ -161,7 +163,7 @@ export default function ProjectTaskSection({
                   <div className="bg-primary/5 rounded-xl p-3 border border-primary/10">
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-[10px] font-jakarta font-bold text-primary uppercase tracking-wider">Instructor Feedback</span>
-                      {isInstructor && (
+                      {isInstructor && !readOnly && (
                         <div className="flex gap-1">
                           <button 
                             onClick={() => handleEditFeedback(task, feedback)}
@@ -183,7 +185,7 @@ export default function ProjectTaskSection({
                     </p>
                   </div>
                 ) : (
-                  isInstructor && (
+                  isInstructor && !readOnly && (
                     <button
                       onClick={() => handleAddFeedback(task)}
                       className="w-full py-2 border border-dashed border-outline-variant hover:border-primary/40 hover:bg-primary/5 rounded-xl text-xs font-jakarta font-bold text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-2"

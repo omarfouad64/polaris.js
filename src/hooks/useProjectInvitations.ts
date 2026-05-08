@@ -103,47 +103,39 @@ export function useProjectInvitations(projectId: string, currentUserId: string, 
   )
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Search collaborators/instructors by name (first or last) or email
-  const searchCollaborators = useCallback((query: string): CollaborationSearchResult[] => {
+  // Search collaborators/instructors with role filter
+  const searchCollaborators = useCallback((query: string, roleFilter?: 'Student' | 'Course Instructor'): CollaborationSearchResult[] => {
     if (!query.trim()) return []
-
     const lowerQuery = query.toLowerCase()
+    
     return DUMMY_SEARCHABLE_USERS.filter(user => {
-      const isMatch =
+      const matchesSearch =
         user.name.toLowerCase().includes(lowerQuery) ||
         user.email.toLowerCase().includes(lowerQuery)
-
-      // Mark if already a collaborator
+      
+      const matchesRole = !roleFilter || user.role === roleFilter
+      
       const isAlready = collaborators.some(c => c.email === user.email)
-
-      return isMatch && !isAlready
+      
+      return matchesSearch && matchesRole && !isAlready
     }).map(user => ({
       ...user,
       isAlreadyCollaborator: false
     }))
   }, [collaborators])
 
-  // Send invitation to a user
+  // Send invitation logic with better state management
   const sendInvitation = useCallback((userId: string, userEmail: string, userName: string) => {
-    // Check if already collaborator
-    const existingCollaborator = collaborators.find(c => c.email === userEmail)
-    if (existingCollaborator) {
-      console.warn('User is already a collaborator')
-      return { success: false, message: 'User is already a collaborator' }
-    }
-
-    // Check if pending invitation already exists
-    const existingInvitation = pendingInvitations.find(
-      inv => inv.recipientEmail === userEmail && inv.projectId === projectId
-    )
-    if (existingInvitation) {
-      console.warn('Invitation already sent to this user')
-      return { success: false, message: 'Invitation already sent to this user' }
-    }
-
-    // Instructor Validation (Req 3: Instructor eligibility)
     const userToInvite = DUMMY_SEARCHABLE_USERS.find(u => u.userId === userId)
-    if (userToInvite?.role === 'Course Instructor') {
+    if (!userToInvite) return { success: false, message: 'User not found' }
+
+    // Check if already collaborator or pending
+    if (collaborators.some(c => c.email === userEmail)) {
+      return { success: false, message: 'User is already on the team' }
+    }
+
+    // Instructor Validation
+    if (userToInvite.role === 'Course Instructor') {
       if (!projectCourseId || !userToInvite.teachingCourses?.includes(projectCourseId)) {
         return { 
           success: false, 
@@ -152,96 +144,40 @@ export function useProjectInvitations(projectId: string, currentUserId: string, 
       }
     }
 
-    // Add as pending collaborator
-    const newCollaborator: ProjectCollaborator = {
+    const role: ProjectCollaborator['role'] = userToInvite.role === 'Course Instructor' ? 'instructor' : 'collaborator'
+    
+    const newMember: ProjectCollaborator = {
       collaboratorId: userId,
       name: userName,
       email: userEmail,
-      role: userToInvite?.role === 'Course Instructor' ? 'instructor' : 'collaborator',
+      role,
       invitationStatus: 'pending',
       invitedAt: new Date().toISOString()
     }
 
-    setCollaborators(prev => [...prev, newCollaborator])
-
-    // Create invitation record
-    const newInvitation: ProjectInvitation = {
-      id: `inv-${Date.now()}`,
-      projectId,
-      projectTitle: 'Current Project',
-      senderName: 'You',
-      senderId: currentUserId,
-      recipientEmail: userEmail,
-      recipientName: userName,
-      invitationStatus: 'pending',
-      createdAt: new Date().toISOString()
-    }
-
-    setPendingInvitations(prev => [...prev, newInvitation])
+    setCollaborators(prev => [...prev, newMember])
     return { success: true }
-  }, [projectId, currentUserId, projectCourseId, collaborators, pendingInvitations])
+  }, [collaborators, projectCourseId])
 
-  // Cancel invitation (unsend)
-  const cancelInvitation = useCallback((collaboratorEmail: string) => {
-    setCollaborators(prev =>
-      prev.filter(c => c.email !== collaboratorEmail || c.invitationStatus === 'accepted')
-    )
+  // Remove collaborator (revoking invitations or removing accepted members)
+  const removeCollaborator = useCallback((email: string) => {
+    const member = collaborators.find(c => c.email === email)
+    if (!member) return false
+    if (member.role === 'owner') return false // Cannot remove owner
 
-    setPendingInvitations(prev =>
-      prev.filter(inv => inv.recipientEmail !== collaboratorEmail)
-    )
-  }, [])
-
-  // Accept invitation (from recipient side)
-  const acceptInvitation = useCallback((collaboratorEmail: string) => {
-    setCollaborators(prev =>
-      prev.map(c =>
-        c.email === collaboratorEmail
-          ? { ...c, invitationStatus: 'accepted', respondedAt: new Date().toISOString() }
-          : c
-      )
-    )
-
-    setPendingInvitations(prev =>
-      prev.filter(inv => inv.recipientEmail !== collaboratorEmail)
-    )
-  }, [])
-
-  // Reject invitation (from recipient side)
-  const rejectInvitation = useCallback((collaboratorEmail: string) => {
-    setCollaborators(prev =>
-      prev.map(c => 
-        c.email === collaboratorEmail 
-          ? { ...c, invitationStatus: 'rejected', respondedAt: new Date().toISOString() } 
-          : c
-      )
-    )
-
-    setPendingInvitations(prev =>
-      prev.filter(inv => inv.recipientEmail !== collaboratorEmail)
-    )
-  }, [])
-
-  // Remove collaborator (owner only)
-  const removeCollaborator = useCallback((collaboratorEmail: string) => {
-    // Cannot remove project owner
-    const collaborator = collaborators.find(c => c.email === collaboratorEmail)
-    if (collaborator?.role === 'owner') {
-      console.warn('Cannot remove project owner')
-      return false
-    }
-
-    // Req 4: Prevent removing users whose invitation is not yet accepted
-    if (collaborator?.invitationStatus === 'pending') {
-      console.warn('Use cancelInvitation instead for pending users')
-      return false
-    }
-
-    setCollaborators(prev =>
-      prev.filter(c => c.email !== collaboratorEmail)
-    )
+    setCollaborators(prev => prev.filter(c => c.email !== email))
     return true
   }, [collaborators])
+
+  // Get suggested instructors (Req: Display all assigned course instructors even if not yet invited)
+  const suggestedInstructors = useMemo(() => {
+    if (!projectCourseId) return []
+    return DUMMY_SEARCHABLE_USERS.filter(user => 
+      user.role === 'Course Instructor' && 
+      user.teachingCourses?.includes(projectCourseId) &&
+      !collaborators.some(c => c.email === user.email)
+    )
+  }, [projectCourseId, collaborators])
 
   // Get collaborators sorted by status
   const sortedCollaborators = useMemo(() => {
@@ -268,18 +204,41 @@ export function useProjectInvitations(projectId: string, currentUserId: string, 
     instructors: collaborators.filter(c => c.role === 'instructor').length
   }), [collaborators])
 
+  // Accept invitation (from recipient side)
+  const acceptInvitation = useCallback((collaboratorEmail: string) => {
+    setCollaborators(prev =>
+      prev.map(c =>
+        c.email === collaboratorEmail
+          ? { ...c, invitationStatus: 'accepted', respondedAt: new Date().toISOString() }
+          : c
+      )
+    )
+  }, [])
+
+  // Reject invitation (from recipient side)
+  const rejectInvitation = useCallback((collaboratorEmail: string) => {
+    setCollaborators(prev =>
+      prev.map(c => 
+        c.email === collaboratorEmail 
+          ? { ...c, invitationStatus: 'rejected', respondedAt: new Date().toISOString() } 
+          : c
+      )
+    )
+  }, [])
+
   return {
     // State
     collaborators: sortedCollaborators,
     pendingInvitations,
     searchQuery,
     stats,
+    suggestedInstructors,
 
     // Actions
     setSearchQuery,
     searchCollaborators,
     sendInvitation,
-    cancelInvitation,
+    cancelInvitation: removeCollaborator,
     acceptInvitation,
     rejectInvitation,
     removeCollaborator

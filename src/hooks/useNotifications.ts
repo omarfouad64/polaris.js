@@ -14,11 +14,9 @@ const dummyNotifications: Notification[] = [
   { id: 'n-7', type: 'message', title: 'New Message', body: 'Dr. Mona Farid updated the project feedback.', timestamp: '2026-04-24T15:45:00Z', read: true }
 ]
 
-/**
- * useNotifications — provides notification data and management operations.
- *
- * @returns notifications list, mark-read functions, and unread count.
- */
+// ── Shared module-level state ──────────────────────────────────────────────
+type Listener = () => void
+
 const loadNotifications = (): Notification[] => {
   if (typeof window === 'undefined') return dummyNotifications
   const saved = window.localStorage.getItem(STORAGE_KEY)
@@ -31,41 +29,51 @@ const loadNotifications = (): Notification[] => {
   }
 }
 
+const loadMuted = (): boolean => {
+  if (typeof window === 'undefined') return false
+  return window.localStorage.getItem(MUTE_KEY) === 'true'
+}
+
+let sharedNotifications: Notification[] = loadNotifications()
+let sharedMuted: boolean = loadMuted()
+const listeners: Set<Listener> = new Set()
+
+function emit() {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sharedNotifications))
+    window.localStorage.setItem(MUTE_KEY, String(sharedMuted))
+  }
+  listeners.forEach(fn => fn())
+}
+
 export default function useNotifications() {
-  const [notifications, setNotifications] = useState<Notification[]>(loadNotifications)
-  const [notificationsMuted, setNotificationsMuted] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return window.localStorage.getItem(MUTE_KEY) === 'true'
-  })
+  const [, setTick] = useState(0)
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications))
-  }, [notifications])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(MUTE_KEY, String(notificationsMuted))
-  }, [notificationsMuted])
-
-  const toggleMuteAll = useCallback((): void => {
-    setNotificationsMuted(prev => !prev)
+    const listener = () => setTick(t => t + 1)
+    listeners.add(listener)
+    return () => { listeners.delete(listener) }
   }, [])
+
+  const notifications = sharedNotifications
+  const notificationsMuted = sharedMuted
 
   const unreadCount = useMemo(() =>
     notifications.filter(n => !n.read).length,
     [notifications]
   )
 
-  const toggleRead = (id: string): void => {
-    setNotifications(prev => prev.map(n =>
+  const toggleRead = useCallback((id: string): void => {
+    sharedNotifications = sharedNotifications.map(n =>
       n.id === id ? { ...n, read: !n.read } : n
-    ))
-  }
+    )
+    emit()
+  }, [])
 
-  const markAllRead = (): void => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-  }
+  const markAllRead = useCallback((): void => {
+    sharedNotifications = sharedNotifications.map(n => ({ ...n, read: true }))
+    emit()
+  }, [])
 
   const addNotification = useCallback(
     (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
@@ -75,10 +83,25 @@ export default function useNotifications() {
         timestamp: new Date().toISOString(),
         read: false
       }
-      setNotifications(prev => [newNotification, ...prev])
+      sharedNotifications = [newNotification, ...sharedNotifications]
+      emit()
     },
     []
   )
 
-  return { notifications, unreadCount, toggleRead, markAllRead, addNotification, notificationsMuted, toggleMuteAll }
+  const toggleMuteAll = useCallback((): void => {
+    sharedMuted = !sharedMuted
+    emit()
+  }, [])
+
+  return { 
+    notifications, 
+    unreadCount, 
+    toggleRead, 
+    markAllRead, 
+    addNotification, 
+    notificationsMuted, 
+    toggleMuteAll 
+  }
 }
+

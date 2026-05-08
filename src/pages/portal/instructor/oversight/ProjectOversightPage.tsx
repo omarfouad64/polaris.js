@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGlobalContext } from '../../../../globalContext'
-import useStudentProjects from '../../student/projects/scripts/useStudentProjects'
+import useStudentProjects, { type ProjectTask } from '../../student/projects/scripts/useStudentProjects'
 import { useInstructorFeedback } from '../../../../hooks/useInstructorFeedback'
 import { useProjectInvitations } from '../../../../hooks/useProjectInvitations'
 import useNotifications from '../../../../hooks/useNotifications'
 import Button from '../../../../components/Button'
+import FeedbackDialog from '../../../../components/FeedbackDialog'
+import ProjectTaskSection from '../../shared/projects/components/ProjectTaskSection'
 
 /**
  * ProjectOversightPage — main dashboard for instructors to review and evaluate projects.
@@ -105,6 +107,7 @@ export default function ProjectOversightPage() {
                 <ProjectEvaluationSection 
                   projectId={selectedProject.id} 
                   projectTitle={selectedProject.title}
+                  tasks={selectedProject.tasks || []}
                   instructorId={user?.username || 'instructor-001'}
                   instructorName={user?.username || 'Dr. Fatima Al-Mansouri'}
                 />
@@ -125,9 +128,10 @@ export default function ProjectOversightPage() {
 /**
  * ProjectEvaluationSection — Handles rating and feedback for a specific project.
  */
-function ProjectEvaluationSection({ projectId, projectTitle, instructorId, instructorName }: { 
+function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId, instructorName }: { 
   projectId: string, 
   projectTitle: string,
+  tasks: ProjectTask[],
   instructorId: string, 
   instructorName: string 
 }) {
@@ -149,6 +153,8 @@ function ProjectEvaluationSection({ projectId, projectTitle, instructorId, instr
   const [ratingComment, setRatingComment] = useState('')
   const [editingFeedbackId, setEditingFeedbackId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState('')
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   const handleAddFeedback = () => {
     if (!feedbackText.trim()) return
@@ -159,6 +165,8 @@ function ProjectEvaluationSection({ projectId, projectTitle, instructorId, instr
       body: `${instructorName} left feedback on your project "${projectTitle}"`
     })
     setFeedbackText('')
+    setSuccessMessage('Project feedback has been posted successfully.')
+    setShowSuccessDialog(true)
   }
 
   const handleRate = () => {
@@ -171,6 +179,8 @@ function ProjectEvaluationSection({ projectId, projectTitle, instructorId, instr
     })
     setRatingValue(0)
     setRatingComment('')
+    setSuccessMessage(`Project rated ${ratingValue}/5 stars successfully.`)
+    setShowSuccessDialog(true)
   }
 
   return (
@@ -229,6 +239,22 @@ function ProjectEvaluationSection({ projectId, projectTitle, instructorId, instr
             </Button>
           </div>
         </div>
+      </section>
+
+      {/* Task Feedback Section */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <span className="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center font-bold">
+            <span className="material-symbols-outlined">assignment</span>
+          </span>
+          <h3 className="text-xl font-jakarta font-bold text-on-surface">Task-Specific Feedback</h3>
+        </div>
+        <ProjectTaskSection 
+          projectId={projectId}
+          tasks={tasks}
+          currentUserId={instructorId}
+          readOnly={false}
+        />
       </section>
 
       {/* Feedback Section */}
@@ -337,6 +363,14 @@ function ProjectEvaluationSection({ projectId, projectTitle, instructorId, instr
           </div>
         </div>
       </section>
+
+      <FeedbackDialog
+        isOpen={showSuccessDialog}
+        title="Success"
+        message={successMessage}
+        actionLabel="Excellent"
+        onClose={() => setShowSuccessDialog(false)}
+      />
     </div>
   )
 }

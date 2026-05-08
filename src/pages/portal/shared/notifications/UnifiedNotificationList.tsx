@@ -59,23 +59,21 @@ export default function UnifiedNotificationList(): React.JSX.Element {
       <div className="flex items-center justify-between gap-3">
         {/* Mute All toggle (Req 91) */}
         <button
-          id="btn-mute-all-notifications"
           onClick={toggleMuteAll}
           className={`flex items-center gap-2.5 px-4 py-2 rounded-xl border font-jakarta font-semibold text-sm transition-all duration-200 ${
             notificationsMuted
-              ? 'bg-error/10 text-error border-error/30 hover:bg-error/20'
+              ? 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20'
               : 'bg-surface-container-high text-on-surface-variant border-outline-variant/30 hover:bg-surface-container hover:text-on-surface'
           }`}
           aria-pressed={notificationsMuted}
-          aria-label={notificationsMuted ? 'Turn notifications on' : 'Turn notifications off'}
         >
           <span
             className="material-symbols-outlined text-[18px]"
             style={{ fontVariationSettings: notificationsMuted ? "'FILL' 1" : "'FILL' 0" }}
           >
-            {notificationsMuted ? 'notifications_off' : 'notifications'}
+            {notificationsMuted ? 'volume_off' : 'notifications'}
           </span>
-          {notificationsMuted ? 'Notifications Off' : 'Notifications On'}
+          {notificationsMuted ? 'Notifications Muted' : 'Mute All'}
         </button>
 
         {/* Mark all read */}

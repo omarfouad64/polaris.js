@@ -12,12 +12,16 @@ export default function AdminLayout() {
     { name: 'Moderation', path: '/portal/administrator/moderation' }
   ]
 
+  const isDashboard = location.pathname === '/portal/administrator'
+
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="font-jakarta text-4xl font-extrabold text-on-surface">Admin Control Panel</h1>
-        <p className="font-lexend text-on-surface-variant">Platform-wide dashboard for monitoring usage and managing ecosystem entities.</p>
-      </div>
+      {isDashboard && (
+        <div className="flex flex-col gap-2">
+          <h1 className="font-jakarta text-4xl font-extrabold text-on-surface">Admin Control Panel</h1>
+          <p className="font-lexend text-on-surface-variant">Platform-wide dashboard for monitoring usage and managing ecosystem entities.</p>
+        </div>
+      )}
 
       {/* Admin Sub-Tabs */}
       {showTabs && (

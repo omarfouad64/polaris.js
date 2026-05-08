@@ -294,10 +294,12 @@ export default function ProjectTaskManager({
                   </label>
                   <input
                     type="date"
+                    min={new Date().toISOString().split('T')[0]}
                     value={isAddingTask ? taskForm.deadline : tasks.find(t => t.id === editingTaskId)?.deadline}
                     onChange={(e) => isAddingTask ? setTaskForm({ ...taskForm, deadline: e.target.value }) : handleUpdateTask(editingTaskId!, { deadline: e.target.value })}
                     className="w-full bg-surface-container-low border border-surface-container-high rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
+                  <p className="text-[10px] text-on-surface-variant mt-1">Deadline must be today or later.</p>
                 </div>
               </div>
             </div>
@@ -314,7 +316,15 @@ export default function ProjectTaskManager({
               </Button>
               <Button
                 variant="primary"
-                onClick={isAddingTask ? handleAddTask : () => setEditingTaskId(null)}
+                onClick={() => {
+                  const currentDeadline = isAddingTask ? taskForm.deadline : tasks.find(t => t.id === editingTaskId)?.deadline;
+                  const today = new Date().toISOString().split('T')[0];
+                  if (currentDeadline && currentDeadline < today) {
+                    alert('Deadline cannot be in the past.');
+                    return;
+                  }
+                  isAddingTask ? handleAddTask() : setEditingTaskId(null);
+                }}
                 disabled={isAddingTask && (!taskForm.description || !taskForm.assigneeId || !taskForm.deadline)}
               >
                 {isAddingTask ? 'Create Task' : 'Done'}

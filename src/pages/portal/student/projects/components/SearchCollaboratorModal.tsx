@@ -9,6 +9,7 @@ interface SearchCollaboratorModalProps {
   isOpen: boolean
   onClose: () => void
   onInvitationSent: () => void
+  roleFilter?: 'Student' | 'Course Instructor'
 }
 
 /**
@@ -21,7 +22,8 @@ export default function SearchCollaboratorModal({
   projectCourseId,
   isOpen,
   onClose,
-  onInvitationSent
+  onInvitationSent,
+  roleFilter
 }: SearchCollaboratorModalProps) {
   const [searchInputValue, setSearchInputValue] = useState('')
   const [selectedUser, setSelectedUser] = useState<CollaborationSearchResult | null>(null)
@@ -37,8 +39,8 @@ export default function SearchCollaboratorModal({
   // Get search results
   const searchResults = useMemo(() => {
     if (!searchInputValue.trim()) return []
-    return searchCollaborators(searchInputValue)
-  }, [searchInputValue, searchCollaborators])
+    return searchCollaborators(searchInputValue, roleFilter)
+  }, [searchInputValue, searchCollaborators, roleFilter])
 
   // Handler: Send invitation
   const handleSendInvitation = () => {
@@ -68,7 +70,7 @@ export default function SearchCollaboratorModal({
         {/* Modal Header */}
         <div className="border-b border-surface-container-high p-6 flex justify-between items-center bg-surface-container-low/30">
           <h2 className="text-xl font-jakarta font-bold text-on-surface">
-            Invite Team Members
+            {roleFilter === 'Course Instructor' ? 'Invite Instructors' : 'Invite Collaborators'}
           </h2>
           <button
             onClick={onClose}

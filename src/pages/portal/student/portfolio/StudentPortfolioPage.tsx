@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio'
 import useStudentProjects from '../projects/scripts/useStudentProjects'
 import ProjectList from '../projects/components/ProjectList'
 import { useNavigate } from 'react-router-dom'
+import { useGlobalContext } from '../../../../globalContext'
 
 interface PortfolioSection {
   id: 'profile' | 'skills' | 'projects' | 'contact'
@@ -23,6 +24,7 @@ const PORTFOLIO_SECTIONS: PortfolioSection[] = [
  */
 export default function StudentPortfolioPage() {
   const navigate = useNavigate()
+  const { updateUser, user } = useGlobalContext()
   // State management
   const [activeSection, setActiveSection] = useState<'profile' | 'skills' | 'projects' | 'contact'>('profile')
   const [newSkill, setNewSkill] = useState('')
@@ -41,6 +43,13 @@ export default function StudentPortfolioPage() {
     removeSkill,
     updateProfilePicture
   } = useStudentPortfolio()
+
+  // Sync initial user data if available
+  useEffect(() => {
+    if (user && !portfolio.profilePicture && user.profilePicture) {
+       updateProfilePicture(user.profilePicture)
+    }
+  }, [])
 
   const { projects, deleteProject, isLoading: projectsLoading } = useStudentProjects()
 
@@ -72,6 +81,7 @@ export default function StudentPortfolioPage() {
     updateMajor(editMajor)
     updateBio(editBio)
     updateLinkedinUrl(editLinkedin)
+    // Synchronize name if we had a name edit field (currently name is static in dummy)
     setIsEditing(false)
   }
 
@@ -96,6 +106,7 @@ export default function StudentPortfolioPage() {
       reader.onload = (e) => {
         const pictureUrl = e.target?.result as string
         updateProfilePicture(pictureUrl)
+        updateUser({ profilePicture: pictureUrl })
       }
       reader.readAsDataURL(file)
     }

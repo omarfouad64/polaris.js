@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import useNotifications from '../../../../../hooks/useNotifications'
 
 interface TaskFeedbackFormProps {
   projectId: string
@@ -36,6 +37,7 @@ export default function TaskFeedbackForm({
   const [feedbackText, setFeedbackText] = useState(initialFeedback)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const { addNotification } = useNotifications()
 
   useEffect(() => {
     if (isOpen) {
@@ -53,8 +55,18 @@ export default function TaskFeedbackForm({
 
       if (feedbackId) {
         editTaskFeedback(feedbackId, feedbackText.trim())
+        addNotification({
+          type: 'feedback',
+          title: 'Task Feedback Updated',
+          body: `${instructorName} updated feedback on task: "${taskTitle}"`,
+        })
       } else {
         addTaskFeedback(taskId, instructorId, instructorName, feedbackText.trim())
+        addNotification({
+          type: 'feedback',
+          title: 'New Task Feedback',
+          body: `${instructorName} left feedback on task: "${taskTitle}"`,
+        })
       }
       
       setSubmitted(true)

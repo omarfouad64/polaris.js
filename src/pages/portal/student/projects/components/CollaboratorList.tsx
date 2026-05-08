@@ -158,7 +158,7 @@ export default function CollaboratorList({
                           </span>
                         )}
 
-                        {collaborator.invitationStatus === 'accepted' && (
+                        {collaborator.invitationStatus === 'accepted' && collaborator.role !== 'owner' && (
                           <span className="text-[10px] font-jakarta font-bold px-2 py-0.5 rounded-full bg-secondary/10 text-secondary flex items-center gap-1">
                             <span className="material-symbols-outlined text-[12px]">check_circle</span>
                             ACCEPTED
@@ -178,21 +178,12 @@ export default function CollaboratorList({
                   {/* Actions */}
                   {isOwner && collaborator.role !== 'owner' && (
                     <div className="flex flex-col gap-2 shrink-0">
-                      {collaborator.invitationStatus === 'pending' ? (
-                        <button
-                          onClick={() => handleCancelInvitation(collaborator.email)}
-                          className="px-4 py-1.5 text-xs font-jakarta font-semibold border border-error/30 text-error hover:bg-error hover:text-on-error rounded-lg transition-all whitespace-nowrap"
-                        >
-                          Cancel Invitation
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleRemoveCollaborator(collaborator.email)}
-                          className="px-4 py-1.5 text-xs font-jakarta font-semibold border border-error/30 text-error hover:bg-error hover:text-on-error rounded-lg transition-all whitespace-nowrap"
-                        >
-                          Remove Team Member
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleRemoveCollaborator(collaborator.email)}
+                        className="px-4 py-1.5 text-xs font-jakarta font-semibold border border-error/30 text-error hover:bg-error hover:text-on-error rounded-lg transition-all whitespace-nowrap"
+                      >
+                        {collaborator.invitationStatus === 'pending' ? 'Cancel Invitation' : 'Remove Team Member'}
+                      </button>
                     </div>
                   )}
                 </div>

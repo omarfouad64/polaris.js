@@ -35,7 +35,6 @@ const roleTabs: Record<UserRole, Tab[]> = {
     { name: 'Courses', path: '/portal/instructor/courses', icon: 'menu_book' },
     { name: 'Invitations', path: '/portal/instructor/invitations', icon: 'mail' },
     { name: 'Search', path: '/portal/instructor/search', icon: 'search' },
-    { name: 'Gradebook', path: '/portal/instructor/grades', icon: 'grade' },
     { name: 'Project Oversight', path: '/portal/instructor/oversight', icon: 'visibility' },
     { name: 'Communications', path: '/portal/instructor/communications', icon: 'chat' },
     { name: 'Notifications', path: '/portal/instructor/notifications', icon: 'notifications' }
@@ -114,8 +113,12 @@ export default function Sidebar(): React.JSX.Element {
 
       <div className="p-6 border-t border-surface-container bg-surface-container-low/30">
         <div className="flex items-center gap-3 mb-6 px-2">
-          <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold shadow-sm">
-            {user?.username[0].toUpperCase()}
+          <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold shadow-sm overflow-hidden">
+            {user?.profilePicture ? (
+              <img src={user.profilePicture} alt={user.username} className="w-full h-full object-cover" />
+            ) : (
+              user?.username[0].toUpperCase()
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-jakarta font-bold text-on-surface truncate">{user?.username}</p>

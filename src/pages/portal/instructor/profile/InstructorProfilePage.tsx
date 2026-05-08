@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useInstructorProfile } from '../../../../hooks/useInstructorProfile'
+import { useGlobalContext } from '../../../../globalContext'
 
 interface ProfileSection {
   id: 'about' | 'research' | 'education'
@@ -18,6 +19,7 @@ const PROFILE_SECTIONS: ProfileSection[] = [
  * Displays profile information in a tabbed interface.
  */
 export default function InstructorProfilePage() {
+  const { updateUser, user } = useGlobalContext()
   // State management
   const [activeSection, setActiveSection] = useState<'about' | 'research' | 'education'>('about')
   const [isEditing, setIsEditing] = useState(false)
@@ -36,6 +38,13 @@ export default function InstructorProfilePage() {
     removeResearchInterest,
     updateProfilePicture
   } = useInstructorProfile()
+
+  // Sync initial user data if available
+  useEffect(() => {
+    if (user && !profile.profilePicture && user.profilePicture) {
+       updateProfilePicture(user.profilePicture)
+    }
+  }, [])
 
   // Handler: Start editing mode
   const handleEditStart = () => {
@@ -72,6 +81,7 @@ export default function InstructorProfilePage() {
       reader.onload = (e) => {
         const pictureUrl = e.target?.result as string
         updateProfilePicture(pictureUrl)
+        updateUser({ profilePicture: pictureUrl })
       }
       reader.readAsDataURL(file)
     }
@@ -96,9 +106,9 @@ export default function InstructorProfilePage() {
           <div className="flex flex-col sm:flex-row gap-6 mb-8 pb-8 border-b border-surface-container-high">
             {/* Profile Picture */}
             <div className="shrink-0">
-              <div className="w-24 h-24 rounded-full bg-primary-container flex items-center justify-center text-primary text-3xl font-jakarta font-bold overflow-hidden">
-                {profile.profilePicture ? (
-                  <img src={profile.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+              <div className="w-24 h-24 rounded-full bg-primary-container text-primary text-3xl font-jakarta font-bold overflow-hidden">
+                {user?.profilePicture ? (
+                  <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <span>{profile.name.charAt(0)}</span>
                 )}
