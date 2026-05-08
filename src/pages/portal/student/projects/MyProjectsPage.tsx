@@ -47,6 +47,10 @@ export default function MyProjectsPage() {
     }
   };
 
+  const handleTasks = (id: string) => {
+    navigate(`/portal/student/projects/${id}/tasks`);
+  };
+
   // Filtering logic
   const filteredProjects = projects.filter((project) => {
     const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -95,6 +99,7 @@ export default function MyProjectsPage() {
             onDelete={handleDelete}
             onView={handleView}
             onToggleVisibility={handleToggleVisibility}
+            onTasks={handleTasks}
             isLoading={isLoading}
           />
         ) : (

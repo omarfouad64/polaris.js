@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import type { Notification } from '../types'
 
 const STORAGE_KEY = 'polaris_notifications'
+const MUTE_KEY = 'polaris_notifications_muted'
 
 const dummyNotifications: Notification[] = [
   { id: 'n-1', type: 'message', title: 'New Message', body: 'Ahmed Hassan sent you a message.', timestamp: '2026-04-30T10:30:00Z', read: false },
@@ -32,11 +33,24 @@ const loadNotifications = (): Notification[] => {
 
 export default function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>(loadNotifications)
+  const [notificationsMuted, setNotificationsMuted] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return window.localStorage.getItem(MUTE_KEY) === 'true'
+  })
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications))
   }, [notifications])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(MUTE_KEY, String(notificationsMuted))
+  }, [notificationsMuted])
+
+  const toggleMuteAll = useCallback((): void => {
+    setNotificationsMuted(prev => !prev)
+  }, [])
 
   const unreadCount = useMemo(() =>
     notifications.filter(n => !n.read).length,
@@ -66,5 +80,5 @@ export default function useNotifications() {
     []
   )
 
-  return { notifications, unreadCount, toggleRead, markAllRead, addNotification }
+  return { notifications, unreadCount, toggleRead, markAllRead, addNotification, notificationsMuted, toggleMuteAll }
 }

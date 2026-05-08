@@ -18,7 +18,8 @@ const roleTabs: Record<UserRole, Tab[]> = {
     { name: 'Internships', path: '/portal/student/internships', icon: 'work' },
     { name: 'Portfolio', path: '/portal/student/portfolio', icon: 'person' },
     { name: 'Favorites', path: '/portal/student/favorites', icon: 'favorite' },
-    { name: 'Communications', path: '/portal/student/communications', icon: 'chat' }
+    { name: 'Communications', path: '/portal/student/communications', icon: 'chat' },
+    { name: 'Notifications', path: '/portal/student/notifications', icon: 'notifications' }
   ],
   Employer: [
     { name: 'Dashboard', path: '/portal/employer', icon: 'dashboard' },
@@ -26,7 +27,8 @@ const roleTabs: Record<UserRole, Tab[]> = {
     { name: 'Internships', path: '/portal/employer/internships', icon: 'work' },
     { name: 'Search', path: '/portal/employer/search', icon: 'search' },
     { name: 'Favorites', path: '/portal/employer/favorites', icon: 'favorite' },
-    { name: 'Communications', path: '/portal/employer/communications', icon: 'chat' }
+    { name: 'Communications', path: '/portal/employer/communications', icon: 'chat' },
+    { name: 'Notifications', path: '/portal/employer/notifications', icon: 'notifications' }
   ],
   'Course Instructor': [
     { name: 'Profile', path: '/portal/instructor', icon: 'person' },
@@ -35,11 +37,13 @@ const roleTabs: Record<UserRole, Tab[]> = {
     { name: 'Search', path: '/portal/instructor/search', icon: 'search' },
     { name: 'Gradebook', path: '/portal/instructor/grades', icon: 'grade' },
     { name: 'Project Oversight', path: '/portal/instructor/oversight', icon: 'visibility' },
-    { name: 'Communications', path: '/portal/instructor/communications', icon: 'chat' }
+    { name: 'Communications', path: '/portal/instructor/communications', icon: 'chat' },
+    { name: 'Notifications', path: '/portal/instructor/notifications', icon: 'notifications' }
   ],
   Administrator: [
     { name: 'Admin Dashboard', path: '/portal/administrator', icon: 'admin_panel_settings' },
-    { name: 'Search', path: '/portal/administrator/search', icon: 'search' }
+    { name: 'Search', path: '/portal/administrator/search', icon: 'search' },
+    { name: 'Notifications', path: '/portal/administrator/notifications', icon: 'notifications' }
   ]
 }
 

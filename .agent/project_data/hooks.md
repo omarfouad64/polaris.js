@@ -126,3 +126,9 @@ This document lists and describes the custom React hooks implemented to manage s
     - State: `filters`, `portfolios`, `recommendedPortfolios`
     - Functions: `updateFilters`
     - Metadata: `availableMajors`, `availableSkills`
+
+### 14. Global - useStudentStats
+- **Source:** `src/hooks/useStudentStats.ts`
+- **Purpose:** Computes portfolio-level statistics for the logged-in student (Req 72).
+- **Key Features:**
+    - Derived State: `totalProjects`, `publicProjects`, `activeProjects`, `totalTasks`, `languageStats`, `projectsWithCollaborators`
