@@ -118,6 +118,12 @@ export default function CompanyProfilePage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
+      {/* Page Title */}
+      <div className="flex flex-col gap-2 mb-2">
+        <h1 className="font-jakarta text-4xl font-extrabold text-on-surface">Company Profile</h1>
+        <p className="font-lexend text-on-surface-variant">Manage your company's details, location, and verified documents.</p>
+      </div>
+
       {/* Profile Header */}
       <div
         className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/40 flex flex-col sm:flex-row items-start sm:items-center gap-4"
