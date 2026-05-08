@@ -55,12 +55,12 @@ export default function useStudentStats() {
   const totalProjects = projects.length
   const publicProjects = projects.filter(p => p.isPublic).length
   const activeProjects = projects.filter(p => p.status === 'active').length
-  const totalTasks = projects.reduce((acc, p) => acc + p.tasks.length, 0)
+  const totalTasks = projects.reduce((acc, p) => acc + (p.tasks?.length || 0), 0)
 
   const languageStats = useMemo((): LanguageStat[] => {
     const langMap: Record<string, number> = {}
     projects.forEach(p => {
-      p.languages.forEach(lang => {
+      (p.languages || []).forEach(lang => {
         langMap[lang] = (langMap[lang] || 0) + 1
       })
     })
