@@ -56,8 +56,7 @@ export default function StudentPortfolioPage() {
   }
 
   const handleViewProject = (id: string) => {
-    console.log('View project:', id)
-    // Future: navigate to public project view
+    navigate(`/portal/student/projects/${id}/view`)
   }
 
   // Handler: Start editing mode
