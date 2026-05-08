@@ -21,7 +21,7 @@ export default function ProjectCollaboration() {
   const isOwner = true // For demo, assuming the student is the owner
 
   const [activeTab, setActiveTab] = useState<'team' | 'tasks'>('team')
-  const { collaborators } = useProjectInvitations(projectId, currentUserId)
+  const { collaborators = [] } = useProjectInvitations(projectId, currentUserId)
 
   const handleTasksChange = (tasks: ProjectTask[]) => {
     updateProject(projectId, { tasks })

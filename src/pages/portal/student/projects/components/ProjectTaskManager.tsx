@@ -17,7 +17,7 @@ interface ProjectTaskManagerProps {
  */
 export default function ProjectTaskManager({
   projectId,
-  tasks,
+  tasks = [],
   onTasksChange,
   isOwner,
   currentUserId,
