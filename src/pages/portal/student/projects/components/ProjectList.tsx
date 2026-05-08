@@ -7,6 +7,7 @@ interface ProjectListProps {
   onDelete: (id: string) => void;
   onView: (id: string) => void;
   onToggleVisibility?: (id: string) => void;
+  onTeam?: (id: string) => void;
   isLoading?: boolean;
 }
 
@@ -18,6 +19,7 @@ interface ProjectListProps {
  * @param onDelete - Callback when delete button is clicked.
  * @param onView - Callback when view button is clicked.
  * @param onToggleVisibility - Optional callback when visibility toggle is clicked.
+ * @param onTeam - Optional callback when team button is clicked.
  * @param isLoading - Optional loading state indicator.
  */
 export default function ProjectList({
@@ -26,6 +28,7 @@ export default function ProjectList({
   onDelete,
   onView,
   onToggleVisibility,
+  onTeam,
   isLoading = false,
 }: ProjectListProps) {
   if (isLoading) {
@@ -51,6 +54,7 @@ export default function ProjectList({
           onDelete={onDelete}
           onView={onView}
           onToggleVisibility={onToggleVisibility}
+          onTeam={onTeam}
         />
       ))}
     </div>

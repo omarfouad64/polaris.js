@@ -40,6 +40,10 @@ export default function MyProjectsPage() {
     navigate(`/portal/student/projects/${id}/view`);
   };
 
+  const handleTeam = (id: string) => {
+    navigate(`/portal/student/projects/${id}/collaboration`);
+  };
+
   const handleToggleVisibility = (id: string) => {
     const project = projects.find(p => p.id === id);
     if (project) {
@@ -95,6 +99,7 @@ export default function MyProjectsPage() {
             onDelete={handleDelete}
             onView={handleView}
             onToggleVisibility={handleToggleVisibility}
+            onTeam={handleTeam}
             isLoading={isLoading}
           />
         ) : (

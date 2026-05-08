@@ -34,7 +34,7 @@ const roleTabs: Record<UserRole, Tab[]> = {
     { name: 'Invitations', path: '/portal/instructor/invitations', icon: 'mail' },
     { name: 'Search', path: '/portal/instructor/search', icon: 'search' },
     { name: 'Gradebook', path: '/portal/instructor/grades', icon: 'grade' },
-    { name: 'Project Oversight', path: '/portal/instructor/oversight', icon: 'visibility' },
+    { name: 'Project Overview', path: '/portal/instructor/oversight', icon: 'visibility' },
     { name: 'Communications', path: '/portal/instructor/communications', icon: 'chat' }
   ],
   Administrator: [

@@ -31,6 +31,7 @@ import ApplicantReviewPage from './pages/portal/employer/applicants/ApplicantRev
 import InstructorLayout from './pages/portal/instructor/InstructorLayout.tsx'
 import InstructorProfilePage from './pages/portal/instructor/profile/InstructorProfilePage.tsx'
 import MyCourses from './pages/portal/instructor/courses/MyCourses.tsx'
+import ProjectOversightPage from './pages/portal/instructor/oversight/ProjectOversightPage.tsx'
 
 // Student Sub-Sections
 import InternshipExplorerPage from './pages/portal/student/internships/InternshipExplorerPage.tsx'
@@ -139,7 +140,9 @@ export const router = createBrowserRouter([
           { path: 'communications', element: <CommunicationsPage /> },
           { path: 'notifications', element: <NotificationCenter /> },
           { path: 'projects/:id/view', element: <ProjectDetailsPage /> },
-          { path: 'invitations', element: <ProjectInvitationsPage /> }
+          { path: 'projects/:id/collaboration', element: <ProjectCollaboration /> },
+          { path: 'invitations', element: <ProjectInvitationsPage /> },
+          { path: 'oversight', element: <ProjectOversightPage /> }
       ]
       },
       {

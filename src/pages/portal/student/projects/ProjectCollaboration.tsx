@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useProjectInvitations } from '../../../../hooks/useProjectInvitations'
+import { useGlobalContext } from '../../../../globalContext'
 import useStudentProjects, { type ProjectData, type ProjectTask } from './scripts/useStudentProjects'
 import ProjectCollaborationPage from './components/ProjectCollaborationPage'
 import ProjectTaskManager from './components/ProjectTaskManager'
@@ -12,13 +13,15 @@ import ProjectTaskManager from './components/ProjectTaskManager'
  */
 export default function ProjectCollaboration() {
   const { id } = useParams<{ id: string }>()
+  const { user } = useGlobalContext()
   const { getProjectById, updateProject } = useStudentProjects()
   
   const projectId = id || 'proj-001'
   const project = getProjectById(projectId)
   const projectTitle = project?.title || 'E-Commerce Platform'
-  const currentUserId = 'student-001' // In a real app, this would come from auth context
-  const isOwner = true // For demo, assuming the student is the owner
+  const currentUserId = user?.username || 'student-001'
+  const isOwner = user?.role === 'Student' && currentUserId === 'student-001' // Simplified check
+  const isInstructor = user?.role === 'Course Instructor'
 
   const [activeTab, setActiveTab] = useState<'team' | 'tasks'>('team')
   const { collaborators } = useProjectInvitations(projectId, currentUserId)
@@ -65,13 +68,13 @@ export default function ProjectCollaboration() {
         </div>
       </div>
 
-      {/* Collaboration Content */}
       {activeTab === 'team' ? (
         <ProjectCollaborationPage
           projectId={projectId}
           projectTitle={projectTitle}
           currentUserId={currentUserId}
           isOwner={isOwner}
+          projectCourseId={project?.course}
         />
       ) : (
         <ProjectTaskManager
@@ -79,7 +82,9 @@ export default function ProjectCollaboration() {
           tasks={project?.tasks || []}
           onTasksChange={handleTasksChange}
           isOwner={isOwner}
+          isInstructor={isInstructor}
           currentUserId={currentUserId}
+          userName={user?.username || 'Unknown User'}
         />
       )}
 

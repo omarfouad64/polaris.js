@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import type { Notification } from '../types'
 
 const STORAGE_KEY = 'polaris_notifications'
@@ -13,12 +13,14 @@ const dummyNotifications: Notification[] = [
   { id: 'n-7', type: 'message', title: 'New Message', body: 'Dr. Mona Farid updated the project feedback.', timestamp: '2026-04-24T15:45:00Z', read: true }
 ]
 
-/**
- * useNotifications — provides notification data and management operations.
- *
- * @returns notifications list, mark-read functions, and unread count.
- */
-const loadNotifications = (): Notification[] => {
+// ── Shared module-level state ──────────────────────────────────────────────
+// Every useNotifications() instance subscribes here so that when ONE
+// component calls toggleRead / markAllRead, ALL consumers re-render
+// (including the Header badge).
+
+type Listener = () => void
+
+const loadInitial = (): Notification[] => {
   if (typeof window === 'undefined') return dummyNotifications
   const saved = window.localStorage.getItem(STORAGE_KEY)
   if (!saved) return dummyNotifications
@@ -30,28 +32,55 @@ const loadNotifications = (): Notification[] => {
   }
 }
 
+let sharedNotifications: Notification[] = loadInitial()
+const listeners: Set<Listener> = new Set()
+
+function emit() {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sharedNotifications))
+  }
+  listeners.forEach(fn => fn())
+}
+
+/**
+ * useNotifications — provides notification data and management operations.
+ * Uses a shared module-level store so every component that calls this hook
+ * sees the same data and re-renders together.
+ *
+ * @returns notifications list, mark-read functions, and unread count.
+ */
 export default function useNotifications() {
-  const [notifications, setNotifications] = useState<Notification[]>(loadNotifications)
+  // Force re-render when shared state changes
+  const [, setTick] = useState(0)
+  const tickRef = useRef(0)
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications))
-  }, [notifications])
+    const listener = () => {
+      tickRef.current += 1
+      setTick(tickRef.current)
+    }
+    listeners.add(listener)
+    return () => { listeners.delete(listener) }
+  }, [])
+
+  const notifications = sharedNotifications
 
   const unreadCount = useMemo(() =>
     notifications.filter(n => !n.read).length,
     [notifications]
   )
 
-  const toggleRead = (id: string): void => {
-    setNotifications(prev => prev.map(n =>
+  const toggleRead = useCallback((id: string): void => {
+    sharedNotifications = sharedNotifications.map(n =>
       n.id === id ? { ...n, read: !n.read } : n
-    ))
-  }
+    )
+    emit()
+  }, [])
 
-  const markAllRead = (): void => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-  }
+  const markAllRead = useCallback((): void => {
+    sharedNotifications = sharedNotifications.map(n => ({ ...n, read: true }))
+    emit()
+  }, [])
 
   const addNotification = useCallback(
     (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
@@ -61,7 +90,8 @@ export default function useNotifications() {
         timestamp: new Date().toISOString(),
         read: false
       }
-      setNotifications(prev => [newNotification, ...prev])
+      sharedNotifications = [newNotification, ...sharedNotifications]
+      emit()
     },
     []
   )

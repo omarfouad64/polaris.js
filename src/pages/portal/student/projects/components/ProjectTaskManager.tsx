@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { type ProjectTask } from '../scripts/useStudentProjects';
 import { useProjectInvitations } from '../../../../../hooks/useProjectInvitations';
+import { useInstructorFeedback } from '../../../../../hooks/useInstructorFeedback';
+import useNotifications from '../../../../../hooks/useNotifications';
 import Button from '../../../../../components/Button';
+import TaskFeedbackForm from './TaskFeedbackForm';
 
 interface ProjectTaskManagerProps {
   projectId: string;
   tasks: ProjectTask[];
   onTasksChange: (tasks: ProjectTask[]) => void;
   isOwner: boolean;
+  isInstructor?: boolean;
   currentUserId: string;
+  userName?: string;
 }
 
 /**
@@ -20,11 +25,21 @@ export default function ProjectTaskManager({
   tasks,
   onTasksChange,
   isOwner,
+  isInstructor = false,
   currentUserId,
+  userName = 'Unknown User',
 }: ProjectTaskManagerProps) {
   const { collaborators } = useProjectInvitations(projectId, currentUserId);
+  const { addNotification } = useNotifications();
+  const { 
+    getTaskFeedback, 
+    removeTaskFeedback 
+  } = useInstructorFeedback(projectId);
+  
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [feedbackTaskId, setFeedbackTaskId] = useState<string | null>(null);
+  const [feedbackTaskTitle, setFeedbackTaskTitle] = useState('');
 
   // New task form state
   const [taskForm, setTaskForm] = useState<Omit<ProjectTask, 'id'>>({
@@ -125,27 +140,66 @@ export default function ProjectTaskManager({
                       </span>
                     )}
 
-                    {/* Creator Actions */}
-                    {isOwner && (
-                      <div className="flex items-center gap-1">
+                    {/* Creator/Instructor Actions */}
+                    <div className="flex items-center gap-1">
+                      {isInstructor && (
                         <button
-                          onClick={() => setEditingTaskId(task.id)}
-                          className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors"
-                          title="Edit task"
+                          onClick={() => {
+                            setFeedbackTaskId(task.id);
+                            setFeedbackTaskTitle(task.description);
+                          }}
+                          className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors"
+                          title="Add feedback"
                         >
-                          <span className="material-symbols-outlined text-xl">edit</span>
+                          <span className="material-symbols-outlined text-xl">comment</span>
                         </button>
-                        <button
-                          onClick={() => handleDeleteTask(task.id)}
-                          className="p-2 text-error hover:bg-error/10 rounded-full transition-colors"
-                          title="Delete task"
-                        >
-                          <span className="material-symbols-outlined text-xl">delete</span>
-                        </button>
-                      </div>
-                    )}
+                      )}
+                      {isOwner && (
+                        <>
+                          <button
+                            onClick={() => setEditingTaskId(task.id)}
+                            className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors"
+                            title="Edit task"
+                          >
+                            <span className="material-symbols-outlined text-xl">edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTask(task.id)}
+                            className="p-2 text-error hover:bg-error/10 rounded-full transition-colors"
+                            title="Delete task"
+                          >
+                            <span className="material-symbols-outlined text-xl">delete</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
+
+                {/* Task Feedback List */}
+                {getTaskFeedback(task.id).length > 0 && (
+                  <div className="mt-3 ml-4 pl-4 border-l-2 border-primary/20 space-y-2">
+                    {getTaskFeedback(task.id).map((fb) => (
+                      <div key={fb.id} className="bg-primary/5 rounded-lg p-3 relative group">
+                        <div className="flex justify-between items-start">
+                          <p className="text-xs font-jakarta font-bold text-primary mb-1">
+                            {fb.instructorName} • {new Date(fb.createdAt).toLocaleDateString()}
+                          </p>
+                          {isInstructor && fb.instructorId === currentUserId && (
+                            <button
+                              onClick={() => removeTaskFeedback(task.id, fb.id)}
+                              className="opacity-0 group-hover:opacity-100 p-1 text-error hover:bg-error/10 rounded transition-all"
+                              title="Delete feedback"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">delete</span>
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-sm text-on-surface leading-relaxed">{fb.comment}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -236,6 +290,24 @@ export default function ProjectTaskManager({
           </div>
         </div>
       )}
+      {/* Task Feedback Modal */}
+      <TaskFeedbackForm
+        projectId={projectId}
+        taskId={feedbackTaskId || ''}
+        taskTitle={feedbackTaskTitle}
+        instructorId={currentUserId}
+        instructorName={userName}
+        isOpen={!!feedbackTaskId}
+        onClose={() => setFeedbackTaskId(null)}
+        onFeedbackSubmitted={() => {
+          addNotification({
+            type: 'feedback',
+            title: 'New Task Feedback',
+            body: `${userName} left feedback on task: "${feedbackTaskTitle}"`,
+          });
+          setFeedbackTaskId(null);
+        }}
+      />
     </div>
   );
 }

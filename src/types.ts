@@ -179,6 +179,7 @@ export interface CollaborationSearchResult {
   role: 'Student' | 'Course Instructor'
   profilePicture?: string | null
   isAlreadyCollaborator: boolean
+  teachingCourses?: string[] // For instructor validation
 }
 
 export interface TaskFeedback {

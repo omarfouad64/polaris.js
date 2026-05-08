@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import type { Notification } from '../types'
 
 export interface ProjectInvitationNotification extends Notification {
@@ -10,13 +10,13 @@ export interface ProjectInvitationNotification extends Notification {
 }
 
 // Dummy notification data
-const DUMMY_NOTIFICATIONS: ProjectInvitationNotification[] = [
+const INITIAL_NOTIFICATIONS: ProjectInvitationNotification[] = [
   {
     id: 'notif-001',
     type: 'project_invitation',
     title: 'New Project Invitation',
     body: 'You have been invited to join the E-Commerce Platform project',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     read: false,
     projectId: 'proj-001',
     projectTitle: 'E-Commerce Platform',
@@ -29,7 +29,7 @@ const DUMMY_NOTIFICATIONS: ProjectInvitationNotification[] = [
     type: 'project_invitation',
     title: 'New Project Invitation',
     body: 'You have been invited to join the AI Chatbot project',
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
     read: false,
     projectId: 'proj-002',
     projectTitle: 'AI Chatbot',
@@ -42,7 +42,7 @@ const DUMMY_NOTIFICATIONS: ProjectInvitationNotification[] = [
     type: 'project_invitation',
     title: 'New Project Invitation',
     body: 'You have been invited to join the Mobile App Development project',
-    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     read: true,
     projectId: 'proj-003',
     projectTitle: 'Mobile App Development',
@@ -52,64 +52,81 @@ const DUMMY_NOTIFICATIONS: ProjectInvitationNotification[] = [
   }
 ]
 
+// ── Shared module-level state ──────────────────────────────────────────────
+type Listener = () => void
+
+let sharedNotifications: ProjectInvitationNotification[] = [...INITIAL_NOTIFICATIONS]
+const listeners: Set<Listener> = new Set()
+
+function emit() {
+  listeners.forEach(fn => fn())
+}
+
 /**
  * useProjectNotifications – manages project invitation notifications.
- * Provides methods to view, mark as read, and track invitation notifications.
+ * Uses shared module-level state so that all consumers (Header, NotificationCenter)
+ * stay in sync.
  *
  * @returns Object containing notifications, filtering, and action functions.
  */
 export function useProjectNotifications() {
-  const [notifications, setNotifications] = useState<ProjectInvitationNotification[]>(
-    DUMMY_NOTIFICATIONS
-  )
+  const [, setTick] = useState(0)
+  const tickRef = useRef(0)
+
+  useEffect(() => {
+    const listener = () => {
+      tickRef.current += 1
+      setTick(tickRef.current)
+    }
+    listeners.add(listener)
+    return () => { listeners.delete(listener) }
+  }, [])
 
   // Get unread count
   const unreadCount = useMemo(() => {
-    return notifications.filter(n => !n.read).length
-  }, [notifications])
+    return sharedNotifications.filter(n => !n.read).length
+  }, [sharedNotifications]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get only project invitation notifications
   const invitationNotifications = useMemo(() => {
-    return notifications.filter(n => n.type === 'project_invitation')
-  }, [notifications])
+    return sharedNotifications.filter(n => n.type === 'project_invitation')
+  }, [sharedNotifications]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Mark notification as read
   const markAsRead = useCallback((notificationId: string) => {
-    setNotifications(prev =>
-      prev.map(notif =>
-        notif.id === notificationId ? { ...notif, read: true } : notif
-      )
+    sharedNotifications = sharedNotifications.map(notif =>
+      notif.id === notificationId ? { ...notif, read: true } : notif
     )
+    emit()
   }, [])
 
   // Mark all as read
   const markAllAsRead = useCallback(() => {
-    setNotifications(prev =>
-      prev.map(notif => ({ ...notif, read: true }))
-    )
+    sharedNotifications = sharedNotifications.map(notif => ({ ...notif, read: true }))
+    emit()
   }, [])
 
   // Delete notification
   const deleteNotification = useCallback((notificationId: string) => {
-    setNotifications(prev =>
-      prev.filter(notif => notif.id !== notificationId)
-    )
+    sharedNotifications = sharedNotifications.filter(notif => notif.id !== notificationId)
+    emit()
   }, [])
 
   // Add new notification
   const addNotification = useCallback((notification: ProjectInvitationNotification) => {
-    setNotifications(prev => [notification, ...prev])
+    sharedNotifications = [notification, ...sharedNotifications]
+    emit()
   }, [])
 
   // Get notification by ID
   const getNotificationById = useCallback((id: string) => {
-    return notifications.find(n => n.id === id)
-  }, [notifications])
+    return sharedNotifications.find(n => n.id === id)
+  }, [])
 
   return {
     // State
     notifications: invitationNotifications,
-    allNotifications: notifications,
+    allNotifications: sharedNotifications,
     unreadCount,
 
     // Actions

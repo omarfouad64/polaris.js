@@ -7,6 +7,7 @@ interface ProjectCollaborationPageProps {
   projectTitle: string
   currentUserId: string
   isOwner: boolean
+  projectCourseId?: string
 }
 
 /**
@@ -18,7 +19,8 @@ export default function ProjectCollaborationPage({
   projectId,
   projectTitle,
   currentUserId,
-  isOwner
+  isOwner,
+  projectCourseId
 }: ProjectCollaborationPageProps) {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
   // const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -66,12 +68,14 @@ export default function ProjectCollaborationPage({
         projectId={projectId}
         currentUserId={currentUserId}
         isOwner={isOwner}
+        projectCourseId={projectCourseId}
       />
 
       {/* Search Collaborator Modal */}
       <SearchCollaboratorModal
         projectId={projectId}
         currentUserId={currentUserId}
+        projectCourseId={projectCourseId}
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
         onInvitationSent={handleInvitationSent}

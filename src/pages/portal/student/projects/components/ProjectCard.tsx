@@ -89,14 +89,18 @@ export default function ProjectCard({
               {isPublic !== undefined && !isFlagged && (
                 <button
                   onClick={() => onToggleVisibility?.(id)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 ${isPublic ? 'bg-secondary' : 'bg-outline-variant'
-                    }`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-jakarta font-semibold transition-all duration-200 border ${
+                    isPublic
+                      ? 'bg-secondary/10 text-secondary border-secondary/20 hover:bg-secondary/20'
+                      : 'bg-surface-container text-on-surface-variant border-outline-variant/40 hover:bg-surface-container-high'
+                  }`}
                   aria-label={isPublic ? 'Make private' : 'Make public'}
+                  title={isPublic ? 'Public — visible on portfolio' : 'Private — hidden from portfolio'}
                 >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${isPublic ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                  />
+                  <span className="material-symbols-outlined text-[16px]">
+                    {isPublic ? 'public' : 'lock'}
+                  </span>
+                  {isPublic ? 'Public' : 'Private'}
                 </button>
               )}
             </div>
@@ -158,6 +162,7 @@ export default function ProjectCard({
             <span className="material-symbols-outlined text-lg">edit</span>
             Edit
           </button>
+
           <button
             onClick={() => onDelete(id)}
             className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg border border-error/30 text-error hover:bg-error hover:text-on-error transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
