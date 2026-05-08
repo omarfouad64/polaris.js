@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import type { TaskFeedback, ProjectFeedback, ProjectRating } from '../types'
 
 // Dummy task feedback data
@@ -49,11 +49,31 @@ const DUMMY_PROJECT_RATINGS: ProjectRating[] = [
  * @returns Object containing feedback, and CRUD operations.
  */
 export function useInstructorFeedback(projectId: string) {
-  const [taskFeedback, setTaskFeedback] = useState<TaskFeedback[]>(DUMMY_TASK_FEEDBACK)
-  const [projectFeedback, setProjectFeedback] = useState<ProjectFeedback[]>(
-    DUMMY_PROJECT_FEEDBACK
-  )
-  const [projectRatings, setProjectRatings] = useState<ProjectRating[]>(DUMMY_PROJECT_RATINGS)
+  const [taskFeedback, setTaskFeedback] = useState<TaskFeedback[]>(() => {
+    const saved = localStorage.getItem(`polaris_task_feedback_${projectId}`)
+    return saved ? JSON.parse(saved) : DUMMY_TASK_FEEDBACK
+  })
+  const [projectFeedback, setProjectFeedback] = useState<ProjectFeedback[]>(() => {
+    const saved = localStorage.getItem(`polaris_project_feedback_${projectId}`)
+    return saved ? JSON.parse(saved) : DUMMY_PROJECT_FEEDBACK
+  })
+  const [projectRatings, setProjectRatings] = useState<ProjectRating[]>(() => {
+    const saved = localStorage.getItem(`polaris_project_ratings_${projectId}`)
+    return saved ? JSON.parse(saved) : DUMMY_PROJECT_RATINGS
+  })
+
+  // Persistence
+  useEffect(() => {
+    localStorage.setItem(`polaris_task_feedback_${projectId}`, JSON.stringify(taskFeedback))
+  }, [taskFeedback, projectId])
+
+  useEffect(() => {
+    localStorage.setItem(`polaris_project_feedback_${projectId}`, JSON.stringify(projectFeedback))
+  }, [projectFeedback, projectId])
+
+  useEffect(() => {
+    localStorage.setItem(`polaris_project_ratings_${projectId}`, JSON.stringify(projectRatings))
+  }, [projectRatings, projectId])
 
   // Add task feedback
   const addTaskFeedback = useCallback(

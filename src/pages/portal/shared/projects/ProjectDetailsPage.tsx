@@ -10,6 +10,7 @@ import { useInstructorFeedback } from '../../../../hooks/useInstructorFeedback'
 import Button from '../../../../components/Button'
 import FeedbackDialog from '../../../../components/FeedbackDialog'
 import ProjectTaskManager from '../../student/projects/components/ProjectTaskManager'
+import ProjectTaskSection from './components/ProjectTaskSection'
 
 /**
  * FlagModal — handles the reasoning for flagging a project.
@@ -23,8 +24,8 @@ function FlagModal({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose: (
       <div className="bg-surface-container-lowest rounded-3xl p-8 w-full max-w-md border border-outline-variant/30 shadow-modal animate-in zoom-in-95 duration-200">
         <h3 className="text-2xl font-jakarta font-bold text-on-surface mb-2">Flag Project</h3>
         <p className="font-lexend text-on-surface-variant text-sm mb-6">Please provide a clear reason for flagging this project. This will be visible to the student.</p>
-        
-        <textarea 
+
+        <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="e.g., Potential plagiarism, inappropriate content..."
@@ -33,9 +34,9 @@ function FlagModal({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose: (
 
         <div className="flex gap-3 mt-8">
           <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button 
-            variant="primary" 
-            className="flex-1 !bg-error hover:!bg-error-container !text-on-error" 
+          <Button
+            variant="primary"
+            className="flex-1 !bg-error hover:!bg-error-container !text-on-error"
             disabled={!reason.trim()}
             onClick={() => onConfirm(reason)}
           >
@@ -55,8 +56,8 @@ function AppealModal({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose:
       <div className="bg-surface-container-lowest rounded-3xl p-8 w-full max-w-md border border-outline-variant/30 shadow-modal animate-in zoom-in-95 duration-200">
         <h3 className="text-2xl font-jakarta font-bold text-on-surface mb-2">Appeal Flagging</h3>
         <p className="font-lexend text-on-surface-variant text-sm mb-6">Explain why this project should be unflagged. An administrator will review your appeal.</p>
-        
-        <textarea 
+
+        <textarea
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
           placeholder="Provide your explanation here..."
@@ -65,9 +66,9 @@ function AppealModal({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose:
 
         <div className="flex gap-3 mt-8">
           <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button 
-            variant="primary" 
-            className="flex-1" 
+          <Button
+            variant="primary"
+            className="flex-1"
             disabled={!msg.trim()}
             onClick={() => onConfirm(msg)}
           >
@@ -186,7 +187,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4">
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-sm font-jakarta font-bold text-primary hover:underline"
           >
@@ -219,7 +220,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
         </div>
         <div className="flex flex-wrap gap-3">
           {(user?.role === 'Administrator' || user?.role === 'Course Instructor') && project.status !== 'flagged' && (
-            <button 
+            <button
               onClick={() => setIsFlagModalOpen(true)}
               className="flex items-center gap-2 px-6 py-3 bg-error/10 text-error rounded-xl font-jakarta font-bold text-sm hover:bg-error/20 transition-all border border-error/20"
             >
@@ -228,7 +229,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             </button>
           )}
           {user?.role === 'Student' && project.status === 'flagged' && (
-            <button 
+            <button
               onClick={() => setIsAppealModalOpen(true)}
               className="flex items-center gap-2 px-6 py-3 bg-error text-on-error rounded-xl font-jakarta font-bold text-sm hover:shadow-raised transition-all"
             >
@@ -236,10 +237,10 @@ export default function ProjectDetailsPage(): React.JSX.Element {
               Appeal Flagging
             </button>
           )}
-          <AppealModal 
-            isOpen={isAppealModalOpen} 
-            onClose={() => setIsAppealModalOpen(false)} 
-            onConfirm={handleAppeal} 
+          <AppealModal
+            isOpen={isAppealModalOpen}
+            onClose={() => setIsAppealModalOpen(false)}
+            onConfirm={handleAppeal}
           />
           <FeedbackDialog
             isOpen={showAppealFeedback}
@@ -248,7 +249,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             actionLabel="OK"
             onClose={() => setShowAppealFeedback(false)}
           />
-          <button 
+          <button
             onClick={() => {
               const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
               navigate(`/portal/${rolePath}/projects/${id}/collaboration`)
@@ -258,13 +259,12 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             <span className="material-symbols-outlined text-[20px]">group</span>
             View Team
           </button>
-          <button 
+          <button
             onClick={handleToggleFavorite}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-jakarta font-bold text-sm transition-all border ${
-              isFavorite(project.id) 
-                ? 'bg-primary/10 text-primary border-primary/20 shadow-sm' 
-                : 'bg-surface-container-high text-on-surface hover:bg-surface-container border-outline-variant/30'
-            }`}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-jakarta font-bold text-sm transition-all border ${isFavorite(project.id)
+              ? 'bg-primary/10 text-primary border-primary/20 shadow-sm'
+              : 'bg-surface-container-high text-on-surface hover:bg-surface-container border-outline-variant/30'
+              }`}
           >
             <span className={`material-symbols-outlined text-[20px] ${isFavorite(project.id) ? 'fill-1' : ''}`}>
               {isFavorite(project.id) ? 'favorite' : 'favorite'}
@@ -284,10 +284,10 @@ export default function ProjectDetailsPage(): React.JSX.Element {
         </div>
       )}
 
-      <FlagModal 
-        isOpen={isFlagModalOpen} 
-        onClose={() => setIsFlagModalOpen(false)} 
-        onConfirm={handleFlag} 
+      <FlagModal
+        isOpen={isFlagModalOpen}
+        onClose={() => setIsFlagModalOpen(false)}
+        onConfirm={handleFlag}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -296,8 +296,8 @@ export default function ProjectDetailsPage(): React.JSX.Element {
           {/* Demo Media */}
           {project.demoVideoUrl && (
             <div className="aspect-video bg-surface-container-low rounded-3xl overflow-hidden border border-outline-variant/40 shadow-sm relative group">
-              <iframe 
-                src={project.demoVideoUrl.replace('watch?v=', 'embed/')} 
+              <iframe
+                src={project.demoVideoUrl.replace('watch?v=', 'embed/')}
                 className="w-full h-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -333,6 +333,12 @@ export default function ProjectDetailsPage(): React.JSX.Element {
               userName={user?.username || 'Unknown User'}
             />
           </div>
+          {/* Project Tasks (Requirement 33) */}
+          <ProjectTaskSection
+            projectId={project.id}
+            tasks={project.tasks}
+            currentUserId={user?.username}
+          />
         </div>
 
         {/* Sidebar Info */}
@@ -341,9 +347,9 @@ export default function ProjectDetailsPage(): React.JSX.Element {
           <div className="bg-primary/5 rounded-3xl p-6 border border-primary/10">
             <h4 className="font-jakarta font-bold text-on-surface text-sm mb-4 uppercase tracking-wider">Project Assets</h4>
             <div className="space-y-4">
-              <a 
-                href={project.githubLink} 
-                target="_blank" 
+              <a
+                href={project.githubLink}
+                target="_blank"
                 rel="noreferrer"
                 className="flex items-center justify-between p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 hover:border-primary/40 transition-all group"
               >
@@ -381,7 +387,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                     <p className="text-xs font-lexend text-on-surface-variant">Lead Developer</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => handleStartChat('u-student-001', 'John Doe', 'JD')}
                   className="p-2 rounded-xl hover:bg-primary/10 text-primary transition-colors"
                   title="Message John Doe"
@@ -492,18 +498,18 @@ export default function ProjectDetailsPage(): React.JSX.Element {
           <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 space-y-4">
             <div className="flex gap-4 mb-2">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  checked={feedbackType === 'general'} 
+                <input
+                  type="radio"
+                  checked={feedbackType === 'general'}
                   onChange={() => setFeedbackType('general')}
                   className="w-4 h-4 text-primary"
                 />
                 <span className="text-sm font-jakarta font-semibold text-on-surface">General Feedback</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  checked={feedbackType === 'thesis_draft'} 
+                <input
+                  type="radio"
+                  checked={feedbackType === 'thesis_draft'}
                   onChange={() => setFeedbackType('thesis_draft')}
                   className="w-4 h-4 text-primary"
                 />
@@ -525,10 +531,10 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                 disabled={!feedbackText.trim()}
                 onClick={() => {
                   addProjectFeedback('instructor-001', 'Dr. Fatima Al-Mansouri', feedbackText.trim(), feedbackType)
-                  addNotification({ 
-                    type: 'feedback', 
-                    title: feedbackType === 'general' ? 'New Project Feedback' : 'New Thesis Feedback', 
-                    body: `Dr. Fatima Al-Mansouri left ${feedbackType === 'general' ? 'feedback' : 'thesis feedback'} on your project "${project?.title}"` 
+                  addNotification({
+                    type: 'feedback',
+                    title: feedbackType === 'general' ? 'New Project Feedback' : 'New Thesis Feedback',
+                    body: `Dr. Fatima Al-Mansouri left ${feedbackType === 'general' ? 'feedback' : 'thesis feedback'} on your project "${project?.title}"`
                   })
                   setFeedbackText('')
                   setFeedbackType('general')

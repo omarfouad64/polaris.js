@@ -12,6 +12,7 @@ export interface ProjectTask {
   description: string;
   assigneeId: string;
   status: 'pending' | 'post-poned' | 'completed';
+  importance: 'High' | 'Medium' | 'Low';
   deadline: string;
 }
 
@@ -42,7 +43,11 @@ const DUMMY_PROJECTS: ProjectData[] = [
     languages: ['TypeScript', 'React', 'Node.js', 'MongoDB'],
     demoVideoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     thesisDrafts: [],
-    tasks: [],
+    tasks: [
+      { id: 'task-1', description: 'Setup database schema', assigneeId: 'u-student-001', status: 'completed', importance: 'High', deadline: '2026-01-20' },
+      { id: 'task-2', description: 'Implement authentication', assigneeId: 'u-student-001', status: 'pending', importance: 'Medium', deadline: '2026-02-15' },
+      { id: 'task-3', description: 'Add unit tests', assigneeId: 'u-student-001', status: 'pending', importance: 'Low', deadline: '2026-03-01' },
+    ],
     createdDate: '2026-01-15',
     updatedDate: '2026-02-10',
     isPublic: true,

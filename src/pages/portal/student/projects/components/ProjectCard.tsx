@@ -86,24 +86,6 @@ export default function ProjectCard({
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-              {isPublic !== undefined && !isFlagged && (
-                <button
-                  onClick={() => onToggleVisibility?.(id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-jakarta font-semibold transition-all duration-200 border ${isPublic
-                      ? 'bg-secondary/10 text-secondary border-secondary/20 hover:bg-secondary/20'
-                      : 'bg-surface-container text-on-surface-variant border-outline-variant/40 hover:bg-surface-container-high'
-                    }`}
-                  aria-label={isPublic ? 'Make private' : 'Make public'}
-                  title={isPublic ? 'Public — visible on portfolio' : 'Private — hidden from portfolio'}
-                >
-                  <span className="material-symbols-outlined text-[16px]">
-                    {isPublic ? 'public' : 'lock'}
-                  </span>
-                  {isPublic ? 'Public' : 'Private'}
-                </button>
-              )}
-            </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-jakarta font-bold">
