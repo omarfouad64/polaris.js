@@ -87,21 +87,6 @@ export default function ProjectCard({
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-              {isPublic !== undefined && !isFlagged && (
-                <button
-                  onClick={() => onToggleVisibility?.(id)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 ${isPublic ? 'bg-secondary' : 'bg-outline-variant'
-                    }`}
-                  aria-label={isPublic ? 'Make private' : 'Make public'}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${isPublic ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                  />
-                </button>
-              )}
-            </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-jakarta font-bold">

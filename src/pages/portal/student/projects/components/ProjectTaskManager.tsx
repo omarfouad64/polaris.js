@@ -31,6 +31,7 @@ export default function ProjectTaskManager({
     description: '',
     assigneeId: '',
     status: 'pending',
+    importance: 'Medium',
     deadline: '',
   });
 
@@ -43,7 +44,7 @@ export default function ProjectTaskManager({
     };
 
     onTasksChange([...tasks, newTask]);
-    setTaskForm({ description: '', assigneeId: '', status: 'pending', deadline: '' });
+    setTaskForm({ description: '', assigneeId: '', status: 'pending', importance: 'Medium', deadline: '' });
     setIsAddingTask(false);
   };
 
@@ -69,6 +70,17 @@ export default function ProjectTaskManager({
     completed: 'bg-secondary-container text-on-secondary-container',
   };
 
+  const importanceColors = {
+    High: 'text-error font-bold',
+    Medium: 'text-secondary font-semibold',
+    Low: 'text-on-surface-variant',
+  };
+
+  const sortedTasks = [...tasks].sort((a, b) => {
+    const importanceOrder = { High: 3, Medium: 2, Low: 1 };
+    return (importanceOrder[b.importance] || 0) - (importanceOrder[a.importance] || 0);
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -88,13 +100,18 @@ export default function ProjectTaskManager({
 
       {/* Task List */}
       <div className="bg-surface-container-lowest rounded-xl border border-surface-container-high shadow-sm overflow-hidden">
-        {tasks.length > 0 ? (
+        {sortedTasks.length > 0 ? (
           <div className="divide-y divide-surface-container-high">
-            {tasks.map((task) => (
+            {sortedTasks.map((task) => (
               <div key={task.id} className="p-4 hover:bg-surface-container-low transition-colors">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
-                    <p className="font-jakarta font-semibold text-on-surface">{task.description}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-jakarta font-semibold text-on-surface">{task.description}</p>
+                      <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md bg-surface-container-high ${importanceColors[task.importance]}`}>
+                        {task.importance}
+                      </span>
+                    </div>
                     <div className="flex flex-wrap gap-3 mt-2">
                       <span className="flex items-center gap-1 text-xs text-on-surface-variant">
                         <span className="material-symbols-outlined text-sm">person</span>
@@ -202,16 +219,32 @@ export default function ProjectTaskManager({
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
-                  Deadline
-                </label>
-                <input
-                  type="date"
-                  value={isAddingTask ? taskForm.deadline : tasks.find(t => t.id === editingTaskId)?.deadline}
-                  onChange={(e) => isAddingTask ? setTaskForm({ ...taskForm, deadline: e.target.value }) : handleUpdateTask(editingTaskId!, { deadline: e.target.value })}
-                  className="w-full bg-surface-container-low border border-surface-container-high rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
+                    Importance
+                  </label>
+                  <select
+                    value={isAddingTask ? taskForm.importance : tasks.find(t => t.id === editingTaskId)?.importance}
+                    onChange={(e) => isAddingTask ? setTaskForm({ ...taskForm, importance: e.target.value as any }) : handleUpdateTask(editingTaskId!, { importance: e.target.value as any })}
+                    className="w-full bg-surface-container-low border border-surface-container-high rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
+                    Deadline
+                  </label>
+                  <input
+                    type="date"
+                    value={isAddingTask ? taskForm.deadline : tasks.find(t => t.id === editingTaskId)?.deadline}
+                    onChange={(e) => isAddingTask ? setTaskForm({ ...taskForm, deadline: e.target.value }) : handleUpdateTask(editingTaskId!, { deadline: e.target.value })}
+                    className="w-full bg-surface-container-low border border-surface-container-high rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
               </div>
             </div>
 

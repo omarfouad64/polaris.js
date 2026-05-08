@@ -8,6 +8,7 @@ import useFavorites from '../../../../hooks/useFavorites'
 import useMessages from '../../../../hooks/useMessages'
 import Button from '../../../../components/Button'
 import FeedbackDialog from '../../../../components/FeedbackDialog'
+import ProjectTaskSection from './components/ProjectTaskSection'
 
 /**
  * FlagModal — handles the reasoning for flagging a project.
@@ -287,6 +288,13 @@ export default function ProjectDetailsPage(): React.JSX.Element {
               </p>
             </div>
           </div>
+
+          {/* Project Tasks (Requirement 33) */}
+          <ProjectTaskSection 
+            projectId={project.id} 
+            tasks={project.tasks} 
+            currentUserId={user?.username}
+          />
         </div>
 
         {/* Sidebar Info */}
