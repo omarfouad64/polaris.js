@@ -27,8 +27,8 @@ interface ProjectCardProps {
   createdDate: string;
   status?: 'active' | 'flagged';
   flagReason?: string;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
   onView: (id: string) => void;
   onToggleVisibility?: (id: string) => void;
   onTasks?: (id: string) => void;
@@ -135,7 +135,7 @@ export default function ProjectCard({
         </div>
       )}
 
-      {!isFlagged && (
+      {!isFlagged && (onEdit || onDelete || onTasks) && (
         <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-outline-variant/40" onClick={(e) => e.stopPropagation()}>
           {/* Tasks shortcut (Req 32) */}
           {onTasks && (
@@ -148,20 +148,24 @@ export default function ProjectCard({
             </button>
           )}
           <div className="flex gap-2">
-            <button
-              onClick={() => onEdit(id)}
-              className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/10 shadow-sm flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined text-lg">edit</span>
-              Edit
-            </button>
-            <button
-              onClick={() => onDelete(id)}
-              className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg border border-error/30 text-error hover:bg-error hover:text-on-error transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined text-lg">delete</span>
-              Delete
-            </button>
+            {onEdit && (
+              <button
+                onClick={() => onEdit(id)}
+                className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/10 shadow-sm flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-lg">edit</span>
+                Edit
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={() => onDelete(id)}
+                className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg border border-error/30 text-error hover:bg-error hover:text-on-error transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-lg">delete</span>
+                Delete
+              </button>
+            )}
           </div>
         </div>
       )}

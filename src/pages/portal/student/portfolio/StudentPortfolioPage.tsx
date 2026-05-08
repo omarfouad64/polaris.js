@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio'
 import useStudentProjects from '../projects/scripts/useStudentProjects'
 import ProjectList from '../projects/components/ProjectList'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useGlobalContext } from '../../../../globalContext'
 
 interface PortfolioSection {
   id: 'profile' | 'skills' | 'projects' | 'contact'
@@ -23,6 +24,9 @@ const PORTFOLIO_SECTIONS: PortfolioSection[] = [
  */
 export default function StudentPortfolioPage() {
   const navigate = useNavigate()
+  const { id } = useParams()
+  const { user } = useGlobalContext()
+
   // State management
   const [activeSection, setActiveSection] = useState<'profile' | 'skills' | 'projects' | 'contact'>('profile')
   const [newSkill, setNewSkill] = useState('')
@@ -30,6 +34,21 @@ export default function StudentPortfolioPage() {
   const [editMajor, setEditMajor] = useState('')
   const [editBio, setEditBio] = useState('')
   const [editLinkedin, setEditLinkedin] = useState('')
+
+  const location = useLocation()
+
+  // Determine target portfolio and permissions
+  const isStudent = user?.role === 'Student'
+  
+  // It is ONLY considered "own editable portfolio" if accessed via the root path without an ID.
+  // If an ID is present (e.g. from search), it is viewed in read-only mode, just like others see it.
+  const isOwnEditablePortfolio = isStudent && !id
+  
+  const targetId = id || user?.username || 'student-001'
+  const isReadOnly = !isOwnEditablePortfolio
+  
+  // We still use isOwnPortfolio for some titles, but now it checks if the target matches their username
+  const isOwnPortfolio = isStudent && targetId === (user?.username || 'student-001')
 
   // Hook for portfolio data
   const {
@@ -40,7 +59,7 @@ export default function StudentPortfolioPage() {
     addSkill,
     removeSkill,
     updateProfilePicture
-  } = useStudentPortfolio()
+  } = useStudentPortfolio(targetId)
 
   const { projects, deleteProject, isLoading: projectsLoading } = useStudentProjects()
 
@@ -56,7 +75,8 @@ export default function StudentPortfolioPage() {
   }
 
   const handleViewProject = (id: string) => {
-    navigate(`/portal/student/projects/${id}/view`)
+    const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Employer' ? 'employer' : 'student'
+    navigate(`/portal/${rolePath}/projects/${id}/view`)
   }
 
   // Handler: Start editing mode
@@ -105,8 +125,12 @@ export default function StudentPortfolioPage() {
     <div className="min-h-screen bg-background p-6 lg:p-8">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-jakarta font-bold text-on-surface mb-2">My Portfolio</h1>
-        <p className="text-body-md text-on-surface-variant">Manage your professional profile and showcase your skills</p>
+        <h1 className="text-4xl font-jakarta font-bold text-on-surface mb-2">
+          {isOwnPortfolio ? 'My Portfolio' : `${portfolio.name}'s Portfolio`}
+        </h1>
+        <p className="text-body-md text-on-surface-variant">
+          {isReadOnly ? 'Viewing student professional profile' : 'Manage your professional profile and showcase your skills'}
+        </p>
       </div>
 
       {/* Profile Card */}
@@ -123,21 +147,23 @@ export default function StudentPortfolioPage() {
                   <span>{portfolio.name.charAt(0)}</span>
                 )}
               </div>
-              <label className="mt-4 block">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleProfilePictureUpload}
-                  className="hidden"
-                  aria-label="Upload profile picture"
-                />
-                <button
-                  onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
-                  className="w-full px-3 py-2 text-sm font-jakarta font-semibold text-primary hover:bg-primary-container/20 rounded-lg transition-colors"
-                >
-                  Change Photo
-                </button>
-              </label>
+              {!isReadOnly && (
+                <label className="mt-4 block">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePictureUpload}
+                    className="hidden"
+                    aria-label="Upload profile picture"
+                  />
+                  <button
+                    onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
+                    className="w-full px-3 py-2 text-sm font-jakarta font-semibold text-primary hover:bg-primary-container/20 rounded-lg transition-colors"
+                  >
+                    Change Photo
+                  </button>
+                </label>
+              )}
             </div>
 
             {/* Profile Info */}
@@ -147,12 +173,14 @@ export default function StudentPortfolioPage() {
               <p className="text-body-sm text-on-surface-variant mb-6">
                 Last updated: {new Date(portfolio.updatedAt).toLocaleDateString()}
               </p>
-              <button
-                onClick={handleEditStart}
-                className="px-4 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
-              >
-                {isEditing ? 'Editing' : 'Edit Profile'}
-              </button>
+              {!isReadOnly && (
+                <button
+                  onClick={handleEditStart}
+                  className="px-4 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
+                >
+                  {isEditing ? 'Editing' : 'Edit Profile'}
+                </button>
+              )}
             </div>
           </div>
 
@@ -244,7 +272,9 @@ export default function StudentPortfolioPage() {
             <div className="space-y-6">
               {/* Skills Display */}
               <div>
-                <p className="text-sm font-jakarta font-semibold text-on-surface-variant mb-4">Your Skills</p>
+                <p className="text-sm font-jakarta font-semibold text-on-surface-variant mb-4">
+                  {isOwnPortfolio ? 'Your Skills' : `${portfolio.name}'s Skills`}
+                </p>
                 <div className="flex flex-wrap gap-2 mb-6">
                   {portfolio.skills.length > 0 ? (
                     portfolio.skills.map(skill => (
@@ -253,43 +283,47 @@ export default function StudentPortfolioPage() {
                         className="flex items-center gap-2 px-3 py-1 bg-secondary-container rounded-full"
                       >
                         <span className="text-sm font-lexend text-on-secondary-container">{skill}</span>
-                        <button
-                          onClick={() => handleRemoveSkill(skill)}
-                          className="text-on-secondary-container hover:opacity-70 transition-opacity"
-                          aria-label={`Remove ${skill} skill`}
-                        >
-                          ✕
-                        </button>
+                        {!isReadOnly && (
+                          <button
+                            onClick={() => handleRemoveSkill(skill)}
+                            className="text-on-secondary-container hover:opacity-70 transition-opacity"
+                            aria-label={`Remove ${skill} skill`}
+                          >
+                            ✕
+                          </button>
+                        )}
                       </div>
                     ))
                   ) : (
-                    <p className="text-body-sm text-on-surface-variant">No skills added yet. Add your first skill below!</p>
+                    <p className="text-body-sm text-on-surface-variant">No skills added yet.</p>
                   )}
                 </div>
               </div>
 
               {/* Add Skill Input */}
-              <div>
-                <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
-                  Add a Skill
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
-                    className="flex-1 px-4 py-2 border border-outline rounded-lg bg-surface text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
-                    placeholder="e.g., React, TypeScript"
-                  />
-                  <button
-                    onClick={handleAddSkill}
-                    className="px-6 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
-                  >
-                    Add
-                  </button>
+              {!isReadOnly && (
+                <div>
+                  <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
+                    Add a Skill
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
+                      className="flex-1 px-4 py-2 border border-outline rounded-lg bg-surface text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                      placeholder="e.g., React, TypeScript"
+                    />
+                    <button
+                      onClick={handleAddSkill}
+                      className="px-6 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
+                    >
+                      Add
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -297,36 +331,42 @@ export default function StudentPortfolioPage() {
           {activeSection === 'projects' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center mb-4">
-                <p className="text-sm font-jakarta font-semibold text-on-surface-variant">Your Showcase Projects</p>
-                <button 
-                  onClick={() => navigate('/portal/student/projects/new')}
-                  className="text-sm font-jakarta font-semibold text-primary hover:underline"
-                >
-                  + Add Project
-                </button>
+                <p className="text-sm font-jakarta font-semibold text-on-surface-variant">
+                  {isOwnPortfolio ? 'Your Showcase Projects' : `${portfolio.name}'s Showcase Projects`}
+                </p>
+                {!isReadOnly && (
+                  <button 
+                    onClick={() => navigate('/portal/student/projects/new')}
+                    className="text-sm font-jakarta font-semibold text-primary hover:underline"
+                  >
+                    + Add Project
+                  </button>
+                )}
               </div>
               
               {projects.length > 0 ? (
                 <ProjectList
                   projects={projects.filter(p => p.isPublic)}
-                  onEdit={handleEditProject}
-                  onDelete={handleDeleteProject}
+                  onEdit={isReadOnly ? undefined : handleEditProject}
+                  onDelete={isReadOnly ? undefined : handleDeleteProject}
                   onView={handleViewProject}
                   isLoading={projectsLoading}
                 />
               ) : (
                 <div className="text-center py-12 bg-surface-container-low rounded-xl border border-dashed border-outline-variant">
-                  <p className="text-on-surface-variant font-lexend mb-4">No public projects in your portfolio yet.</p>
-                  <button
-                    onClick={() => navigate('/portal/student/projects')}
-                    className="px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
-                  >
-                    Manage Projects
-                  </button>
+                  <p className="text-on-surface-variant font-lexend mb-4">No public projects available.</p>
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => navigate('/portal/student/projects')}
+                      className="px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
+                    >
+                      Manage Projects
+                    </button>
+                  )}
                 </div>
               )}
 
-              {projects.some(p => !p.isPublic) && (
+              {!isReadOnly && projects.some(p => !p.isPublic) && (
                 <p className="text-xs text-on-surface-variant font-lexend mt-4 italic">
                   Note: Some of your projects are set to private and are not shown here. 
                   Manage them in the <button onClick={() => navigate('/portal/student/projects')} className="text-primary hover:underline">Projects Dashboard</button>.

@@ -9,10 +9,10 @@ interface MockUser {
 
 // In-memory "database"
 const initialUsers: MockUser[] = [
-  { username: 'admin@guc.edu.eg', password: 'password', role: 'Administrator' },
-  { username: 'student@guc.edu.eg', password: 'password', role: 'Student' },
-  { username: 'employer@company.com', password: 'password', role: 'Employer' },
-  { username: 'instructor@guc.edu.eg', password: 'password', role: 'Course Instructor' }
+  { username: 'admin-001', password: 'password', role: 'Administrator' },
+  { username: 'student-001', password: 'password', role: 'Student' },
+  { username: 'employer-001', password: 'password', role: 'Employer' },
+  { username: 'instructor-001', password: 'password', role: 'Course Instructor' }
 ]
 
 let mockDb = [...initialUsers]

@@ -26,9 +26,14 @@ export default function Header() {
   // Extract page name from path (e.g., /portal/student/projects -> Projects)
   const pathParts = location.pathname.split('/').filter(Boolean)
   const lastPart = pathParts[pathParts.length - 1]
-  const pageName = lastPart 
+  
+  let pageName = lastPart 
     ? lastPart.charAt(0).toUpperCase() + lastPart.slice(1).replace(/-/g, ' ')
     : 'Dashboard'
+    
+  if (pathParts.includes('portfolio')) {
+    pageName = 'Portfolio'
+  }
 
   const avatarUrl =
     user?.role === 'Student'

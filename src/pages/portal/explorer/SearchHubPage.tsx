@@ -415,7 +415,9 @@ export default function SearchHubPage(): React.JSX.Element {
                 {portfolioResults.map(portfolio => (
                   <div
                     key={portfolio.studentId}
-                    onClick={() => setActivePortfolio(portfolio)}
+                    onClick={() => {
+                      window.location.assign(`/portal/${rolePath}/portfolio/${portfolio.studentId}`);
+                    }}
                     className="group bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm hover:shadow-raised hover:scale-[1.01] transition-all duration-300 cursor-pointer flex flex-col h-full relative overflow-hidden"
                   >
                     {/* Top Gradient Bar */}

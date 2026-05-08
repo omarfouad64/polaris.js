@@ -3,8 +3,8 @@ import ProjectCard from './ProjectCard';
 
 interface ProjectListProps {
   projects: ProjectData[];
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
   onView: (id: string) => void;
   onToggleVisibility?: (id: string) => void;
   onTasks?: (id: string) => void;

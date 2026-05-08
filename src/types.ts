@@ -57,6 +57,7 @@ export interface InternshipApplication {
   internshipId: string
   internshipTitle: string
   companyName: string
+  studentId: string
   studentName: string
   studentEmail: string
   coverLetter: string
