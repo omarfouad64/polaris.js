@@ -61,10 +61,6 @@ export default function Sidebar(): React.JSX.Element {
     }
 
     const handleNavigate = (path: string): void => {
-        if (location.pathname.includes('/search')) {
-            window.location.assign(path)
-            return
-        }
         navigate(path)
     }
 

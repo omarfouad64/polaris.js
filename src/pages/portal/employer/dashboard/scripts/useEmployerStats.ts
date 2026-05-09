@@ -3,7 +3,7 @@ import type { EmployerStats } from '../../../../../types'
 
 const dummyStats: EmployerStats = {
   internshipsOffered: 12,
-  studentsPlaced: 34,
+  studentsPlaced: 286,
   placementsOverTime: [
     { month: 'May 25', placements: 2, internships: 1 },
     { month: 'Jun 25', placements: 3, internships: 2 },

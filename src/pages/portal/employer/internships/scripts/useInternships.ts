@@ -15,7 +15,7 @@ const dummyInternships: Internship[] = [
     postedAt: '2026-04-01',
     companyName: 'TechVentures Inc.',
     companyLogo: '',
-    applicantCount: 42
+    applicantCount: 3
   },
   {
     id: 'int-2',
@@ -30,7 +30,7 @@ const dummyInternships: Internship[] = [
     postedAt: '2026-03-20',
     companyName: 'TechVentures Inc.',
     companyLogo: '',
-    applicantCount: 89
+    applicantCount: 2
   },
   {
     id: 'int-3',
@@ -45,7 +45,7 @@ const dummyInternships: Internship[] = [
     postedAt: '2026-04-10',
     companyName: 'TechVentures Inc.',
     companyLogo: '',
-    applicantCount: 17
+    applicantCount: 0
   },
   {
     id: 'int-4',
@@ -60,7 +60,7 @@ const dummyInternships: Internship[] = [
     postedAt: '2025-09-01',
     companyName: 'TechVentures Inc.',
     companyLogo: '',
-    applicantCount: 35
+    applicantCount: 0
   }
 ]
 
@@ -104,8 +104,6 @@ export default function useInternships() {
   const toggleArchive = (id: string): void => {
     setInternships(prev => prev.map(i => {
       if (i.id !== id) return i
-      const deadlinePassed = new Date(i.applicationDeadline) < new Date()
-      if (!i.archived && !deadlinePassed) return i
       return { ...i, archived: !i.archived }
     }))
   }

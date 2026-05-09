@@ -40,11 +40,11 @@ export default function EmployerDashboardPage(): React.JSX.Element {
         >
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-secondary/10 rounded-full blur-2xl" />
           <div className="flex items-center justify-between mb-3 relative z-10">
-            <span className="text-sm font-jakarta font-semibold tracking-widest uppercase text-on-surface-variant">Students Placed</span>
+            <span className="text-sm font-jakarta font-semibold tracking-widest uppercase text-on-surface-variant">Total Participants</span>
             <span className="material-symbols-outlined text-secondary bg-secondary/10 p-2 rounded-lg">people</span>
           </div>
           <div className="text-4xl font-jakarta font-bold text-on-surface relative z-10">{stats.studentsPlaced}</div>
-          <div className="text-sm font-lexend text-on-surface-variant mt-1 relative z-10">Across all internships</div>
+          <div className="text-sm font-lexend text-on-surface-variant mt-1 relative z-10">All-time student participation</div>
         </div>
       </div>
 

@@ -10,7 +10,9 @@ export default function InternshipExplorerPage(): React.JSX.Element {
   const {
     internships, applications, completedInternships,
     searchQuery, setSearchQuery, companyFilter, setCompanyFilter,
-    durationFilter, toggleDurationFilter, sortOrder, setSortOrder,
+    durationFilter, toggleDurationFilter,
+    postedDateFrom, setPostedDateFrom, postedDateTo, setPostedDateTo,
+    sortOrder, setSortOrder,
     applyForInternship, hasApplied
   } = useInternshipSearch()
 
@@ -56,7 +58,7 @@ export default function InternshipExplorerPage(): React.JSX.Element {
         <div className="flex gap-6">
           {/* Filter Sidebar */}
           {showFilters && (
-            <div className="hidden md:block w-64 flex-shrink-0 space-y-4">
+            <div className="hidden md:block w-80 flex-shrink-0 space-y-4">
               <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/40 space-y-4" style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}>
                 <h4 className="font-jakarta font-semibold text-on-surface text-sm">Filters</h4>
                 <div>
@@ -74,7 +76,43 @@ export default function InternshipExplorerPage(): React.JSX.Element {
                     ))}
                   </div>
                 </div>
-                <button onClick={() => { setCompanyFilter(''); durations.forEach(d => { if (durationFilter.includes(d)) toggleDurationFilter(d) }) }} className="text-sm font-jakarta text-primary hover:underline">Clear Filters</button>
+                <div>
+                  <label className="font-jakarta text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Posted Date</label>
+                  <div className="space-y-2 mt-1">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">From</label>
+                      <input
+                        type="date"
+                        value={postedDateFrom}
+                        onChange={e => setPostedDateFrom(e.target.value)}
+                        className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-lexend text-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-colors"
+                        aria-label="Posted date from"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">To</label>
+                      <input
+                        type="date"
+                        value={postedDateTo}
+                        onChange={e => setPostedDateTo(e.target.value)}
+                        className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-lexend text-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-colors"
+                        aria-label="Posted date to"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-[10px] font-lexend text-on-surface-variant mt-1">Use the date picker to set the range.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setCompanyFilter('')
+                    durations.forEach(d => { if (durationFilter.includes(d)) toggleDurationFilter(d) })
+                    setPostedDateFrom('')
+                    setPostedDateTo('')
+                  }}
+                  className="text-sm font-jakarta text-primary hover:underline"
+                >
+                  Clear Filters
+                </button>
               </div>
             </div>
           )}
@@ -86,9 +124,9 @@ export default function InternshipExplorerPage(): React.JSX.Element {
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
                 <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-lexend text-sm text-on-surface placeholder:text-outline focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors" placeholder="Search by title or company..." />
               </div>
-              <select value={sortOrder} onChange={e => setSortOrder(e.target.value as 'newest' | 'oldest')} className="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 font-lexend text-sm text-on-surface focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
+              <select value={sortOrder} onChange={e => setSortOrder(e.target.value as 'posted_desc' | 'posted_asc')} className="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 font-lexend text-sm text-on-surface focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
+                <option value="posted_desc">Date Posted: Newest First</option>
+                <option value="posted_asc">Date Posted: Oldest First</option>
               </select>
               <button onClick={() => setShowFilters(p => !p)} className="md:hidden p-2.5 border border-outline-variant rounded-lg hover:bg-surface-container transition-colors" aria-label="Toggle filters"><span className="material-symbols-outlined">filter_list</span></button>
             </div>
@@ -113,7 +151,7 @@ export default function InternshipExplorerPage(): React.JSX.Element {
                       {i.skills.slice(0, 4).map(s => (<span key={s} className="px-2.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-lexend">{s}</span>))}
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="font-lexend text-on-surface-variant">{i.duration} • Deadline: {i.applicationDeadline}</span>
+                      <span className="font-lexend text-on-surface-variant">{i.duration} • Posted: {i.postedAt}</span>
                       {!hasApplied(i.id) && i.status === 'Hiring' ? (
                         <button onClick={e => { e.stopPropagation(); setApplyingTo(i.id) }} className="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-jakarta font-semibold hover:bg-primary-container transition-colors active:translate-y-[1px] focus-visible:ring-2 focus-visible:ring-secondary">Apply</button>
                       ) : hasApplied(i.id) ? (

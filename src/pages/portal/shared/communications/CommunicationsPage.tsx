@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import useMessages from '../../../../hooks/useMessages'
+import { useGlobalContext } from '../../../../globalContext'
+import type { UserRole } from '../../../../types'
 
 /**
  * CommunicationsPage — premium messaging interface for direct communication.
@@ -8,7 +10,17 @@ import useMessages from '../../../../hooks/useMessages'
  */
 export default function CommunicationsPage(): React.JSX.Element {
   const { conversations, activeConversation, activeMessages, sendMessage, selectConversation, totalUnread } = useMessages()
+  const { user } = useGlobalContext()
   const [msgInput, setMsgInput] = useState('')
+
+  const roleLabels: Record<UserRole, string> = useMemo(() => ({
+    Student: 'Student',
+    Employer: 'Employer',
+    'Course Instructor': 'Instructor',
+    Administrator: 'Administrator'
+  }), [])
+
+  const getRoleLabel = (role?: UserRole): string | null => (role ? roleLabels[role] : null)
 
   const handleSend = (): void => {
     if (!msgInput.trim()) return
@@ -67,7 +79,18 @@ export default function CommunicationsPage(): React.JSX.Element {
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-jakarta font-bold text-sm truncate">{c.participantName}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-jakarta font-bold text-sm truncate">{c.participantName}</span>
+                      {getRoleLabel(c.participantRole) && (
+                        <span className={`text-[10px] font-jakarta font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${activeConversation?.id === c.id
+                          ? 'text-on-primary border-on-primary/30'
+                          : 'text-on-surface-variant border-outline-variant/30'
+                          }`}
+                        >
+                          {getRoleLabel(c.participantRole)}
+                        </span>
+                      )}
+                    </div>
                     <span className={`text-[10px] font-lexend ${activeConversation?.id === c.id ? 'text-on-primary/70' : 'text-outline'}`}>
                       {fmt(c.lastTimestamp)}
                     </span>
@@ -97,7 +120,14 @@ export default function CommunicationsPage(): React.JSX.Element {
                     {activeConversation.participantAvatar}
                   </div>
                   <div>
-                    <h3 className="font-jakarta font-bold text-on-surface">{activeConversation.participantName}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-jakarta font-bold text-on-surface">{activeConversation.participantName}</h3>
+                      {getRoleLabel(activeConversation.participantRole) && (
+                        <span className="text-[10px] font-jakarta font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border border-outline-variant/30 text-on-surface-variant">
+                          {getRoleLabel(activeConversation.participantRole)}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-secondary" />
                       <span className="text-[10px] font-lexend text-on-surface-variant uppercase tracking-widest">Online</span>
@@ -132,7 +162,12 @@ export default function CommunicationsPage(): React.JSX.Element {
                           {m.content}
                         </div>
                         <p className={`text-[10px] font-lexend text-outline mt-1.5 px-1 flex items-center gap-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                          {fmt(m.timestamp)}
+                          {getRoleLabel(isMe ? user?.role : (m.senderRole ?? activeConversation?.participantRole)) && (
+                            <span className="uppercase tracking-wider font-jakarta font-semibold text-[10px]">
+                              {getRoleLabel(isMe ? user?.role : (m.senderRole ?? activeConversation?.participantRole))}
+                            </span>
+                          )}
+                          <span>{fmt(m.timestamp)}</span>
                           {isMe && <span className="material-symbols-outlined text-[14px] text-secondary">done_all</span>}
                         </p>
                       </div>

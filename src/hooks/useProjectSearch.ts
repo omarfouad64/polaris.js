@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import useStudentProjects, { type ProjectData } from '../pages/portal/student/projects/scripts/useStudentProjects'
 import useCourses from './useCourses'
 
@@ -67,9 +67,9 @@ export default function useProjectSearch() {
     return result
   }, [allStudentProjects, filters])
 
-  const updateFilters = (updates: Partial<ProjectFilters>) => {
+  const updateFilters = useCallback((updates: Partial<ProjectFilters>) => {
     setFilters(prev => ({ ...prev, ...updates }))
-  }
+  }, [])
 
   return {
     projects: filteredProjects,

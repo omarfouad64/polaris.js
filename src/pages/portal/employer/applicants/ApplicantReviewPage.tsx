@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import useApplicants from './scripts/useApplicants'
 import type { InternshipApplication } from '../../../../types'
 
@@ -9,7 +10,9 @@ import type { InternshipApplication } from '../../../../types'
  * 87 (view applicant list), 88 (set applicant status).
  */
 export default function ApplicantReviewPage(): React.JSX.Element {
-  const internshipId = 'int-1'
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const internshipId = id ?? 'int-1'
   const { applicants, suggestedApplicants, updateStatus, sortByContributors, toggleSortByContributors } = useApplicants(internshipId)
   const [activeTab, setActiveTab] = useState<'candidates' | 'suggested'>('candidates')
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -40,7 +43,7 @@ export default function ApplicantReviewPage(): React.JSX.Element {
                 Score: {app.contributionScore}
               </span>
               <button
-                onClick={() => window.location.assign(`/portal/employer/portfolio/${app.studentId}`)}
+                onClick={() => navigate(`/portal/employer/portfolio/${app.studentId}`)}
                 className="px-3 py-1 text-sm font-jakarta text-primary hover:underline focus-visible:ring-2 focus-visible:ring-secondary rounded-lg"
                 aria-label={`View portfolio of ${app.studentName}`}
               >

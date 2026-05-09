@@ -5,6 +5,7 @@ import { useInstructorSearch } from '../../../hooks/useInstructorSearch'
 import useProjectSearch from '../../../hooks/useProjectSearch'
 import usePortfolioSearch from '../../../hooks/usePortfolioSearch'
 import useCourses from '../../../hooks/useCourses'
+import useFavorites from '../../../hooks/useFavorites'
 
 /**
  * SearchHubPage — unified search hub with shared filters and sectioned results.
@@ -32,6 +33,7 @@ export default function SearchHubPage(): React.JSX.Element {
 
   const { projects, filters: projectFilters, updateFilters } = useProjectSearch()
   const { courses, getCourseById } = useCourses()
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites()
 
   const {
     portfolios,
@@ -72,11 +74,11 @@ export default function SearchHubPage(): React.JSX.Element {
   }, [projects])
 
   const handleViewProject = (id: string) => {
-    window.location.assign(`/portal/${rolePath}/projects/${id}/view`)
+    navigate(`/portal/${rolePath}/projects/${id}/view`)
   }
 
   const handleViewInstructor = (id: string) => {
-    window.location.assign(`/portal/${rolePath}/instructors/${id}`)
+    navigate(`/portal/${rolePath}/instructors/${id}`)
   }
 
   const instructorResults = isDefaultSearch ? recommendedInstructors : filteredResults
@@ -86,6 +88,21 @@ export default function SearchHubPage(): React.JSX.Element {
   const [activePortfolio, setActivePortfolio] = useState<
     ReturnType<typeof usePortfolioSearch>['portfolios'][number] | null
   >(null)
+
+  const handleTogglePortfolioFavorite = (portfolio: ReturnType<typeof usePortfolioSearch>['portfolios'][number]) => {
+    if (isFavorite(portfolio.studentId)) {
+      removeFavorite(portfolio.studentId)
+      return
+    }
+
+    addFavorite({
+      id: portfolio.studentId,
+      type: 'portfolio',
+      title: portfolio.name,
+      subtitle: `${portfolio.major} - ${portfolio.projectCount} Projects`,
+      tags: portfolio.skills
+    })
+  }
 
   return (
     <div className="space-y-6 h-full">
@@ -415,11 +432,29 @@ export default function SearchHubPage(): React.JSX.Element {
                 {portfolioResults.map(portfolio => (
                   <div
                     key={portfolio.studentId}
-                    onClick={() => {
-                      window.location.assign(`/portal/${rolePath}/portfolio/${portfolio.studentId}`);
-                    }}
+                    onClick={() => navigate(`/portal/${rolePath}/portfolio/${portfolio.studentId}`)}
                     className="group bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm hover:shadow-raised hover:scale-[1.01] transition-all duration-300 cursor-pointer flex flex-col h-full relative overflow-hidden"
                   >
+                    {user?.role === 'Employer' && (
+                      <button
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          handleTogglePortfolioFavorite(portfolio)
+                        }}
+                        className={`absolute top-4 right-4 p-2 rounded-full border transition-all focus-visible:ring-2 focus-visible:ring-secondary active:scale-95 ${isFavorite(portfolio.studentId)
+                          ? 'text-error bg-error/10 border-error/20'
+                          : 'text-outline border-outline-variant/40 hover:text-error hover:bg-error/5 hover:border-error/30'
+                          }`}
+                        aria-label={`${isFavorite(portfolio.studentId) ? 'Remove' : 'Add'} ${portfolio.name} portfolio to favorites`}
+                      >
+                        <span
+                          className="material-symbols-outlined text-[18px]"
+                          style={isFavorite(portfolio.studentId) ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                        >
+                          favorite
+                        </span>
+                      </button>
+                    )}
                     {/* Top Gradient Bar */}
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary opacity-70"></div>
 

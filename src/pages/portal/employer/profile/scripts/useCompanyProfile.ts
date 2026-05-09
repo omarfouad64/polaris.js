@@ -18,6 +18,7 @@ const defaultProfile: CompanyProfile = {
 }
 
 const STORAGE_KEY = 'polaris_company_profile'
+const PROFILE_UPDATED_EVENT = 'polaris_company_profile_updated'
 
 /**
  * useCompanyProfile — provides company profile data and CRUD operations.
@@ -48,16 +49,47 @@ export default function useCompanyProfile(): {
     }
   }, [profile])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const handleProfileSync = () => {
+      const saved = window.localStorage.getItem(STORAGE_KEY)
+      if (!saved) return
+      try {
+        setProfile(JSON.parse(saved) as CompanyProfile)
+      } catch {
+        // Ignore malformed storage payloads.
+      }
+    }
+
+    window.addEventListener(PROFILE_UPDATED_EVENT, handleProfileSync)
+    return () => window.removeEventListener(PROFILE_UPDATED_EVENT, handleProfileSync)
+  }, [])
+
   const updateProfile = (updates: Partial<CompanyProfile>): void => {
-    setProfile(prev => ({ ...prev, ...updates }))
+    setProfile(prev => {
+      const next = { ...prev, ...updates }
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
+      }
+      return next
+    })
   }
 
   const setLocation = (lat: number, lng: number, address?: string | null): void => {
-    setProfile(prev => ({
-      ...prev,
-      location: { lat, lng },
-      locationAddress: address ?? prev.locationAddress ?? null
-    }))
+    setProfile(prev => {
+      const next = {
+        ...prev,
+        location: { lat, lng },
+        locationAddress: address ?? null,
+        address: address ?? prev.address
+      }
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
+      }
+      return next
+    })
   }
 
   const uploadDocument = (file: File): void => {
@@ -68,14 +100,28 @@ export default function useCompanyProfile(): {
       size: file.size,
       uploadedAt: new Date().toISOString().split('T')[0]
     }
-    setProfile(prev => ({ ...prev, documents: [...prev.documents, newDoc] }))
+    setProfile(prev => {
+      const next = { ...prev, documents: [...prev.documents, newDoc] }
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
+      }
+      return next
+    })
   }
 
   const removeDocument = (docId: string): void => {
-    setProfile(prev => ({
-      ...prev,
-      documents: prev.documents.filter(d => d.id !== docId)
-    }))
+    setProfile(prev => {
+      const next = {
+        ...prev,
+        documents: prev.documents.filter(d => d.id !== docId)
+      }
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
+      }
+      return next
+    })
   }
 
   return { profile, updateProfile, setLocation, uploadDocument, removeDocument }
