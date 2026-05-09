@@ -80,8 +80,10 @@ export interface Message {
   id: string
   senderId: string
   senderName: string
+  senderRole?: UserRole
   receiverId: string
   receiverName: string
+  receiverRole?: UserRole
   content: string
   timestamp: string
   read: boolean
@@ -92,6 +94,7 @@ export interface Conversation {
   participantId: string
   participantName: string
   participantAvatar: string
+  participantRole?: UserRole
   lastMessage: string
   lastTimestamp: string
   unreadCount: number

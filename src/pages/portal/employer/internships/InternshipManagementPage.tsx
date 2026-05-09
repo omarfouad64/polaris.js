@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import useInternships from './scripts/useInternships'
+import useEmployerStats from '../dashboard/scripts/useEmployerStats'
 import Button from '../../../../components/Button'
 import Input from '../../../../components/Input'
 import type { Internship } from '../../../../types'
@@ -11,6 +12,7 @@ import type { Internship } from '../../../../types'
  */
 export default function InternshipManagementPage(): React.JSX.Element {
   const { activeInternships, archivedInternships, addInternship, updateInternship, deleteInternship, toggleStatus, toggleArchive } = useInternships()
+  const { studentsPlaced } = useEmployerStats()
   const [viewTab, setViewTab] = useState<'active' | 'archived'>('active')
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
@@ -90,10 +92,11 @@ export default function InternshipManagementPage(): React.JSX.Element {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Active Listings', value: activeInternships.length, icon: 'work', color: 'primary' },
           { label: 'Total Applicants', value: activeInternships.reduce((s, i) => s + i.applicantCount, 0), icon: 'group', color: 'secondary' },
+          { label: 'Total Participants', value: studentsPlaced, icon: 'people', color: 'secondary' },
           { label: 'Archived', value: archivedInternships.length, icon: 'archive', color: 'outline' }
         ].map(stat => (
           <div key={stat.label} className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/40 relative overflow-hidden" style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}>
