@@ -56,7 +56,8 @@ export default function useCompanyProfile(): {
     setProfile(prev => ({
       ...prev,
       location: { lat, lng },
-      locationAddress: address ?? prev.locationAddress ?? null
+      locationAddress: address ?? null,
+      address: address ?? prev.address
     }))
   }
 

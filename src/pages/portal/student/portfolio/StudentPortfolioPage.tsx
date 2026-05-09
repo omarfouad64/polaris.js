@@ -4,6 +4,7 @@ import useStudentProjects from '../projects/scripts/useStudentProjects'
 import ProjectList from '../projects/components/ProjectList'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useGlobalContext } from '../../../../globalContext'
+import useFavorites from '../../../../hooks/useFavorites'
 
 interface PortfolioSection {
   id: 'profile' | 'skills' | 'projects' | 'contact'
@@ -22,10 +23,11 @@ const PORTFOLIO_SECTIONS: PortfolioSection[] = [
  * Displays portfolio information with tabs for profile, skills, and contact details.
  * Allows users to add, view, update, and remove portfolio information.
  */
-export default function StudentPortfolioPage() {
+export default function StudentPortfolioPage(): React.JSX.Element {
   const navigate = useNavigate()
   const { id } = useParams()
   const { user } = useGlobalContext()
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites()
 
   // State management
   const [activeSection, setActiveSection] = useState<'profile' | 'skills' | 'projects' | 'contact'>('profile')
@@ -49,6 +51,7 @@ export default function StudentPortfolioPage() {
 
   // We still use isOwnPortfolio for some titles, but now it checks if the target matches their username
   const isOwnPortfolio = isStudent && targetId === (user?.username || 'student-001')
+  const canFavorite = isReadOnly && (user?.role === 'Student' || user?.role === 'Employer')
 
   // Hook for portfolio data
   const {
@@ -123,6 +126,21 @@ export default function StudentPortfolioPage() {
     }
   }
 
+  const handleToggleFavorite = (): void => {
+    if (isFavorite(targetId)) {
+      removeFavorite(targetId)
+      return
+    }
+
+    addFavorite({
+      id: targetId,
+      type: 'portfolio',
+      title: portfolio.name,
+      subtitle: `${portfolio.major} - ${portfolio.projectCount} Projects`,
+      tags: portfolio.skills
+    })
+  }
+
   return (
     <div className="min-h-screen bg-background p-6 lg:p-8">
       {/* Page Header */}
@@ -181,6 +199,24 @@ export default function StudentPortfolioPage() {
                   className="px-4 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
                 >
                   {isEditing ? 'Editing' : 'Edit Profile'}
+                </button>
+              )}
+              {canFavorite && (
+                <button
+                  onClick={handleToggleFavorite}
+                  className={`mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg font-jakarta font-semibold text-sm border transition-all focus-visible:ring-2 focus-visible:ring-secondary ${isFavorite(targetId)
+                    ? 'text-error bg-error/10 border-error/20'
+                    : 'text-on-surface border-outline-variant/40 hover:text-error hover:bg-error/5 hover:border-error/30'
+                    }`}
+                  aria-label={`${isFavorite(targetId) ? 'Remove' : 'Add'} ${portfolio.name} portfolio to favorites`}
+                >
+                  <span
+                    className="material-symbols-outlined text-[18px]"
+                    style={isFavorite(targetId) ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                  >
+                    favorite
+                  </span>
+                  {isFavorite(targetId) ? 'Favorited' : 'Add to Favorites'}
                 </button>
               )}
             </div>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import useCompanyProfile from './scripts/useCompanyProfile'
 import Button from '../../../../components/Button'
 import Input from '../../../../components/Input'
@@ -16,6 +16,7 @@ export default function CompanyProfilePage(): React.JSX.Element {
   const [pendingLocation, setPendingLocation] = useState(profile.location)
   const [pendingAddress, setPendingAddress] = useState<string | null>(profile.locationAddress ?? null)
   const [addressStatus, setAddressStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle')
   const [documentError, setDocumentError] = useState('')
   const [form, setForm] = useState({
     biography: profile.biography,
@@ -25,7 +26,36 @@ export default function CompanyProfilePage(): React.JSX.Element {
   })
   const documentInputRef = useRef<HTMLInputElement>(null)
   const reverseGeocodeRequestId = useRef(0)
+  const saveTimeoutRef = useRef<number | null>(null)
   const maxPdfSize = 5 * 1024 * 1024
+
+  const isSameLocation = (a: { lat: number; lng: number } | null, b: { lat: number; lng: number } | null): boolean => {
+    if (!a || !b) return false
+    return Math.abs(a.lat - b.lat) < 0.000001 && Math.abs(a.lng - b.lng) < 0.000001
+  }
+
+  const isLocationDirty = !!pendingLocation && (
+    !profile.location ||
+    !isSameLocation(pendingLocation, profile.location) ||
+    (pendingAddress ?? null) !== (profile.locationAddress ?? null)
+  )
+
+  useEffect(() => {
+    if (activeTab !== 'location' || !profile.location) return
+    if (!pendingLocation || !isLocationDirty) {
+      setPendingLocation(profile.location)
+      setPendingAddress(profile.locationAddress ?? null)
+      setAddressStatus('idle')
+    }
+  }, [activeTab, profile.location, profile.locationAddress])
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        window.clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const handleSave = (): void => {
     updateProfile(form)
@@ -70,6 +100,7 @@ export default function CompanyProfilePage(): React.JSX.Element {
     setPendingLocation(location)
     setPendingAddress(null)
     setAddressStatus('loading')
+    setSaveStatus('idle')
     const requestId = (reverseGeocodeRequestId.current += 1)
     const address = await reverseGeocode(location.lat, location.lng)
 
@@ -85,8 +116,15 @@ export default function CompanyProfilePage(): React.JSX.Element {
   }
 
   const handleSaveLocation = (): void => {
-    if (!pendingLocation) return
+    if (!pendingLocation || addressStatus === 'loading' || !isLocationDirty) return
     setLocation(pendingLocation.lat, pendingLocation.lng, pendingAddress ?? null)
+    setSaveStatus('saved')
+    if (saveTimeoutRef.current) {
+      window.clearTimeout(saveTimeoutRef.current)
+    }
+    saveTimeoutRef.current = window.setTimeout(() => {
+      setSaveStatus('idle')
+    }, 2000)
   }
 
   const handleDocumentUpload = (file: File): void => {
@@ -254,8 +292,17 @@ export default function CompanyProfilePage(): React.JSX.Element {
               No location set yet. Click on the map to set your company&apos;s location.
             </p>
           )}
-          <Button onClick={handleSaveLocation} disabled={!pendingLocation}>
-            Save Location
+          <Button onClick={handleSaveLocation} disabled={!pendingLocation || addressStatus === 'loading' || !isLocationDirty}>
+            {saveStatus === 'saved' ? (
+              <>
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                Saved
+              </>
+            ) : addressStatus === 'loading' ? (
+              'Fetching address...'
+            ) : (
+              'Save Location'
+            )}
           </Button>
         </div>
       )}

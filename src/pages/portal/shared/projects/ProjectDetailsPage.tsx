@@ -261,13 +261,16 @@ export default function ProjectDetailsPage(): React.JSX.Element {
           </button>
           <button
             onClick={handleToggleFavorite}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-jakarta font-bold text-sm transition-all border ${isFavorite(project.id)
-              ? 'bg-primary/10 text-primary border-primary/20 shadow-sm'
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-jakarta font-bold text-sm transition-all border focus-visible:ring-2 focus-visible:ring-secondary ${isFavorite(project.id)
+              ? 'bg-error/10 text-error border-error/20 shadow-sm'
               : 'bg-surface-container-high text-on-surface hover:bg-surface-container border-outline-variant/30'
               }`}
           >
-            <span className={`material-symbols-outlined text-[20px] ${isFavorite(project.id) ? 'fill-1' : ''}`}>
-              {isFavorite(project.id) ? 'favorite' : 'favorite'}
+            <span
+              className="material-symbols-outlined text-[20px]"
+              style={isFavorite(project.id) ? { fontVariationSettings: "'FILL' 1" } : undefined}
+            >
+              favorite
             </span>
             {isFavorite(project.id) ? 'Saved' : 'Save'}
           </button>
