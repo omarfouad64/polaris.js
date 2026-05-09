@@ -15,7 +15,7 @@ const dummyInternships: Internship[] = [
     postedAt: '2026-04-01',
     companyName: 'TechVentures Inc.',
     companyLogo: '',
-    applicantCount: 42
+    applicantCount: 3
   },
   {
     id: 'int-2',
@@ -30,7 +30,7 @@ const dummyInternships: Internship[] = [
     postedAt: '2026-03-20',
     companyName: 'TechVentures Inc.',
     companyLogo: '',
-    applicantCount: 89
+    applicantCount: 2
   },
   {
     id: 'int-3',
@@ -45,7 +45,7 @@ const dummyInternships: Internship[] = [
     postedAt: '2026-04-10',
     companyName: 'TechVentures Inc.',
     companyLogo: '',
-    applicantCount: 17
+    applicantCount: 0
   },
   {
     id: 'int-4',
@@ -60,7 +60,7 @@ const dummyInternships: Internship[] = [
     postedAt: '2025-09-01',
     companyName: 'TechVentures Inc.',
     companyLogo: '',
-    applicantCount: 35
+    applicantCount: 0
   }
 ]
 

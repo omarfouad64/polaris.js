@@ -62,6 +62,16 @@ export default function CompanyProfilePage(): React.JSX.Element {
     setIsEditing(false)
   }
 
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      updateProfile({ logoUrl: reader.result as string })
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handleCancel = (): void => {
     setForm({
       biography: profile.biography,
@@ -161,8 +171,12 @@ export default function CompanyProfilePage(): React.JSX.Element {
         className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/40 flex flex-col sm:flex-row items-start sm:items-center gap-4"
         style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}
       >
-        <div className="w-20 h-20 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center text-3xl font-jakarta font-bold">
-          {profile.companyName[0]}
+        <div className="w-20 h-20 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center text-3xl font-jakarta font-bold overflow-hidden">
+          {profile.logoUrl ? (
+            <img src={profile.logoUrl} alt={`${profile.companyName} logo`} className="w-full h-full object-cover" />
+          ) : (
+            profile.companyName[0]
+          )}
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-3">
@@ -203,6 +217,29 @@ export default function CompanyProfilePage(): React.JSX.Element {
           className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/40 space-y-5"
           style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}
         >
+          <div className="flex flex-col gap-2">
+            <label className="font-jakarta text-sm font-semibold text-on-surface-variant">Company Logo</label>
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold overflow-hidden">
+                {profile.logoUrl ? (
+                  <img src={profile.logoUrl} alt={`${profile.companyName} logo`} className="w-full h-full object-cover" />
+                ) : (
+                  profile.companyName[0]
+                )}
+              </div>
+              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-jakarta font-semibold text-sm cursor-pointer hover:bg-surface-container">
+                <span className="material-symbols-outlined text-[18px]">upload</span>
+                Upload Logo
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                  aria-label="Upload company logo"
+                />
+              </label>
+            </div>
+          </div>
           <div className="flex flex-col gap-2">
             <label className="font-jakarta text-sm font-semibold text-on-surface-variant">Company Biography</label>
             {isEditing ? (

@@ -5,9 +5,9 @@ const dummyFavorites: FavoriteItem[] = [
   { id: 'fav-1', type: 'project', title: 'AI-Powered Study Planner', subtitle: 'Computer Science • Ahmed Hassan', tags: ['Python', 'TensorFlow', 'React'], rating: 4.5, savedAt: '2026-04-10' },
   { id: 'fav-2', type: 'project', title: 'GUC Campus Navigator', subtitle: 'Software Engineering • Sara Mohamed', tags: ['Flutter', 'Firebase', 'Maps API'], rating: 4.8, savedAt: '2026-04-08' },
   { id: 'fav-3', type: 'project', title: 'E-Commerce Platform', subtitle: 'Web Development • Omar Khaled', tags: ['Next.js', 'Stripe', 'PostgreSQL'], rating: 4.2, savedAt: '2026-03-25' },
-  { id: 'fav-4', type: 'portfolio', title: 'Ahmed Hassan', subtitle: 'Computer Science • 8 Projects', tags: ['Full-Stack', 'AI/ML', 'Cloud'], savedAt: '2026-04-12' },
-  { id: 'fav-5', type: 'portfolio', title: 'Sara Mohamed', subtitle: 'Media Engineering • 5 Projects', tags: ['Mobile', 'UX Design', 'Flutter'], savedAt: '2026-04-05' },
-  { id: 'fav-6', type: 'portfolio', title: 'Nour Ali', subtitle: 'Design • 6 Projects', tags: ['UI/UX', 'Figma', 'Research'], savedAt: '2026-03-30' }
+  { id: 'student-001', type: 'portfolio', title: 'Ahmed Hassan', subtitle: 'Computer Science • 8 Projects', tags: ['Full-Stack', 'AI/ML', 'Cloud'], savedAt: '2026-04-12' },
+  { id: 'student-002', type: 'portfolio', title: 'Sara Mohamed', subtitle: 'Media Engineering • 5 Projects', tags: ['Mobile', 'UX Design', 'Flutter'], savedAt: '2026-04-05' },
+  { id: 'student-004', type: 'portfolio', title: 'Nour Ali', subtitle: 'Design • 6 Projects', tags: ['UI/UX', 'Figma', 'Research'], savedAt: '2026-03-30' }
 ]
 
 const dummyRecommended: FavoriteItem[] = [

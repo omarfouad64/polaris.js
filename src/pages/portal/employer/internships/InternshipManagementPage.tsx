@@ -16,6 +16,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
   const [viewTab, setViewTab] = useState<'active' | 'archived'>('active')
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
+  const [deadlineError, setDeadlineError] = useState<string | null>(null)
   const [form, setForm] = useState<{
     title: string
     description: string
@@ -29,8 +30,36 @@ export default function InternshipManagementPage(): React.JSX.Element {
     applicationDeadline: '', programmingLanguages: '', status: 'Hiring'
   })
 
+  const formatDateInput = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = `${date.getMonth() + 1}`.padStart(2, '0')
+    const day = `${date.getDate()}`.padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const parseDateInput = (value: string): Date => {
+    const [year, month, day] = value.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+
+  const today = (() => {
+    const date = new Date()
+    date.setHours(0, 0, 0, 0)
+    return date
+  })()
+
   const handleSubmit = (): void => {
     if (!form.title.trim()) return
+    if (!form.applicationDeadline) {
+      setDeadlineError('Deadline is required.')
+      return
+    }
+    const selectedDeadline = parseDateInput(form.applicationDeadline)
+    if (selectedDeadline < today) {
+      setDeadlineError('Deadline must be today or later.')
+      return
+    }
+    setDeadlineError(null)
     if (editId) {
       updateInternship(editId, {
         title: form.title,
@@ -73,6 +102,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
     setForm({ title: '', description: '', skills: '', duration: '3 months', applicationDeadline: '', programmingLanguages: '', status: 'Hiring' })
     setShowForm(false)
     setEditId(null)
+    setDeadlineError(null)
   }
 
   const currentList = viewTab === 'active' ? activeInternships : archivedInternships
@@ -130,7 +160,17 @@ export default function InternshipManagementPage(): React.JSX.Element {
                   <option value="6 months">6 months</option>
                 </select>
               </div>
-              <Input label="Deadline" type="date" value={form.applicationDeadline} onChange={e => setForm(p => ({ ...p, applicationDeadline: e.target.value }))} />
+              <Input
+                label="Deadline"
+                type="date"
+                min={formatDateInput(today)}
+                value={form.applicationDeadline}
+                error={deadlineError ?? undefined}
+                onChange={e => {
+                  setForm(p => ({ ...p, applicationDeadline: e.target.value }))
+                  if (deadlineError) setDeadlineError(null)
+                }}
+              />
             </div>
             <Input label="Programming Languages (comma-separated)" value={form.programmingLanguages} onChange={e => setForm(p => ({ ...p, programmingLanguages: e.target.value }))} placeholder="TypeScript, Python" />
             <div className="flex gap-3 pt-2">
@@ -184,9 +224,16 @@ export default function InternshipManagementPage(): React.JSX.Element {
               </div>
               <div className="flex items-center justify-between border-t border-outline-variant/30 pt-3">
                 <div className="flex items-center gap-4">
-                  <div><span className="text-xl font-jakarta font-bold text-on-surface">{internship.applicantCount}</span><span className="text-xs font-lexend text-on-surface-variant ml-1">Applicants</span></div>
+                  <div><span className="text-xl font-jakarta font-bold text-on-surface">{internship.applicantCount}</span><span className="text-xs font-lexend text-on-surface-variant ml-1"> Applicants</span></div>
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => window.location.assign(`/portal/employer/internships/${internship.id}/applicants`)}
+                    className="px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-lg text-sm font-jakarta font-semibold hover:bg-surface-container transition-colors focus-visible:ring-2 focus-visible:ring-secondary"
+                    aria-label={`View applicants for ${internship.title}`}
+                  >
+                    Applicants
+                  </button>
                   <button onClick={() => toggleStatus(internship.id)} className="px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-lg text-sm font-jakarta font-semibold hover:bg-surface-container transition-colors focus-visible:ring-2 focus-visible:ring-secondary" aria-label={`Toggle status of ${internship.title}`}>
                     {internship.status === 'Hiring' ? 'Mark Filled' : 'Reopen'}
                   </button>

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import useFavorites from '../../../../../hooks/useFavorites'
 import type { InternshipApplication } from '../../../../../types'
 
 const dummyApplicants: InternshipApplication[] = [
@@ -43,20 +44,29 @@ const dummyApplicants: InternshipApplication[] = [
 export default function useApplicants(internshipId: string) {
   const [applicants, setApplicants] = useState<InternshipApplication[]>(dummyApplicants)
   const [sortByContributors, setSortByContributors] = useState(false)
+  const { favoritePortfolios } = useFavorites()
+
+  const favoriteIds = useMemo(() => new Set(favoritePortfolios.map(favorite => favorite.id)), [favoritePortfolios])
+  const favoriteNames = useMemo(() => new Set(favoritePortfolios.map(favorite => favorite.title.toLowerCase())), [favoritePortfolios])
 
   const filteredApplicants = useMemo(() => {
-    let results = applicants.filter(a => a.internshipId === internshipId)
+    const results = applicants.filter(a => a.internshipId === internshipId)
     if (sortByContributors) {
-      results = [...results].sort((a, b) => b.contributionScore - a.contributionScore)
+      return [...results].sort((a, b) => {
+        const scoreDiff = b.contributionScore - a.contributionScore
+        if (scoreDiff !== 0) return scoreDiff
+        return new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime()
+      })
     }
-    return results
+    return [...results].sort((a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime())
   }, [applicants, internshipId, sortByContributors])
 
   const suggestedApplicants = useMemo(() => {
     return applicants
-      .filter(a => a.internshipId === internshipId && a.contributionScore >= 85)
+      .filter(a => a.internshipId === internshipId)
+      .filter(a => favoriteIds.has(a.studentId) || favoriteNames.has(a.studentName.toLowerCase()))
       .sort((a, b) => b.contributionScore - a.contributionScore)
-  }, [applicants, internshipId])
+  }, [applicants, internshipId, favoriteIds, favoriteNames])
 
   const updateStatus = (applicationId: string, status: InternshipApplication['status']): void => {
     setApplicants(prev => prev.map(a =>

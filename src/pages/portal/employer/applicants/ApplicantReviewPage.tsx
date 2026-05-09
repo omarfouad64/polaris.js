@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useParams } from 'react-router-dom'
 import useApplicants from './scripts/useApplicants'
 import type { InternshipApplication } from '../../../../types'
 
@@ -9,7 +10,8 @@ import type { InternshipApplication } from '../../../../types'
  * 87 (view applicant list), 88 (set applicant status).
  */
 export default function ApplicantReviewPage(): React.JSX.Element {
-  const internshipId = 'int-1'
+  const { id } = useParams()
+  const internshipId = id ?? 'int-1'
   const { applicants, suggestedApplicants, updateStatus, sortByContributors, toggleSortByContributors } = useApplicants(internshipId)
   const [activeTab, setActiveTab] = useState<'candidates' | 'suggested'>('candidates')
   const [expandedId, setExpandedId] = useState<string | null>(null)
