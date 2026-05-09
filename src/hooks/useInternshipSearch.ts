@@ -28,7 +28,9 @@ export default function useInternshipSearch() {
   const [searchQuery, setSearchQuery] = useState('')
   const [companyFilter, setCompanyFilter] = useState('')
   const [durationFilter, setDurationFilter] = useState<string[]>([])
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
+  const [postedDateFrom, setPostedDateFrom] = useState('')
+  const [postedDateTo, setPostedDateTo] = useState('')
+  const [sortOrder, setSortOrder] = useState<'posted_desc' | 'posted_asc'>('posted_desc')
   const [applications, setApplications] = useState<InternshipApplication[]>(myApplications)
 
   const filteredInternships = useMemo(() => {
@@ -50,14 +52,24 @@ export default function useInternshipSearch() {
       results = results.filter(i => durationFilter.includes(i.duration))
     }
 
+    if (postedDateFrom) {
+      const from = new Date(postedDateFrom).getTime()
+      results = results.filter(i => new Date(i.postedAt).getTime() >= from)
+    }
+
+    if (postedDateTo) {
+      const to = new Date(postedDateTo).getTime()
+      results = results.filter(i => new Date(i.postedAt).getTime() <= to)
+    }
+
     results.sort((a, b) => {
       const dateA = new Date(a.postedAt).getTime()
       const dateB = new Date(b.postedAt).getTime()
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
+      return sortOrder === 'posted_desc' ? dateB - dateA : dateA - dateB
     })
 
     return results
-  }, [searchQuery, companyFilter, durationFilter, sortOrder])
+  }, [searchQuery, companyFilter, durationFilter, postedDateFrom, postedDateTo, sortOrder])
 
   const applyForInternship = (internshipId: string, coverLetter: string): void => {
     const internship = allInternships.find(i => i.id === internshipId)
@@ -100,6 +112,10 @@ export default function useInternshipSearch() {
     setCompanyFilter,
     durationFilter,
     toggleDurationFilter,
+    postedDateFrom,
+    setPostedDateFrom,
+    postedDateTo,
+    setPostedDateTo,
     sortOrder,
     setSortOrder,
     applyForInternship,

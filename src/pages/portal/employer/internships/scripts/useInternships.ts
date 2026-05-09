@@ -104,8 +104,6 @@ export default function useInternships() {
   const toggleArchive = (id: string): void => {
     setInternships(prev => prev.map(i => {
       if (i.id !== id) return i
-      const deadlinePassed = new Date(i.applicationDeadline) < new Date()
-      if (!i.archived && !deadlinePassed) return i
       return { ...i, archived: !i.archived }
     }))
   }
