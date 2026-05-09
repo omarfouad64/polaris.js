@@ -98,8 +98,6 @@ export default function ProjectDetailsPage(): React.JSX.Element {
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false)
   const [isAppealModalOpen, setIsAppealModalOpen] = useState(false)
   const [showAppealFeedback, setShowAppealFeedback] = useState(false)
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
 
   // Instructor feedback state
   const projectId = id || ''
@@ -128,7 +126,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
         id: project.id,
         type: 'project',
         title: project.title,
-        subtitle: `${getCourseById(project.course)?.name ?? 'Independent'} • ${user?.fullName || user?.username || 'Student'}`,
+        subtitle: `${getCourseById(project.course)?.name ?? 'Independent'} • John Doe`,
         tags: project.languages,
         rating: 4.8
       })
@@ -158,8 +156,6 @@ export default function ProjectDetailsPage(): React.JSX.Element {
       type: 'flag'
     })
     setIsFlagModalOpen(false)
-    setSuccessMessage('Project has been flagged and student notified.')
-    setShowSuccessDialog(true)
   }
 
   const handleAppeal = (message: string) => {
@@ -265,13 +261,13 @@ export default function ProjectDetailsPage(): React.JSX.Element {
           </button>
           <button
             onClick={handleToggleFavorite}
-            className="flex items-center gap-2 px-6 py-3 bg-surface-container-high text-on-surface hover:bg-surface-container rounded-xl font-jakarta font-bold text-sm transition-all border border-outline-variant/30 shadow-sm"
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-jakarta font-bold text-sm transition-all border ${isFavorite(project.id)
+              ? 'bg-primary/10 text-primary border-primary/20 shadow-sm'
+              : 'bg-surface-container-high text-on-surface hover:bg-surface-container border-outline-variant/30'
+              }`}
           >
-            <span 
-              className={`material-symbols-outlined text-[20px] transition-colors duration-300 ${isFavorite(project.id) ? 'fill-1 text-error' : ''}`}
-              style={{ fontVariationSettings: isFavorite(project.id) ? "'FILL' 1" : "'FILL' 0" }}
-            >
-              favorite
+            <span className={`material-symbols-outlined text-[20px] ${isFavorite(project.id) ? 'fill-1' : ''}`}>
+              {isFavorite(project.id) ? 'favorite' : 'favorite'}
             </span>
             {isFavorite(project.id) ? 'Saved' : 'Save'}
           </button>
@@ -322,12 +318,26 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             </div>
           </div>
 
-          {/* Project Tasks (Requirement 33 & Part 4) */}
+          {/* Project Tasks (Req 37) */}
+          <div className="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/30 shadow-sm">
+            <ProjectTaskManager
+              projectId={projectId}
+              tasks={project.tasks || []}
+              onTasksChange={(newTasks) => {
+                updateProject(projectId, { tasks: newTasks })
+                setProject((prev: any) => ({ ...prev, tasks: newTasks }))
+              }}
+              isOwner={user?.username === 'student-001'} // Simplified for demo
+              isInstructor={isInstructor}
+              currentUserId={user?.username || 'Unknown'}
+              userName={user?.username || 'Unknown User'}
+            />
+          </div>
+          {/* Project Tasks (Requirement 33) */}
           <ProjectTaskSection
             projectId={project.id}
-            tasks={project.tasks || []}
+            tasks={project.tasks}
             currentUserId={user?.username}
-            readOnly={isInstructor}
           />
         </div>
 
@@ -371,22 +381,16 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold overflow-hidden">
-                    {user?.profilePicture ? (
-                      <img src={user.profilePicture} alt={user.username} className="w-full h-full object-cover" />
-                    ) : (
-                      (user?.fullName || user?.username || 'JD').charAt(0).toUpperCase()
-                    )}
-                  </div>
+                  <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold">JD</div>
                   <div>
-                    <p className="text-sm font-jakarta font-bold text-on-surface">{user?.fullName || user?.username}</p>
-                    <p className="text-xs font-lexend text-on-surface-variant">Project Lead</p>
+                    <p className="text-sm font-jakarta font-bold text-on-surface">John Doe</p>
+                    <p className="text-xs font-lexend text-on-surface-variant">Lead Developer</p>
                   </div>
                 </div>
                 <button
-                  onClick={() => handleStartChat(user?.username || 'u-student-001', user?.fullName || user?.username || 'User', (user?.fullName || user?.username || 'U')[0])}
+                  onClick={() => handleStartChat('u-student-001', 'John Doe', 'JD')}
                   className="p-2 rounded-xl hover:bg-primary/10 text-primary transition-colors"
-                  title={`Message ${user?.fullName || user?.username}`}
+                  title="Message John Doe"
                 >
                   <span className="material-symbols-outlined text-[20px]">chat</span>
                 </button>
@@ -414,17 +418,57 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             ) : (
               <p className="text-xs font-lexend text-on-surface-variant">No ratings yet.</p>
             )}
-            {/* Rating is now read-only on this page as per Part 4 */}
+            {isInstructor && (
+              <button
+                onClick={() => setShowRatingForm(!showRatingForm)}
+                className="mt-3 w-full px-4 py-2 bg-secondary text-on-secondary rounded-xl font-jakarta font-bold text-sm hover:shadow-raised transition-all flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">star</span>
+                {showRatingForm ? 'Cancel' : 'Rate Project'}
+              </button>
+            )}
           </div>
 
-          {/* Success Dialog */}
-          <FeedbackDialog
-            isOpen={showSuccessDialog}
-            title="Success"
-            message={successMessage}
-            actionLabel="Great"
-            onClose={() => setShowSuccessDialog(false)}
-          />
+          {/* Rating Form (Instructor Only) */}
+          {isInstructor && showRatingForm && (
+            <div className="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm space-y-4">
+              <h4 className="font-jakarta font-bold text-on-surface text-sm">Your Rating</h4>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map(star => (
+                  <button
+                    key={star}
+                    onClick={() => setRatingValue(star)}
+                    onMouseEnter={() => setRatingHover(star)}
+                    onMouseLeave={() => setRatingHover(0)}
+                    className="text-3xl transition-transform hover:scale-110"
+                  >
+                    {(ratingHover || ratingValue) >= star ? '⭐' : '☆'}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                value={ratingComment}
+                onChange={e => setRatingComment(e.target.value)}
+                placeholder="Optional comment..."
+                rows={2}
+                className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl p-3 font-lexend text-sm text-on-surface focus:border-secondary focus:ring-2 focus:ring-secondary/10 outline-none"
+              />
+              <button
+                onClick={() => {
+                  if (ratingValue === 0) return
+                  rateProject('instructor-001', 'Dr. Fatima Al-Mansouri', ratingValue, ratingComment)
+                  addNotification({ type: 'feedback', title: 'Project Rated', body: `Dr. Fatima Al-Mansouri rated your project "${project?.title}" ${ratingValue}/5` })
+                  setShowRatingForm(false)
+                  setRatingValue(0)
+                  setRatingComment('')
+                }}
+                disabled={ratingValue === 0}
+                className={`w-full px-4 py-2 rounded-xl font-jakarta font-bold text-sm transition-all ${ratingValue > 0 ? 'bg-secondary text-on-secondary hover:shadow-raised' : 'bg-surface-container text-on-surface-variant cursor-not-allowed'}`}
+              >
+                Submit Rating
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -438,8 +482,70 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             </h3>
             <p className="text-sm font-lexend text-on-surface-variant mt-1">Comments and evaluations from course instructors</p>
           </div>
-          {/* Feedback addition is now read-only on this page as per Part 4 */}
+          {isInstructor && (
+            <button
+              onClick={() => setShowFeedbackForm(!showFeedbackForm)}
+              className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-jakarta font-bold text-sm hover:shadow-raised transition-all flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">add_comment</span>
+              {showFeedbackForm ? 'Cancel' : 'Add Feedback'}
+            </button>
+          )}
         </div>
+
+        {/* Inline Add Feedback Form */}
+        {isInstructor && showFeedbackForm && (
+          <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 space-y-4">
+            <div className="flex gap-4 mb-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  checked={feedbackType === 'general'}
+                  onChange={() => setFeedbackType('general')}
+                  className="w-4 h-4 text-primary"
+                />
+                <span className="text-sm font-jakarta font-semibold text-on-surface">General Feedback</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  checked={feedbackType === 'thesis_draft'}
+                  onChange={() => setFeedbackType('thesis_draft')}
+                  className="w-4 h-4 text-primary"
+                />
+                <span className="text-sm font-jakarta font-semibold text-on-surface">Thesis Draft Feedback</span>
+              </label>
+            </div>
+            <textarea
+              value={feedbackText}
+              onChange={e => setFeedbackText(e.target.value)}
+              placeholder={feedbackType === 'general' ? "Write your general feedback..." : "Write your feedback on the thesis draft..."}
+              rows={4}
+              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 font-lexend text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
+              autoFocus
+            />
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => { setShowFeedbackForm(false); setFeedbackText(''); setFeedbackType('general'); }}>Cancel</Button>
+              <Button
+                variant="primary"
+                disabled={!feedbackText.trim()}
+                onClick={() => {
+                  addProjectFeedback('instructor-001', 'Dr. Fatima Al-Mansouri', feedbackText.trim(), feedbackType)
+                  addNotification({
+                    type: 'feedback',
+                    title: feedbackType === 'general' ? 'New Project Feedback' : 'New Thesis Feedback',
+                    body: `Dr. Fatima Al-Mansouri left ${feedbackType === 'general' ? 'feedback' : 'thesis feedback'} on your project "${project?.title}"`
+                  })
+                  setFeedbackText('')
+                  setFeedbackType('general')
+                  setShowFeedbackForm(false)
+                }}
+              >
+                Submit Feedback
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Feedback List */}
         {projectFeedback.length > 0 ? (
@@ -460,17 +566,52 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                     <span className="text-xs font-jakarta font-semibold px-2 py-1 rounded-full bg-primary-container text-on-primary-container">
                       {fb.feedbackType === 'thesis_draft' ? 'Thesis' : 'General'}
                     </span>
-                    {/* Editing is now disabled on this page as per Part 4 */}
+                    {isInstructor && fb.instructorId === 'instructor-001' && (
+                      <>
+                        <button
+                          onClick={() => { setEditingFeedbackId(fb.id); setEditingFeedbackText(fb.comment) }}
+                          className="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors"
+                          title="Edit"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">edit</span>
+                        </button>
+                        <button
+                          onClick={() => { if (window.confirm('Delete this feedback?')) removeProjectFeedback(fb.id) }}
+                          className="p-1.5 rounded-lg hover:bg-error/10 text-error transition-colors"
+                          title="Delete"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">delete</span>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
-                <p className="text-sm font-lexend text-on-surface leading-relaxed">{fb.comment}</p>
+                {editingFeedbackId === fb.id ? (
+                  <div className="space-y-3">
+                    <textarea
+                      value={editingFeedbackText}
+                      onChange={e => setEditingFeedbackText(e.target.value)}
+                      rows={3}
+                      className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-3 font-lexend text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button onClick={() => setEditingFeedbackId(null)} className="px-3 py-1.5 text-xs font-jakarta font-semibold text-on-surface-variant hover:bg-surface-container rounded-lg">Cancel</button>
+                      <button
+                        onClick={() => { editProjectFeedback(fb.id, editingFeedbackText); setEditingFeedbackId(null) }}
+                        className="px-3 py-1.5 text-xs font-jakarta font-semibold bg-primary text-on-primary rounded-lg hover:shadow-sm"
+                      >Save</button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm font-lexend text-on-surface leading-relaxed">{fb.comment}</p>
+                )}
               </div>
             ))}
           </div>
         ) : (
           <div className="bg-surface-container rounded-2xl p-8 text-center">
             <span className="material-symbols-outlined text-[40px] text-outline/30 mb-2">chat_bubble_outline</span>
-            <p className="text-sm font-lexend text-on-surface-variant">No feedback yet. {isInstructor ? 'Evaluate from the Oversight Dashboard!' : 'Instructors will add feedback as they review your project.'}</p>
+            <p className="text-sm font-lexend text-on-surface-variant">No feedback yet. {isInstructor ? 'Be the first to add feedback!' : 'Instructors will add feedback as they review your project.'}</p>
           </div>
         )}
 

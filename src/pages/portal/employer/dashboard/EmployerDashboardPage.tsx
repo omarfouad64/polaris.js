@@ -11,6 +11,11 @@ export default function EmployerDashboardPage(): React.JSX.Element {
 
   return (
     <div className="space-y-8">
+      <div className="flex flex-col gap-2 mb-2">
+        <h1 className="font-jakarta text-4xl font-extrabold text-on-surface">Employer Portal</h1>
+        <p className="font-lexend text-on-surface-variant">Manage your company, internships, and talent pipeline.</p>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div

@@ -39,7 +39,11 @@ export default function ApplicantReviewPage(): React.JSX.Element {
               <span className="text-xs font-jakarta font-semibold text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">
                 Score: {app.contributionScore}
               </span>
-              <button className="px-3 py-1 text-sm font-jakarta text-primary hover:underline focus-visible:ring-2 focus-visible:ring-secondary rounded-lg" aria-label={`View portfolio of ${app.studentName}`}>
+              <button
+                onClick={() => window.location.assign(`/portal/employer/portfolio/${app.studentId}`)}
+                className="px-3 py-1 text-sm font-jakarta text-primary hover:underline focus-visible:ring-2 focus-visible:ring-secondary rounded-lg"
+                aria-label={`View portfolio of ${app.studentName}`}
+              >
                 View Portfolio
               </button>
             </div>

@@ -1,4 +1,4 @@
-import { useLocation, Link, useNavigate } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { useGlobalContext } from '../../../globalContext'
 import useNotifications from '../../../hooks/useNotifications'
 import { useProjectNotifications } from '../../../hooks/useProjectNotifications'
@@ -8,9 +8,8 @@ import useCompanyProfile from '../employer/profile/scripts/useCompanyProfile'
 
 export default function Header() {
   const location = useLocation()
-  const navigate = useNavigate()
   const { user } = useGlobalContext()
-  const { unreadCount: generalUnread, notificationsMuted } = useNotifications()
+  const { unreadCount: generalUnread } = useNotifications()
   const { unreadCount: invitationUnread } = useProjectNotifications()
   const { portfolio } = useStudentPortfolio()
   const { profile: instructorProfile } = useInstructorProfile()
@@ -23,15 +22,15 @@ export default function Header() {
   if (user?.role === 'Course Instructor') rolePath = 'instructor'
   else if (user?.role === 'Administrator') rolePath = 'administrator'
   else if (user?.role === 'Employer') rolePath = 'employer'
-  
+
   // Extract page name from path (e.g., /portal/student/projects -> Projects)
   const pathParts = location.pathname.split('/').filter(Boolean)
   const lastPart = pathParts[pathParts.length - 1]
-  const pageName = lastPart 
+  const pageName = lastPart
     ? lastPart.charAt(0).toUpperCase() + lastPart.slice(1).replace(/-/g, ' ')
     : 'Dashboard'
 
-  const avatarUrl = user?.profilePicture || (
+  const avatarUrl =
     user?.role === 'Student'
       ? portfolio.profilePicture
       : user?.role === 'Course Instructor'
@@ -39,25 +38,15 @@ export default function Header() {
         : user?.role === 'Employer'
           ? companyProfile.logoUrl
           : null
-  )
 
-  const avatarInitial = (
+  const avatarInitial =
     user?.role === 'Student'
-      ? portfolio.name?.charAt(0) || user.username.charAt(0)
+      ? portfolio.name.charAt(0)
       : user?.role === 'Course Instructor'
-        ? instructorProfile.name?.charAt(0) || user.username.charAt(0)
+        ? instructorProfile.name.charAt(0)
         : user?.role === 'Employer'
-          ? companyProfile.companyName?.charAt(0) || user.username.charAt(0)
-          : user?.username?.charAt(0) || 'A'
-  )
-
-  const handleNavigate = (path: string): void => {
-    if (location.pathname.includes('/search')) {
-      window.location.assign(path)
-      return
-    }
-    navigate(path)
-  }
+          ? companyProfile.companyName.charAt(0)
+          : user?.username?.charAt(0) ?? 'A'
 
   return (
     <header className="h-20 bg-surface-container-lowest border-b border-surface-container flex items-center justify-between px-10 shadow-sm">
@@ -66,19 +55,13 @@ export default function Header() {
       </h2>
       <div className="flex items-center gap-4">
         <div className="relative">
-          <button 
-            onClick={() => handleNavigate(`/portal/${rolePath}/notifications`)}
+          <Link
+            to={`/portal/${rolePath}/notifications`}
             className="p-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors"
           >
-            <span className="material-symbols-outlined">
-              {notificationsMuted ? 'notifications_paused' : 'notifications'}
-            </span>
-          </button>
-          {notificationsMuted ? (
-            <span className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 bg-surface-container-high text-primary text-[14px] rounded-full w-5 h-5 flex items-center justify-center border-2 border-surface-container-lowest">
-              <span className="material-symbols-outlined text-[12px] font-bold">volume_off</span>
-            </span>
-          ) : unreadCount > 0 && (
+            <span className="material-symbols-outlined">notifications</span>
+          </Link>
+          {unreadCount > 0 && (
             <span className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 bg-error text-on-error text-[10px] font-jakarta font-bold rounded-full min-w-4.5 h-4.5 flex items-center justify-center px-1">
               {unreadCount}
             </span>

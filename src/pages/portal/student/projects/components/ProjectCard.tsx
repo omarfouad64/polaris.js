@@ -18,167 +18,153 @@
 import useCourses from '../../../../../hooks/useCourses';
 
 interface ProjectCardProps {
-  id: string;
-  title: string;
-  course: string;
-  languages: string[];
-  rating?: number;
-  isPublic?: boolean;
-  createdDate: string;
-  status?: 'active' | 'flagged';
-  flagReason?: string;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onView: (id: string) => void;
-  onToggleVisibility?: (id: string) => void;
-  onTasks?: (id: string) => void;
+    id: string;
+    title: string;
+    course: string;
+    languages: string[];
+    rating?: number;
+    isPublic?: boolean;
+    createdDate: string;
+    status?: 'active' | 'flagged';
+    flagReason?: string;
+    onEdit: (id: string) => void;
+    onDelete: (id: string) => void;
+    onView: (id: string) => void;
+    onToggleVisibility?: (id: string) => void;
+    onTasks?: (id: string) => void;
 }
 
 export default function ProjectCard({
-  id,
-  title,
-  course,
-  languages,
-  rating,
-  isPublic,
-  createdDate,
-  status = 'active',
-  flagReason,
-  onEdit,
-  onDelete,
-  onView,
-  onToggleVisibility,
-  onTasks,
+    id,
+    title,
+    course,
+    languages,
+    rating,
+    isPublic,
+    createdDate,
+    status = 'active',
+    flagReason,
+    onEdit,
+    onDelete,
+    onView,
+    onToggleVisibility,
+    onTasks,
 }: ProjectCardProps) {
-  const { getCourseById } = useCourses();
+    const { getCourseById } = useCourses();
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+    const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
+    };
 
-  const courseData = getCourseById(course);
-  const isFlagged = status === 'flagged';
+    const courseData = getCourseById(course);
+    const isFlagged = status === 'flagged';
 
-  return (
-    <div
-      className={`bg-surface-container-lowest rounded-xl p-6 border transition-all duration-300 cursor-pointer group relative flex flex-col h-full ${isFlagged ? 'border-error/40 bg-error/5' : 'border-outline-variant/40 hover:shadow-raised hover:scale-[1.01]'
-        }`}
-      onClick={() => onView(id)}
-    >
-      {/* Header */}
-      <div className="space-y-4">
-        <div>
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-xl font-jakarta font-semibold text-on-background group-hover:text-primary transition-colors duration-150 line-clamp-2">
-                  {title}
-                </h3>
-                {isFlagged && (
-                  <span className="px-2 py-0.5 bg-error text-on-error rounded-full text-[10px] font-jakarta font-bold uppercase tracking-wider">
-                    Flagged
-                  </span>
-                )}
-              </div>
+    return (
+        <div
+            className={`bg-surface-container-lowest rounded-xl p-6 border transition-all duration-300 cursor-pointer group relative flex flex-col h-full ${isFlagged ? 'border-error/40 bg-error/5' : 'border-outline-variant/40 hover:shadow-raised hover:scale-[1.01]'
+                }`}
+            onClick={() => onView(id)}
+        >
+            {/* Header */}
+            <div className="space-y-4">
+                <div>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-xl font-jakarta font-semibold text-on-background group-hover:text-primary transition-colors duration-150 line-clamp-2">
+                                    {title}
+                                </h3>
+                                {isFlagged && (
+                                    <span className="px-2 py-0.5 bg-error text-on-error rounded-full text-[10px] font-jakarta font-bold uppercase tracking-wider">
+                                        Flagged
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-jakarta font-bold">
+                            {courseData?.code || 'N/A'}
+                        </span>
+                        <p className="text-sm font-lexend text-on-surface-variant line-clamp-1">{courseData?.name || course}</p>
+                    </div>
+                </div>
+
+                {/* Languages */}
+                <div>
+                    <div className="flex flex-wrap gap-2">
+                        {languages.slice(0, 3).map((lang) => (
+                            <span
+                                key={lang}
+                                className="text-xs font-jakarta font-semibold bg-primary/10 text-primary px-2 py-1 rounded-full"
+                            >
+                                {lang}
+                            </span>
+                        ))}
+                        {languages.length > 3 && (
+                            <span className="text-xs font-jakarta font-semibold bg-surface-container text-on-surface-variant px-2 py-1 rounded-full">
+                                +{languages.length - 3} more
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-4 border-t border-outline-variant/40">
+                    <p className="text-xs font-lexend text-on-surface-variant">
+                        Created {formatDate(createdDate)}
+                    </p>
+                    {rating && (
+                        <p className="text-xs font-lexend text-secondary font-semibold">
+                            ⭐ {rating}/5
+                        </p>
+                    )}
+                </div>
             </div>
-            {onToggleVisibility && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onToggleVisibility(id)
-                }}
-                className="p-1.5 rounded-lg hover:bg-primary/10 text-on-surface-variant hover:text-primary transition-all duration-200"
-                title={isPublic ? 'Project is Public' : 'Project is Private'}
-              >
-                <span className={`material-symbols-outlined text-[20px] ${isPublic ? 'fill-1' : ''}`}>
-                  {isPublic ? 'visibility' : 'visibility_off'}
-                </span>
-              </button>
+
+            {isFlagged && flagReason && (
+                <div className="mt-auto pt-4 border-t border-error/20">
+                    <p className="text-xs font-lexend text-error leading-relaxed">
+                        <span className="font-bold">Reason:</span> {flagReason}
+                    </p>
+                </div>
             )}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-jakarta font-bold">
-              {courseData?.code || 'N/A'}
-            </span>
-            <p className="text-sm font-lexend text-on-surface-variant line-clamp-1">{courseData?.name || course}</p>
-          </div>
-        </div>
 
-        {/* Languages */}
-        <div>
-          <div className="flex flex-wrap gap-2">
-            {languages.slice(0, 3).map((lang) => (
-              <span
-                key={lang}
-                className="text-xs font-jakarta font-semibold bg-primary/10 text-primary px-2 py-1 rounded-full"
-              >
-                {lang}
-              </span>
-            ))}
-            {languages.length > 3 && (
-              <span className="text-xs font-jakarta font-semibold bg-surface-container text-on-surface-variant px-2 py-1 rounded-full">
-                +{languages.length - 3} more
-              </span>
+            {!isFlagged && (
+                <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-outline-variant/40" onClick={(e) => e.stopPropagation()}>
+                    {/* Tasks shortcut (Req 32) */}
+                    {onTasks && (
+                        <button
+                            onClick={() => onTasks(id)}
+                            className="w-full text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-primary/8 text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/20 shadow-sm flex items-center justify-center gap-2"
+                        >
+                            <span className="material-symbols-outlined text-lg">task</span>
+                            Task Board
+                        </button>
+                    )}
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => onEdit(id)}
+                            className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/10 shadow-sm flex items-center justify-center gap-2"
+                        >
+                            <span className="material-symbols-outlined text-lg">edit</span>
+                            Edit
+                        </button>
+                        <button
+                            onClick={() => onDelete(id)}
+                            className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg border border-error/30 text-error hover:bg-error hover:text-on-error transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
+                        >
+                            <span className="material-symbols-outlined text-lg">delete</span>
+                            Delete
+                        </button>
+                    </div>
+                </div>
             )}
-          </div>
         </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-outline-variant/40">
-          <p className="text-xs font-lexend text-on-surface-variant">
-            Created {formatDate(createdDate)}
-          </p>
-          {rating && (
-            <p className="text-xs font-lexend text-secondary font-semibold">
-              ⭐ {rating}/5
-            </p>
-          )}
-        </div>
-      </div>
-
-      {isFlagged && flagReason && (
-        <div className="mt-auto pt-4 border-t border-error/20">
-          <p className="text-xs font-lexend text-error leading-relaxed">
-            <span className="font-bold">Reason:</span> {flagReason}
-          </p>
-        </div>
-      )}
-
-      {!isFlagged && (
-        <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-outline-variant/40" onClick={(e) => e.stopPropagation()}>
-          {/* Tasks shortcut (Req 32) */}
-          {onTasks && (
-            <button
-              onClick={() => onTasks(id)}
-              className="w-full text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-primary/8 text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/20 shadow-sm flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined text-lg">task</span>
-              Task Board
-            </button>
-          )}
-          <div className="flex gap-2">
-            <button
-              onClick={() => onEdit(id)}
-              className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all duration-200 border border-primary/10 shadow-sm flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined text-lg">edit</span>
-              Edit
-            </button>
-            <button
-              onClick={() => onDelete(id)}
-              className="flex-1 text-sm font-jakarta font-semibold px-4 py-2.5 rounded-lg border border-error/30 text-error hover:bg-error hover:text-on-error transition-all duration-200 shadow-sm flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined text-lg">delete</span>
-              Delete
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    );
 }

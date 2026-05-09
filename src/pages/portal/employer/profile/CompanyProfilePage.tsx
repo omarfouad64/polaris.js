@@ -1,10 +1,8 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
 import useCompanyProfile from './scripts/useCompanyProfile'
 import Button from '../../../../components/Button'
 import Input from '../../../../components/Input'
 import OsmMapPicker from './components/OsmMapPicker'
-import FeedbackDialog from '../../../../components/FeedbackDialog'
-import { useGlobalContext } from '../../../../globalContext'
 
 /**
  * CompanyProfilePage — employer company profile management with Details and Location tabs.
@@ -13,15 +11,12 @@ import { useGlobalContext } from '../../../../globalContext'
  */
 export default function CompanyProfilePage(): React.JSX.Element {
   const { profile, updateProfile, setLocation, uploadDocument, removeDocument } = useCompanyProfile()
-  const { updateUser, user } = useGlobalContext()
   const [activeTab, setActiveTab] = useState<'details' | 'location' | 'documents'>('details')
   const [isEditing, setIsEditing] = useState(false)
   const [pendingLocation, setPendingLocation] = useState(profile.location)
   const [pendingAddress, setPendingAddress] = useState<string | null>(profile.locationAddress ?? null)
   const [addressStatus, setAddressStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [documentError, setDocumentError] = useState('')
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
   const [form, setForm] = useState({
     biography: profile.biography,
     address: profile.address,
@@ -29,22 +24,12 @@ export default function CompanyProfilePage(): React.JSX.Element {
     phone: profile.phone
   })
   const documentInputRef = useRef<HTMLInputElement>(null)
-  const logoInputRef = useRef<HTMLInputElement>(null)
   const reverseGeocodeRequestId = useRef(0)
   const maxPdfSize = 5 * 1024 * 1024
-
-  // Sync initial user data if available
-  useEffect(() => {
-    if (user && !profile.logoUrl && user.profilePicture) {
-       updateProfile({ logoUrl: user.profilePicture })
-    }
-  }, [])
 
   const handleSave = (): void => {
     updateProfile(form)
     setIsEditing(false)
-    setSuccessMessage('Company profile details updated successfully.')
-    setShowSuccessDialog(true)
   }
 
   const handleCancel = (): void => {
@@ -55,19 +40,6 @@ export default function CompanyProfilePage(): React.JSX.Element {
       phone: profile.phone
     })
     setIsEditing(false)
-  }
-
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const pictureUrl = e.target?.result as string
-        updateProfile({ logoUrl: pictureUrl })
-        updateUser({ profilePicture: pictureUrl })
-      }
-      reader.readAsDataURL(file)
-    }
   }
 
   const reverseGeocode = async (lat: number, lng: number): Promise<string | null> => {
@@ -114,17 +86,7 @@ export default function CompanyProfilePage(): React.JSX.Element {
 
   const handleSaveLocation = (): void => {
     if (!pendingLocation) return
-    
-    // Update the profile state
     setLocation(pendingLocation.lat, pendingLocation.lng, pendingAddress ?? null)
-    
-    // Clear pending state to reflect the new saved state in the UI
-    setPendingLocation(null)
-    setPendingAddress(null)
-    setAddressStatus('idle')
-    
-    setSuccessMessage('Company location has been updated successfully.')
-    setShowSuccessDialog(true)
   }
 
   const handleDocumentUpload = (file: File): void => {
@@ -158,30 +120,11 @@ export default function CompanyProfilePage(): React.JSX.Element {
     <div className="space-y-6">
       {/* Profile Header */}
       <div
-        className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/40 flex flex-col sm:flex-row items-start sm:items-center gap-6"
+        className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/40 flex flex-col sm:flex-row items-start sm:items-center gap-4"
         style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}
       >
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-20 h-20 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center text-3xl font-jakarta font-bold overflow-hidden border-2 border-surface-container">
-            {user?.profilePicture ? (
-              <img src={user.profilePicture} alt={profile.companyName} className="w-full h-full object-cover" />
-            ) : (
-              profile.companyName[0]
-            )}
-          </div>
-          <input
-            ref={logoInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleLogoUpload}
-          />
-          <button
-            onClick={() => logoInputRef.current?.click()}
-            className="text-[12px] font-jakarta font-semibold text-primary hover:underline"
-          >
-            Change Photo
-          </button>
+        <div className="w-20 h-20 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center text-3xl font-jakarta font-bold">
+          {profile.companyName[0]}
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-3">
@@ -206,11 +149,10 @@ export default function CompanyProfilePage(): React.JSX.Element {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-lg text-sm font-jakarta font-semibold transition-all ${
-              activeTab === tab
+            className={`px-5 py-2 rounded-lg text-sm font-jakarta font-semibold transition-all ${activeTab === tab
                 ? 'bg-surface-container-lowest text-primary shadow-sm'
                 : 'text-on-surface-variant hover:text-on-surface'
-            }`}
+              }`}
           >
             {tab === 'details' ? 'Details' : tab === 'location' ? 'Location' : 'Documents'}
           </button>
@@ -384,13 +326,6 @@ export default function CompanyProfilePage(): React.JSX.Element {
           )}
         </div>
       )}
-      <FeedbackDialog
-        isOpen={showSuccessDialog}
-        title="Success"
-        message={successMessage}
-        actionLabel="OK"
-        onClose={() => setShowSuccessDialog(false)}
-      />
     </div>
   )
 }
