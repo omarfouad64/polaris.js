@@ -5,9 +5,10 @@ import ProjectList from '../projects/components/ProjectList'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useGlobalContext } from '../../../../globalContext'
 import useFavorites from '../../../../hooks/useFavorites'
+import useInternshipSearch from '../../../../hooks/useInternshipSearch'
 
 interface PortfolioSection {
-  id: 'profile' | 'skills' | 'projects' | 'contact'
+  id: 'profile' | 'skills' | 'projects' | 'internships' | 'contact'
   label: string
 }
 
@@ -15,6 +16,7 @@ const PORTFOLIO_SECTIONS: PortfolioSection[] = [
   { id: 'profile', label: 'Profile Info' },
   { id: 'skills', label: 'Skills' },
   { id: 'projects', label: 'Projects' },
+  { id: 'internships', label: 'Internships' },
   { id: 'contact', label: 'Contact & Links' }
 ]
 
@@ -30,7 +32,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
   const { isFavorite, addFavorite, removeFavorite } = useFavorites()
 
   // State management
-  const [activeSection, setActiveSection] = useState<'profile' | 'skills' | 'projects' | 'contact'>('profile')
+  const [activeSection, setActiveSection] = useState<'profile' | 'skills' | 'projects' | 'internships' | 'contact'>('profile')
   const [newSkill, setNewSkill] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [editMajor, setEditMajor] = useState('')
@@ -65,6 +67,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
   } = useStudentPortfolio(targetId)
 
   const { projects, deleteProject, isLoading: projectsLoading } = useStudentProjects()
+  const { completedInternships } = useInternshipSearch()
 
   // Project Handlers
   const handleEditProject = (id: string) => {
@@ -412,7 +415,53 @@ export default function StudentPortfolioPage(): React.JSX.Element {
             </div>
           )}
 
-          {/* SECTION 4: Contact & Links Tab */}
+          {/* SECTION 4: Internships Tab — Req 90 */}
+          {activeSection === 'internships' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-sm font-jakarta font-semibold text-on-surface-variant">
+                  {isOwnPortfolio ? 'Your Completed Internships' : `${portfolio.name}'s Completed Internships`}
+                </p>
+              </div>
+              {completedInternships.length === 0 ? (
+                <div className="text-center py-12 bg-surface-container-low rounded-xl border border-dashed border-outline-variant">
+                  <span className="material-symbols-outlined text-[40px] text-outline/40 block mb-2">workspace_premium</span>
+                  <p className="text-on-surface-variant font-lexend text-sm">No completed internships yet.</p>
+                  {isOwnPortfolio && (
+                    <p className="text-xs font-lexend text-on-surface-variant mt-1">
+                      Completed internships appear here automatically once you finish an internship.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {completedInternships.map(ci => (
+                    <div
+                      key={ci.id}
+                      className="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 flex items-center gap-4"
+                      style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}
+                    >
+                      <div className="w-11 h-11 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                        <span className="material-symbols-outlined text-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-jakarta font-semibold text-on-surface">{ci.title}</h4>
+                        <p className="text-sm font-lexend text-on-surface-variant mt-0.5">
+                          {ci.companyName} • {ci.duration}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="px-2.5 py-1 bg-secondary/10 text-secondary rounded-full text-xs font-jakarta font-semibold">Completed</span>
+                        <p className="text-xs font-lexend text-on-surface-variant mt-1">{ci.completedAt}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SECTION 5: Contact & Links Tab */}
           {activeSection === 'contact' && (
             <div className="space-y-6">
               {isEditing ? (

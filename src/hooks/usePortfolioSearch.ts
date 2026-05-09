@@ -1,7 +1,7 @@
 /**
  * usePortfolioSearch — provides portfolio search and filter behavior with dummy data.
  */
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import type { StudentPortfolio } from '../types'
 
 interface PortfolioFilters {
@@ -157,9 +157,9 @@ export default function usePortfolioSearch() {
       .slice(0, 3)
   }, [basePortfolios])
 
-  const updateFilters = (updates: Partial<PortfolioFilters>) => {
+  const updateFilters = useCallback((updates: Partial<PortfolioFilters>) => {
     setFilters(prev => ({ ...prev, ...updates }))
-  }
+  }, [])
 
   return {
     portfolios,

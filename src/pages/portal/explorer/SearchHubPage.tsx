@@ -74,11 +74,11 @@ export default function SearchHubPage(): React.JSX.Element {
   }, [projects])
 
   const handleViewProject = (id: string) => {
-    window.location.assign(`/portal/${rolePath}/projects/${id}/view`)
+    navigate(`/portal/${rolePath}/projects/${id}/view`)
   }
 
   const handleViewInstructor = (id: string) => {
-    window.location.assign(`/portal/${rolePath}/instructors/${id}`)
+    navigate(`/portal/${rolePath}/instructors/${id}`)
   }
 
   const instructorResults = isDefaultSearch ? recommendedInstructors : filteredResults
@@ -432,9 +432,7 @@ export default function SearchHubPage(): React.JSX.Element {
                 {portfolioResults.map(portfolio => (
                   <div
                     key={portfolio.studentId}
-                    onClick={() => {
-                      window.location.assign(`/portal/${rolePath}/portfolio/${portfolio.studentId}`);
-                    }}
+                    onClick={() => navigate(`/portal/${rolePath}/portfolio/${portfolio.studentId}`)}
                     className="group bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm hover:shadow-raised hover:scale-[1.01] transition-all duration-300 cursor-pointer flex flex-col h-full relative overflow-hidden"
                   >
                     {user?.role === 'Employer' && (

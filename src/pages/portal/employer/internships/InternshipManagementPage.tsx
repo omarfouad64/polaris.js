@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import useInternships from './scripts/useInternships'
 import useEmployerStats from '../dashboard/scripts/useEmployerStats'
 import Button from '../../../../components/Button'
@@ -11,8 +12,10 @@ import type { Internship } from '../../../../types'
  * Covers Req 74 (CRUD), 77 (hiring status), 78 (archive), 85 (view list), 86 (select internship).
  */
 export default function InternshipManagementPage(): React.JSX.Element {
+  const navigate = useNavigate()
   const { activeInternships, archivedInternships, addInternship, updateInternship, deleteInternship, toggleStatus, toggleArchive } = useInternships()
   const { studentsPlaced } = useEmployerStats()
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewTab, setViewTab] = useState<'active' | 'archived'>('active')
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
@@ -202,7 +205,12 @@ export default function InternshipManagementPage(): React.JSX.Element {
               <p className="font-lexend text-on-surface-variant mt-2">No {viewTab} internships.</p>
             </div>
           ) : currentList.map(internship => (
-            <div key={internship.id} className="group border border-outline-variant/40 rounded-xl p-5 bg-surface-container-lowest hover:bg-surface-container-low/50 transition-all duration-300 hover:shadow-[0_4px_16px_rgba(55,48,163,0.10)]">
+            <div
+              key={internship.id}
+              onClick={() => setSelectedId(internship.id)}
+              className="group border border-outline-variant/40 rounded-xl p-5 bg-surface-container-lowest hover:bg-surface-container-low/50 transition-all duration-300 hover:shadow-[0_4px_16px_rgba(55,48,163,0.10)] cursor-pointer"
+              aria-label={`Select internship: ${internship.title}`}
+            >
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="text-lg font-jakarta font-semibold text-on-surface group-hover:text-primary transition-colors">{internship.title}</h3>
@@ -226,9 +234,9 @@ export default function InternshipManagementPage(): React.JSX.Element {
                 <div className="flex items-center gap-4">
                   <div><span className="text-xl font-jakarta font-bold text-on-surface">{internship.applicantCount}</span><span className="text-xs font-lexend text-on-surface-variant ml-1"> Applicants</span></div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                   <button
-                    onClick={() => window.location.assign(`/portal/employer/internships/${internship.id}/applicants`)}
+                    onClick={() => navigate(`/portal/employer/internships/${internship.id}/applicants`)}
                     className="px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-lg text-sm font-jakarta font-semibold hover:bg-surface-container transition-colors focus-visible:ring-2 focus-visible:ring-secondary"
                     aria-label={`View applicants for ${internship.title}`}
                   >
@@ -248,6 +256,107 @@ export default function InternshipManagementPage(): React.JSX.Element {
           ))}
         </div>
       </div>
+
+      {/* Internship Detail Modal — Req 86 */}
+      {selectedId && (() => {
+        const all = [...activeInternships, ...archivedInternships]
+        const sel = all.find(i => i.id === selectedId)
+        if (!sel) return null
+        return (
+          <div
+            className="fixed inset-0 bg-on-background/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Internship details: ${sel.title}`}
+            onClick={() => setSelectedId(null)}
+          >
+            <div
+              className="bg-surface-container-lowest rounded-2xl p-8 w-full max-w-xl space-y-5"
+              style={{ boxShadow: '0 8px 40px rgba(55,48,163,0.18)' }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-2xl font-jakarta font-bold text-on-surface">{sel.title}</h3>
+                  <p className="text-sm font-lexend text-on-surface-variant mt-1">{sel.companyName}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`px-3 py-1 rounded-full text-xs font-jakarta font-semibold tracking-wider uppercase ${
+                    sel.status === 'Hiring' ? 'bg-secondary/10 text-secondary' : 'bg-outline-variant/30 text-on-surface-variant'
+                  }`}>{sel.status}</span>
+                  <button
+                    onClick={() => setSelectedId(null)}
+                    className="p-1.5 rounded-lg hover:bg-surface-container transition-colors"
+                    aria-label="Close detail panel"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">close</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Description */}
+              {sel.description && (
+                <p className="font-lexend text-sm text-on-surface leading-relaxed">{sel.description}</p>
+              )}
+
+              {/* Skills */}
+              {sel.skills.length > 0 && (
+                <div>
+                  <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Required Skills</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sel.skills.map(s => (
+                      <span key={s} className="px-2.5 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-jakarta font-semibold">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Languages */}
+              {sel.programmingLanguages.length > 0 && (
+                <div>
+                  <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Programming Languages</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sel.programmingLanguages.map(l => (
+                      <span key={l} className="px-2.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-lexend">{l}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Meta row */}
+              <div className="grid grid-cols-3 gap-3 bg-surface-container-low rounded-xl p-4 text-center">
+                <div>
+                  <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">Duration</p>
+                  <p className="text-sm font-jakarta font-bold text-on-surface mt-1">{sel.duration}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">Deadline</p>
+                  <p className="text-sm font-jakarta font-bold text-on-surface mt-1">{sel.applicationDeadline}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">Applicants</p>
+                  <p className="text-2xl font-jakarta font-bold text-primary mt-1">{sel.applicantCount}</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-1">
+                <Button onClick={() => { setSelectedId(null); navigate(`/portal/employer/internships/${sel.id}/applicants`) }}>
+                  <span className="material-symbols-outlined text-[18px]">group</span>
+                  View Applicants
+                </Button>
+                <Button variant="outline" onClick={() => { setSelectedId(null); startEdit(sel) }}>
+                  <span className="material-symbols-outlined text-[18px]">edit</span>
+                  Edit
+                </Button>
+                <Button variant="ghost" onClick={() => setSelectedId(null)}>Close</Button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
+

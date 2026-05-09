@@ -5,15 +5,64 @@ import { useProjectNotifications } from '../../../hooks/useProjectNotifications'
 import { useStudentPortfolio } from '../../../hooks/useStudentPortfolio'
 import { useInstructorProfile } from '../../../hooks/useInstructorProfile'
 import useCompanyProfile from '../employer/profile/scripts/useCompanyProfile'
+import type { UserRole } from '../../../types'
+
+// ---------------------------------------------------------------------------
+// Role-specific avatar sub-components
+// These are rendered conditionally so their hooks only mount for the right role.
+// This prevents useCompanyProfile's localStorage writes from running for students,
+// and avoids any cross-role data contamination in the header.
+// ---------------------------------------------------------------------------
+
+function StudentAvatar() {
+  const { portfolio } = useStudentPortfolio()
+  const initial = portfolio.name.charAt(0).toUpperCase()
+  return portfolio.profilePicture ? (
+    <img src={portfolio.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+  ) : (
+    <span className="text-sm font-jakarta font-bold text-on-surface">{initial}</span>
+  )
+}
+
+function InstructorAvatar() {
+  const { profile } = useInstructorProfile()
+  const initial = profile.name.charAt(0).toUpperCase()
+  return profile.profilePicture ? (
+    <img src={profile.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+  ) : (
+    <span className="text-sm font-jakarta font-bold text-on-surface">{initial}</span>
+  )
+}
+
+function EmployerAvatar() {
+  const { profile } = useCompanyProfile()
+  const initial = profile.companyName.charAt(0).toUpperCase()
+  return profile.logoUrl ? (
+    <img src={profile.logoUrl} alt="Profile" className="w-full h-full object-cover" />
+  ) : (
+    <span className="text-sm font-jakarta font-bold text-on-surface">{initial}</span>
+  )
+}
+
+function RoleAvatar({ role, username }: { role: UserRole | undefined; username: string | undefined }) {
+  if (role === 'Student') return <StudentAvatar />
+  if (role === 'Course Instructor') return <InstructorAvatar />
+  if (role === 'Employer') return <EmployerAvatar />
+  // Administrator — just use username initial, no profile hook needed
+  return (
+    <span className="text-sm font-jakarta font-bold text-on-surface">
+      {(username?.charAt(0) ?? 'A').toUpperCase()}
+    </span>
+  )
+}
+
+// ---------------------------------------------------------------------------
 
 export default function Header() {
   const location = useLocation()
   const { user } = useGlobalContext()
   const { unreadCount: generalUnread } = useNotifications()
   const { unreadCount: invitationUnread } = useProjectNotifications()
-  const { portfolio } = useStudentPortfolio()
-  const { profile: instructorProfile } = useInstructorProfile()
-  const { profile: companyProfile } = useCompanyProfile()
 
   const unreadCount = generalUnread + invitationUnread
 
@@ -29,24 +78,6 @@ export default function Header() {
   const pageName = lastPart
     ? lastPart.charAt(0).toUpperCase() + lastPart.slice(1).replace(/-/g, ' ')
     : 'Dashboard'
-
-  const avatarUrl =
-    user?.role === 'Student'
-      ? portfolio.profilePicture
-      : user?.role === 'Course Instructor'
-        ? instructorProfile.profilePicture
-        : user?.role === 'Employer'
-          ? companyProfile.logoUrl
-          : null
-
-  const avatarInitial =
-    user?.role === 'Student'
-      ? portfolio.name.charAt(0)
-      : user?.role === 'Course Instructor'
-        ? instructorProfile.name.charAt(0)
-        : user?.role === 'Employer'
-          ? companyProfile.companyName.charAt(0)
-          : user?.username?.charAt(0) ?? 'A'
 
   return (
     <header className="h-20 bg-surface-container-lowest border-b border-surface-container flex items-center justify-between px-10 shadow-sm">
@@ -69,13 +100,7 @@ export default function Header() {
         </div>
         <div className="h-8 w-px bg-surface-container mx-2"></div>
         <div className="w-10 h-10 rounded-full bg-surface-container-high border-2 border-surface-container overflow-hidden flex items-center justify-center">
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-sm font-jakarta font-bold text-on-surface">
-              {avatarInitial.toUpperCase()}
-            </span>
-          )}
+          <RoleAvatar role={user?.role} username={user?.username} />
         </div>
       </div>
     </header>
