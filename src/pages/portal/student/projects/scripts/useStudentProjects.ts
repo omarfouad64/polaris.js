@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface ThesisDraft {
   id: string;
@@ -32,6 +32,8 @@ export interface ProjectData {
   status: 'active' | 'flagged';
   flagReason?: string;
 }
+
+// ── Seed data ─────────────────────────────────────────────────────────────────
 
 const DUMMY_PROJECTS: ProjectData[] = [
   {
@@ -86,62 +88,92 @@ const DUMMY_PROJECTS: ProjectData[] = [
   },
 ];
 
+// ── Shared module-level state ─────────────────────────────────────────────────
+// All hook instances share the same array so mutations are immediately visible
+// across every component (project list card, project detail page, settings toggle).
+
+const STORAGE_KEY = 'polaris_projects';
+
+type Listener = () => void;
+const listeners = new Set<Listener>();
+
+let sharedProjects: ProjectData[] = (() => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as ProjectData[];
+      // Merge: keep saved projects, add any new seeds missing from saved data
+      const savedIds = new Set(parsed.map(p => p.id));
+      const missing = DUMMY_PROJECTS.filter(p => !savedIds.has(p.id));
+      return [...parsed, ...missing];
+    }
+  } catch { /* ignore */ }
+  return [...DUMMY_PROJECTS];
+})();
+
+function persist() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sharedProjects));
+  } catch { /* ignore quota errors */ }
+}
+
+function emit() {
+  persist();
+  listeners.forEach(fn => fn());
+}
+
+// ── Hook ──────────────────────────────────────────────────────────────────────
+
 /**
- * useStudentProjects — Manages student project CRUD operations with dummy data.
- * Data persists during the current session.
- *
- * @returns Project management functions and state.
+ * useStudentProjects — Manages student project CRUD with shared module-level state.
+ * All instances (project list, detail page, settings panel) share the same data
+ * so visibility toggles and edits are immediately consistent everywhere.
  */
 export default function useStudentProjects() {
-  const [projects, setProjects] = useState<ProjectData[]>(() => {
-    const saved = localStorage.getItem('polaris_projects');
-    return saved ? JSON.parse(saved) : DUMMY_PROJECTS;
-  });
-  const [isLoading] = useState(false);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
-    localStorage.setItem('polaris_projects', JSON.stringify(projects));
-  }, [projects]);
+    const listener = () => setTick(t => t + 1);
+    listeners.add(listener);
+    return () => { listeners.delete(listener); };
+  }, []);
 
-  const createProject = (project: Omit<ProjectData, 'id' | 'createdDate' | 'updatedDate'>) => {
+  const createProject = useCallback((project: Omit<ProjectData, 'id' | 'createdDate' | 'updatedDate'>) => {
     const newProject: ProjectData = {
       ...project,
       id: `proj-${Date.now()}`,
       createdDate: new Date().toISOString().split('T')[0],
       updatedDate: new Date().toISOString().split('T')[0],
     };
-    setProjects((prev) => [newProject, ...prev]);
+    sharedProjects = [newProject, ...sharedProjects];
+    emit();
     return newProject;
-  };
+  }, []);
 
-  const updateProject = (id: string, updates: Partial<Omit<ProjectData, 'id' | 'createdDate'>>) => {
-    setProjects((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              ...updates,
-              updatedDate: new Date().toISOString().split('T')[0],
-            }
-          : p
-      )
+  const updateProject = useCallback((id: string, updates: Partial<Omit<ProjectData, 'id' | 'createdDate'>>) => {
+    sharedProjects = sharedProjects.map(p =>
+      p.id === id
+        ? { ...p, ...updates, updatedDate: new Date().toISOString().split('T')[0] }
+        : p
     );
-  };
+    emit();
+  }, []);
 
-  const deleteProject = (id: string) => {
-    setProjects((prev) => prev.filter((p) => p.id !== id));
-  };
+  const deleteProject = useCallback((id: string) => {
+    sharedProjects = sharedProjects.filter(p => p.id !== id);
+    emit();
+  }, []);
 
-  const getProjectById = (id: string): ProjectData | undefined => {
-    return projects.find((p) => p.id === id);
-  };
+  const getProjectById = useCallback((id: string): ProjectData | undefined => {
+    return sharedProjects.find(p => p.id === id);
+  }, []);
 
   return {
-    projects,
+    projects: sharedProjects,
     createProject,
     updateProject,
     deleteProject,
     getProjectById,
-    isLoading,
+    isLoading: false,
   };
 }

@@ -1,30 +1,33 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import type { ProjectCollaborator, ProjectInvitation, CollaborationSearchResult } from '../types'
 
-// Dummy collaborators for a project
-const DUMMY_PROJECT_COLLABORATORS: ProjectCollaborator[] = [
-  {
-    collaboratorId: 'student-001',
-    name: 'Ahmed Hassan',
-    email: 'ahmed.hassan@student.guc.edu.eg',
-    role: 'owner',
-    invitationStatus: 'accepted',
-    invitedAt: new Date('2024-01-10').toISOString(),
-    profilePicture: null
-  },
-  {
-    collaboratorId: 'student-002',
-    name: 'Mariam Khalil',
-    email: 'mariam.khalil@student.guc.edu.eg',
-    role: 'collaborator',
-    invitationStatus: 'accepted',
-    invitedAt: new Date('2024-01-15').toISOString(),
-    respondedAt: new Date('2024-01-16').toISOString(),
-    profilePicture: null
-  }
-]
+// ── Seed data ─────────────────────────────────────────────────────────────────
 
-// Dummy searchable users
+const SEED_COLLABORATORS: Record<string, ProjectCollaborator[]> = {
+  'proj-001': [
+    {
+      collaboratorId: 'student-001',
+      name: 'Ahmed Hassan',
+      email: 'ahmed.hassan@student.guc.edu.eg',
+      role: 'owner',
+      invitationStatus: 'accepted',
+      invitedAt: new Date('2024-01-10').toISOString(),
+      profilePicture: null
+    },
+    {
+      collaboratorId: 'student-002',
+      name: 'Mariam Khalil',
+      email: 'mariam.khalil@student.guc.edu.eg',
+      role: 'collaborator',
+      invitationStatus: 'accepted',
+      invitedAt: new Date('2024-01-15').toISOString(),
+      respondedAt: new Date('2024-01-16').toISOString(),
+      profilePicture: null
+    }
+  ]
+}
+
+// Searchable users pool (students + instructors)
 const DUMMY_SEARCHABLE_USERS: CollaborationSearchResult[] = [
   {
     userId: 'student-003',
@@ -38,6 +41,14 @@ const DUMMY_SEARCHABLE_USERS: CollaborationSearchResult[] = [
     userId: 'student-004',
     name: 'Omar Ibrahim',
     email: 'omar.ibrahim@student.guc.edu.eg',
+    role: 'Student',
+    profilePicture: null,
+    isAlreadyCollaborator: false
+  },
+  {
+    userId: 'student-005',
+    name: 'Sarah Ali',
+    email: 'sarah.ali@student.guc.edu.eg',
     role: 'Student',
     profilePicture: null,
     isAlreadyCollaborator: false
@@ -59,143 +70,177 @@ const DUMMY_SEARCHABLE_USERS: CollaborationSearchResult[] = [
     profilePicture: null,
     isAlreadyCollaborator: false,
     teachingCourses: ['course-003', 'course-004']
-  },
-  {
-    userId: 'student-005',
-    name: 'Sarah Ali',
-    email: 'sarah.ali@student.guc.edu.eg',
-    role: 'Student',
-    profilePicture: null,
-    isAlreadyCollaborator: false
   }
 ]
 
-// Dummy pending invitations
-const DUMMY_PENDING_INVITATIONS: ProjectInvitation[] = [
-  {
-    id: 'inv-001',
-    projectId: 'proj-001',
-    projectTitle: 'E-Commerce Platform',
-    senderName: 'Ahmed Hassan',
-    senderId: 'student-001',
-    recipientEmail: 'fatima.mousa@student.guc.edu.eg',
-    recipientName: 'Fatima Mousa',
-    invitationStatus: 'pending',
-    createdAt: new Date('2024-02-20').toISOString()
+// ── Shared module-level state (keyed by projectId) ───────────────────────────
+// This ensures all hook instances for the same project share the same data.
+
+const STORAGE_KEY = (pid: string) => `polaris_collaborators_${pid}`
+
+type Listener = () => void
+const listenersByProject: Record<string, Set<Listener>> = {}
+
+const collaboratorsByProject: Record<string, ProjectCollaborator[]> = {}
+
+function loadCollaborators(projectId: string): ProjectCollaborator[] {
+  if (collaboratorsByProject[projectId]) return collaboratorsByProject[projectId]
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY(projectId))
+    collaboratorsByProject[projectId] = raw
+      ? (JSON.parse(raw) as ProjectCollaborator[])
+      : (SEED_COLLABORATORS[projectId] ?? [])
+  } catch {
+    collaboratorsByProject[projectId] = SEED_COLLABORATORS[projectId] ?? []
   }
-]
+  return collaboratorsByProject[projectId]
+}
+
+function saveAndEmit(projectId: string) {
+  try {
+    localStorage.setItem(STORAGE_KEY(projectId), JSON.stringify(collaboratorsByProject[projectId]))
+  } catch { /* ignore quota errors */ }
+  listenersByProject[projectId]?.forEach(fn => fn())
+}
+
+// ── Hook ──────────────────────────────────────────────────────────────────────
 
 /**
  * useProjectInvitations – manages project collaboration and invitations.
- * Provides methods to search collaborators, send invitations, and manage team members.
+ * Uses shared module-level state so all component instances for the same project
+ * stay in sync without prop-drilling.
  *
- * @param projectId - The ID of the project
- * @param currentUserId - The ID of the current user (project owner)
- * @param projectCourseId - The course ID associated with the project (for instructor validation)
- * @returns Object containing collaborators, search functions, and invitation actions.
+ * @param projectId       - The ID of the project
+ * @param currentUserId   - The ID of the current user
+ * @param projectCourseId - Course the project belongs to (for instructor validation)
  */
 export function useProjectInvitations(projectId: string, currentUserId: string, projectCourseId?: string) {
-  const [collaborators, setCollaborators] = useState<ProjectCollaborator[]>(
-    DUMMY_PROJECT_COLLABORATORS
-  )
-  const [pendingInvitations, setPendingInvitations] = useState<ProjectInvitation[]>(
-    DUMMY_PENDING_INVITATIONS
-  )
-  const [searchQuery, setSearchQuery] = useState('')
+  // Subscribe to changes so the component re-renders on any mutation
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    if (!listenersByProject[projectId]) listenersByProject[projectId] = new Set()
+    const listener = () => setTick(t => t + 1)
+    listenersByProject[projectId].add(listener)
+    // Ensure data is loaded
+    loadCollaborators(projectId)
+    return () => { listenersByProject[projectId]?.delete(listener) }
+  }, [projectId])
 
-  // Search collaborators/instructors with role filter
-  const searchCollaborators = useCallback((query: string, roleFilter?: 'Student' | 'Course Instructor'): CollaborationSearchResult[] => {
-    if (!query.trim()) return []
-    const lowerQuery = query.toLowerCase()
-    
-    return DUMMY_SEARCHABLE_USERS.filter(user => {
-      const matchesSearch =
-        user.name.toLowerCase().includes(lowerQuery) ||
-        user.email.toLowerCase().includes(lowerQuery)
-      
-      const matchesRole = !roleFilter || user.role === roleFilter
-      
-      const isAlready = collaborators.some(c => c.email === user.email)
-      
-      return matchesSearch && matchesRole && !isAlready
-    }).map(user => ({
-      ...user,
-      isAlreadyCollaborator: false
-    }))
-  }, [collaborators])
+  const collaborators = loadCollaborators(projectId)
 
-  // Send invitation logic with better state management
+  // ── Actions ────────────────────────────────────────────────────────────────
+
+  /** Send an invitation (adds collaborator with 'pending' status). */
   const sendInvitation = useCallback((userId: string, userEmail: string, userName: string) => {
+    const list = loadCollaborators(projectId)
     const userToInvite = DUMMY_SEARCHABLE_USERS.find(u => u.userId === userId)
     if (!userToInvite) return { success: false, message: 'User not found' }
 
-    // Check if already collaborator or pending
-    if (collaborators.some(c => c.email === userEmail)) {
+    if (list.some(c => c.email === userEmail)) {
       return { success: false, message: 'User is already on the team' }
     }
 
-    // Instructor Validation
+    // Instructors must teach the project's course
     if (userToInvite.role === 'Course Instructor') {
       if (!projectCourseId || !userToInvite.teachingCourses?.includes(projectCourseId)) {
-        return { 
-          success: false, 
-          message: 'Instructor does not teach the course associated with this project.' 
+        return {
+          success: false,
+          message: 'This instructor does not teach the course associated with this project.'
         }
       }
     }
 
-    const role: ProjectCollaborator['role'] = userToInvite.role === 'Course Instructor' ? 'instructor' : 'collaborator'
-    
+    const role: ProjectCollaborator['role'] =
+      userToInvite.role === 'Course Instructor' ? 'instructor' : 'collaborator'
+
     const newMember: ProjectCollaborator = {
       collaboratorId: userId,
       name: userName,
       email: userEmail,
       role,
       invitationStatus: 'pending',
-      invitedAt: new Date().toISOString()
+      invitedAt: new Date().toISOString(),
+      profilePicture: null
     }
 
-    setCollaborators(prev => [...prev, newMember])
+    collaboratorsByProject[projectId] = [...list, newMember]
+    saveAndEmit(projectId)
     return { success: true }
-  }, [collaborators, projectCourseId])
+  }, [projectId, projectCourseId])
 
-  // Remove collaborator (revoking invitations or removing accepted members)
+  /** Cancel a pending invitation OR remove an accepted/rejected member. */
   const removeCollaborator = useCallback((email: string) => {
-    const member = collaborators.find(c => c.email === email)
-    if (!member) return false
-    if (member.role === 'owner') return false // Cannot remove owner
+    const list = loadCollaborators(projectId)
+    const member = list.find(c => c.email === email)
+    if (!member || member.role === 'owner') return false
 
-    setCollaborators(prev => prev.filter(c => c.email !== email))
+    collaboratorsByProject[projectId] = list.filter(c => c.email !== email)
+    saveAndEmit(projectId)
     return true
-  }, [collaborators])
+  }, [projectId])
 
-  // Get suggested instructors (Req: Display all assigned course instructors even if not yet invited)
+  /** Alias — canceling an invitation is the same as removing the pending entry. */
+  const cancelInvitation = removeCollaborator
+
+  /** Accept an invitation (recipient side). */
+  const acceptInvitation = useCallback((collaboratorEmail: string) => {
+    collaboratorsByProject[projectId] = loadCollaborators(projectId).map(c =>
+      c.email === collaboratorEmail
+        ? { ...c, invitationStatus: 'accepted', respondedAt: new Date().toISOString() }
+        : c
+    )
+    saveAndEmit(projectId)
+  }, [projectId])
+
+  /** Reject an invitation (recipient side). */
+  const rejectInvitation = useCallback((collaboratorEmail: string) => {
+    collaboratorsByProject[projectId] = loadCollaborators(projectId).map(c =>
+      c.email === collaboratorEmail
+        ? { ...c, invitationStatus: 'rejected', respondedAt: new Date().toISOString() }
+        : c
+    )
+    saveAndEmit(projectId)
+  }, [projectId])
+
+  // ── Derived data ───────────────────────────────────────────────────────────
+
+  /** Search the user pool, excluding current collaborators. */
+  const searchCollaborators = useCallback((query: string, roleFilter?: 'Student' | 'Course Instructor'): CollaborationSearchResult[] => {
+    if (!query.trim()) return []
+    const lower = query.toLowerCase()
+    const currentList = loadCollaborators(projectId)
+    return DUMMY_SEARCHABLE_USERS
+      .filter(u => {
+        const matchesSearch = u.name.toLowerCase().includes(lower) || u.email.toLowerCase().includes(lower)
+        const matchesRole = !roleFilter || u.role === roleFilter
+        const notAlready = !currentList.some(c => c.email === u.email)
+        return matchesSearch && matchesRole && notAlready
+      })
+      .map(u => ({ ...u, isAlreadyCollaborator: false }))
+  }, [projectId])
+
+  /** Instructors from the search pool who teach this project's course and aren't already on the team. */
   const suggestedInstructors = useMemo(() => {
     if (!projectCourseId) return []
-    return DUMMY_SEARCHABLE_USERS.filter(user => 
-      user.role === 'Course Instructor' && 
-      user.teachingCourses?.includes(projectCourseId) &&
-      !collaborators.some(c => c.email === user.email)
+    const currentList = loadCollaborators(projectId)
+    return DUMMY_SEARCHABLE_USERS.filter(u =>
+      u.role === 'Course Instructor' &&
+      u.teachingCourses?.includes(projectCourseId) &&
+      !currentList.some(c => c.email === u.email)
     )
-  }, [projectCourseId, collaborators])
+  }, [projectId, projectCourseId, collaborators]) // collaborators in deps triggers recompute on change
 
-  // Get collaborators sorted by status
+  /** Collaborators sorted: owner → accepted → pending/rejected → alphabetical. */
   const sortedCollaborators = useMemo(() => {
     return [...collaborators].sort((a, b) => {
-      // Owner first
       if (a.role === 'owner') return -1
       if (b.role === 'owner') return 1
-
-      // Accepted next
       if (a.invitationStatus === 'accepted' && b.invitationStatus !== 'accepted') return -1
       if (a.invitationStatus !== 'accepted' && b.invitationStatus === 'accepted') return 1
-
-      // Then by name
       return a.name.localeCompare(b.name)
     })
   }, [collaborators])
 
-  // Get statistics
   const stats = useMemo(() => ({
     total: collaborators.length,
     accepted: collaborators.filter(c => c.invitationStatus === 'accepted').length,
@@ -204,43 +249,21 @@ export function useProjectInvitations(projectId: string, currentUserId: string, 
     instructors: collaborators.filter(c => c.role === 'instructor').length
   }), [collaborators])
 
-  // Accept invitation (from recipient side)
-  const acceptInvitation = useCallback((collaboratorEmail: string) => {
-    setCollaborators(prev =>
-      prev.map(c =>
-        c.email === collaboratorEmail
-          ? { ...c, invitationStatus: 'accepted', respondedAt: new Date().toISOString() }
-          : c
-      )
-    )
-  }, [])
-
-  // Reject invitation (from recipient side)
-  const rejectInvitation = useCallback((collaboratorEmail: string) => {
-    setCollaborators(prev =>
-      prev.map(c => 
-        c.email === collaboratorEmail 
-          ? { ...c, invitationStatus: 'rejected', respondedAt: new Date().toISOString() } 
-          : c
-      )
-    )
-  }, [])
-
   return {
-    // State
     collaborators: sortedCollaborators,
-    pendingInvitations,
-    searchQuery,
     stats,
     suggestedInstructors,
 
-    // Actions
-    setSearchQuery,
     searchCollaborators,
     sendInvitation,
-    cancelInvitation: removeCollaborator,
+    cancelInvitation,
+    removeCollaborator,
     acceptInvitation,
     rejectInvitation,
-    removeCollaborator
+
+    // legacy compat
+    pendingInvitations: [] as ProjectInvitation[],
+    searchQuery: '',
+    setSearchQuery: (_q: string) => {}
   }
 }

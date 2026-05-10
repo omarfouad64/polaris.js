@@ -36,11 +36,18 @@ export default function SearchCollaboratorModal({
     projectCourseId
   )
 
-  // Get search results
+  // Get search results — instructors are filtered to only those teaching the project's course
   const searchResults = useMemo(() => {
     if (!searchInputValue.trim()) return []
-    return searchCollaborators(searchInputValue, roleFilter)
-  }, [searchInputValue, searchCollaborators, roleFilter])
+    const results = searchCollaborators(searchInputValue, roleFilter)
+    if (roleFilter === 'Course Instructor') {
+      return results.filter(u =>
+        u.role !== 'Course Instructor' ||
+        (projectCourseId && u.teachingCourses?.includes(projectCourseId))
+      )
+    }
+    return results
+  }, [searchInputValue, searchCollaborators, roleFilter, projectCourseId])
 
   // Handler: Send invitation
   const handleSendInvitation = () => {
@@ -160,7 +167,11 @@ export default function SearchCollaboratorModal({
                   ) : (
                     <div className="text-center py-8">
                       <span className="material-symbols-outlined text-outline-variant text-[40px] mb-2">person_search</span>
-                      <p className="text-sm font-lexend text-on-surface-variant">No users found matching your search.</p>
+                      <p className="text-sm font-lexend text-on-surface-variant">
+                        {roleFilter === 'Course Instructor'
+                          ? 'No eligible instructors found. Only instructors who teach this project\'s course can be invited.'
+                          : 'No users found matching your search.'}
+                      </p>
                     </div>
                   )}
                 </div>

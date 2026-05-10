@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useProjectInvitations } from '../../../../../hooks/useProjectInvitations'
+import ConfirmDialog from '../../../../../components/ConfirmDialog'
 
 interface CollaboratorListProps {
   projectId: string
@@ -29,30 +30,33 @@ export default function CollaboratorList({
   const [filter, setFilter] = useState<FilterType>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
-  const handleRemoveCollaborator = (email: string) => {
-    if (window.confirm('Are you sure you want to remove this collaborator?')) {
-      removeCollaborator(email)
-    }
-  }
+  // Confirm dialog state
+  const [confirmAction, setConfirmAction] = useState<{
+    email: string
+    type: 'remove' | 'cancel'
+    name: string
+  } | null>(null)
 
-  const handleCancelInvitation = (email: string) => {
-    if (window.confirm('Cancel this invitation?')) {
-      cancelInvitation(email)
+  const executeAction = () => {
+    if (!confirmAction) return
+    if (confirmAction.type === 'cancel') {
+      cancelInvitation(confirmAction.email)
+    } else {
+      removeCollaborator(confirmAction.email)
     }
+    setConfirmAction(null)
   }
 
   // Filtered and searched collaborators
   const filteredCollaborators = useMemo(() => {
     return collaborators.filter(c => {
-      // Role/Status Filter
-      const matchesFilter = 
+      const matchesFilter =
         filter === 'all' ||
         (filter === 'collaborators' && c.role === 'collaborator') ||
         (filter === 'instructors' && c.role === 'instructor') ||
         (filter === 'pending' && c.invitationStatus === 'pending')
 
-      // Search Filter (Email, First Name, Last Name)
-      const matchesSearch = 
+      const matchesSearch =
         c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.email.toLowerCase().includes(searchTerm.toLowerCase())
 
@@ -66,7 +70,7 @@ export default function CollaboratorList({
       <div className="flex flex-col md:flex-row gap-4 bg-surface-container-lowest p-4 rounded-xl border border-surface-container-high shadow-sm">
         <div className="flex-1 relative">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-          <input 
+          <input
             type="text"
             placeholder="Search team by name or email..."
             value={searchTerm}
@@ -154,17 +158,15 @@ export default function CollaboratorList({
                         {collaborator.invitationStatus === 'pending' && (
                           <span className="text-[10px] font-jakarta font-bold px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant flex items-center gap-1">
                             <span className="material-symbols-outlined text-[12px]">schedule</span>
-                            PENDING
+                            NO REPLY
                           </span>
                         )}
-
                         {collaborator.invitationStatus === 'accepted' && collaborator.role !== 'owner' && (
                           <span className="text-[10px] font-jakarta font-bold px-2 py-0.5 rounded-full bg-secondary/10 text-secondary flex items-center gap-1">
                             <span className="material-symbols-outlined text-[12px]">check_circle</span>
                             ACCEPTED
                           </span>
                         )}
-
                         {collaborator.invitationStatus === 'rejected' && (
                           <span className="text-[10px] font-jakarta font-bold px-2 py-0.5 rounded-full bg-error/10 text-error flex items-center gap-1">
                             <span className="material-symbols-outlined text-[12px]">cancel</span>
@@ -175,15 +177,24 @@ export default function CollaboratorList({
                     </div>
                   </div>
 
-                  {/* Actions */}
+                  {/* Actions — only project owner, never on self */}
                   {isOwner && collaborator.role !== 'owner' && (
                     <div className="flex flex-col gap-2 shrink-0">
-                      <button
-                        onClick={() => handleRemoveCollaborator(collaborator.email)}
-                        className="px-4 py-1.5 text-xs font-jakarta font-semibold border border-error/30 text-error hover:bg-error hover:text-on-error rounded-lg transition-all whitespace-nowrap"
-                      >
-                        {collaborator.invitationStatus === 'pending' ? 'Cancel Invitation' : 'Remove Team Member'}
-                      </button>
+                      {collaborator.invitationStatus === 'pending' ? (
+                        <button
+                          onClick={() => setConfirmAction({ email: collaborator.email, type: 'cancel', name: collaborator.name })}
+                          className="px-4 py-1.5 text-xs font-jakarta font-semibold border border-outline-variant text-on-surface-variant hover:border-error/30 hover:text-error hover:bg-error/5 rounded-lg transition-all whitespace-nowrap"
+                        >
+                          Cancel Invitation
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmAction({ email: collaborator.email, type: 'remove', name: collaborator.name })}
+                          className="px-4 py-1.5 text-xs font-jakarta font-semibold border border-error/30 text-error hover:bg-error hover:text-on-error rounded-lg transition-all whitespace-nowrap"
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -193,14 +204,30 @@ export default function CollaboratorList({
             <div className="p-12 text-center">
               <span className="material-symbols-outlined text-[48px] text-outline-variant mb-2">group_off</span>
               <p className="text-sm font-lexend text-on-surface-variant">
-                {searchTerm || filter !== 'all' 
-                  ? 'No matching team members found.' 
+                {searchTerm || filter !== 'all'
+                  ? 'No matching team members found.'
                   : 'No collaborators yet. Invite someone to get started!'}
               </p>
             </div>
           )}
         </div>
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmAction !== null}
+        title={confirmAction?.type === 'cancel' ? 'Cancel Invitation' : 'Remove Team Member'}
+        message={
+          confirmAction?.type === 'cancel'
+            ? `Are you sure you want to cancel the invitation sent to ${confirmAction?.name}?`
+            : `Are you sure you want to remove ${confirmAction?.name} from the project? They will lose access immediately.`
+        }
+        confirmLabel={confirmAction?.type === 'cancel' ? 'Cancel Invitation' : 'Remove'}
+        cancelLabel="Keep"
+        variant="danger"
+        onConfirm={executeAction}
+        onCancel={() => setConfirmAction(null)}
+      />
     </div>
   )
 }

@@ -1,10 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import type { TaskFeedback, ProjectFeedback, ProjectRating } from '../types'
 
-/**
- * Returns the correct seed data for task feedback, scoped to a projectId.
- * Task IDs match the dummy projects in useStudentProjects.
- */
+// ── Seed data (only applied once on first load, never overwriting user changes) ─
+
 function seedTaskFeedback(projectId: string): TaskFeedback[] {
   if (projectId === 'proj-001') {
     const now = Date.now()
@@ -36,7 +34,6 @@ function seedTaskFeedback(projectId: string): TaskFeedback[] {
         createdAt: new Date(now - 3 * 60 * 60 * 1000).toISOString(),
         updatedAt: new Date(now - 3 * 60 * 60 * 1000).toISOString()
       },
-      // Second instructor's feedback
       {
         id: 'tf-004',
         taskId: 'task-1',
@@ -60,9 +57,6 @@ function seedTaskFeedback(projectId: string): TaskFeedback[] {
   return []
 }
 
-/**
- * Returns the correct seed data for project feedback, scoped to a projectId.
- */
 function seedProjectFeedback(projectId: string): ProjectFeedback[] {
   if (projectId === 'proj-001') {
     return [
@@ -91,9 +85,6 @@ function seedProjectFeedback(projectId: string): ProjectFeedback[] {
   return []
 }
 
-/**
- * Returns the correct seed data for project ratings, scoped to a projectId.
- */
 function seedProjectRatings(projectId: string): ProjectRating[] {
   if (projectId === 'proj-001') {
     return [
@@ -120,71 +111,116 @@ function seedProjectRatings(projectId: string): ProjectRating[] {
   return []
 }
 
-/** Bump this string any time the dummy data schema changes to auto-clear stale cache. */
-const FEEDBACK_DATA_VERSION = 'v7'
+// ── Shared module-level state keyed by projectId ──────────────────────────────
+// Prevents stale-initializer bug: navigating from proj-001 → proj-002 without
+// unmounting would keep proj-001 data in useState; module-level state always
+// reads the correct bucket for the current projectId.
 
-function flushStaleCache() {
-  const stored = localStorage.getItem('polaris_feedback_version')
-  if (stored !== FEEDBACK_DATA_VERSION) {
-    // Remove all feedback-related keys
-    const keysToRemove: string[] = []
-    for (let i = 0; i < localStorage.length; i++) {
+const TASK_KEY    = (pid: string) => `polaris_task_feedback_${pid}`
+const FB_KEY      = (pid: string) => `polaris_project_feedback_${pid}`
+const RATING_KEY  = (pid: string) => `polaris_project_ratings_${pid}`
+const VERSION_KEY = 'polaris_feedback_version'
+const DATA_VERSION = 'v8'
+
+// One-time cache flush when seed schema changes
+;(() => {
+  if (localStorage.getItem(VERSION_KEY) !== DATA_VERSION) {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i)
       if (key && (
         key.startsWith('polaris_task_feedback_') ||
         key.startsWith('polaris_project_feedback_') ||
         key.startsWith('polaris_project_ratings_')
-      )) {
-        keysToRemove.push(key)
-      }
+      )) localStorage.removeItem(key)
     }
-    keysToRemove.forEach(k => localStorage.removeItem(k))
-    localStorage.setItem('polaris_feedback_version', FEEDBACK_DATA_VERSION)
+    localStorage.setItem(VERSION_KEY, DATA_VERSION)
   }
+})()
+
+type Listener = () => void
+const taskListeners:   Record<string, Set<Listener>> = {}
+const fbListeners:     Record<string, Set<Listener>> = {}
+const ratingListeners: Record<string, Set<Listener>> = {}
+
+const taskStore:   Record<string, TaskFeedback[]>   = {}
+const fbStore:     Record<string, ProjectFeedback[]> = {}
+const ratingStore: Record<string, ProjectRating[]>  = {}
+
+function getTask(pid: string): TaskFeedback[] {
+  if (!taskStore[pid]) {
+    try { taskStore[pid] = JSON.parse(localStorage.getItem(TASK_KEY(pid)) ?? 'null') ?? seedTaskFeedback(pid) }
+    catch { taskStore[pid] = seedTaskFeedback(pid) }
+  }
+  return taskStore[pid]
+}
+function getFb(pid: string): ProjectFeedback[] {
+  if (!fbStore[pid]) {
+    try { fbStore[pid] = JSON.parse(localStorage.getItem(FB_KEY(pid)) ?? 'null') ?? seedProjectFeedback(pid) }
+    catch { fbStore[pid] = seedProjectFeedback(pid) }
+  }
+  return fbStore[pid]
+}
+function getRating(pid: string): ProjectRating[] {
+  if (!ratingStore[pid]) {
+    try { ratingStore[pid] = JSON.parse(localStorage.getItem(RATING_KEY(pid)) ?? 'null') ?? seedProjectRatings(pid) }
+    catch { ratingStore[pid] = seedProjectRatings(pid) }
+  }
+  return ratingStore[pid]
 }
 
-// Run once at module load time
-flushStaleCache()
+function emitTask(pid: string) {
+  localStorage.setItem(TASK_KEY(pid), JSON.stringify(taskStore[pid]))
+  taskListeners[pid]?.forEach(fn => fn())
+}
+function emitFb(pid: string) {
+  localStorage.setItem(FB_KEY(pid), JSON.stringify(fbStore[pid]))
+  fbListeners[pid]?.forEach(fn => fn())
+}
+function emitRating(pid: string) {
+  localStorage.setItem(RATING_KEY(pid), JSON.stringify(ratingStore[pid]))
+  ratingListeners[pid]?.forEach(fn => fn())
+}
+
+// ── Hook ──────────────────────────────────────────────────────────────────────
 
 /**
  * useInstructorFeedback – manages instructor feedback on projects and tasks.
- * Provides methods to add, edit, and remove feedback/comments and ratings.
- * One feedback and one rating per instructor per project is enforced in the UI layer.
- *
- * @param projectId - The ID of the project
- * @returns Object containing feedback, ratings, and CRUD operations.
+ * Uses shared module-level state keyed by projectId to prevent cross-project
+ * data bleed when navigating between projects without component remount.
  */
 export function useInstructorFeedback(projectId: string) {
-  const [taskFeedback, setTaskFeedback] = useState<TaskFeedback[]>(() => {
-    const saved = localStorage.getItem(`polaris_task_feedback_${projectId}`)
-    return saved ? JSON.parse(saved) : seedTaskFeedback(projectId)
-  })
-  const [projectFeedback, setProjectFeedback] = useState<ProjectFeedback[]>(() => {
-    const saved = localStorage.getItem(`polaris_project_feedback_${projectId}`)
-    return saved ? JSON.parse(saved) : seedProjectFeedback(projectId)
-  })
-  const [projectRatings, setProjectRatings] = useState<ProjectRating[]>(() => {
-    const saved = localStorage.getItem(`polaris_project_ratings_${projectId}`)
-    return saved ? JSON.parse(saved) : seedProjectRatings(projectId)
-  })
-
-  // Persistence
-  useEffect(() => {
-    localStorage.setItem(`polaris_task_feedback_${projectId}`, JSON.stringify(taskFeedback))
-  }, [taskFeedback, projectId])
+  const [, setTaskTick]   = useState(0)
+  const [, setFbTick]     = useState(0)
+  const [, setRatingTick] = useState(0)
 
   useEffect(() => {
-    localStorage.setItem(`polaris_project_feedback_${projectId}`, JSON.stringify(projectFeedback))
-  }, [projectFeedback, projectId])
+    if (!taskListeners[projectId])   taskListeners[projectId]   = new Set()
+    if (!fbListeners[projectId])     fbListeners[projectId]     = new Set()
+    if (!ratingListeners[projectId]) ratingListeners[projectId] = new Set()
 
-  useEffect(() => {
-    localStorage.setItem(`polaris_project_ratings_${projectId}`, JSON.stringify(projectRatings))
-  }, [projectRatings, projectId])
+    // Ensure buckets are loaded for this project
+    getTask(projectId); getFb(projectId); getRating(projectId)
 
-  // Add task feedback
+    const tl = () => setTaskTick(t => t + 1)
+    const fl = () => setFbTick(t => t + 1)
+    const rl = () => setRatingTick(t => t + 1)
+
+    taskListeners[projectId].add(tl)
+    fbListeners[projectId].add(fl)
+    ratingListeners[projectId].add(rl)
+
+    return () => {
+      taskListeners[projectId]?.delete(tl)
+      fbListeners[projectId]?.delete(fl)
+      ratingListeners[projectId]?.delete(rl)
+    }
+  }, [projectId])
+
+  // ── Task feedback ────────────────────────────────────────────────────────
+
   const addTaskFeedback = useCallback(
     (taskId: string, instructorId: string, instructorName: string, comment: string) => {
-      const newFeedback: TaskFeedback = {
+      const fb: TaskFeedback = {
         id: `tf-${Date.now()}`,
         taskId,
         instructorId,
@@ -193,163 +229,135 @@ export function useInstructorFeedback(projectId: string) {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
-      setTaskFeedback(prev => [...prev, newFeedback])
-      return newFeedback
-    },
-    []
-  )
+      taskStore[projectId] = [...getTask(projectId), fb]
+      emitTask(projectId)
+      return fb
+    }, [projectId])
 
-  // Edit task feedback
   const editTaskFeedback = useCallback((feedbackId: string, newComment: string) => {
-    setTaskFeedback(prev =>
-      prev.map(fb =>
-        fb.id === feedbackId
-          ? { ...fb, comment: newComment, updatedAt: new Date().toISOString() }
-          : fb
-      )
+    taskStore[projectId] = getTask(projectId).map(fb =>
+      fb.id === feedbackId ? { ...fb, comment: newComment, updatedAt: new Date().toISOString() } : fb
     )
-  }, [])
+    emitTask(projectId)
+  }, [projectId])
 
-  // Remove task feedback
   const removeTaskFeedback = useCallback((feedbackId: string) => {
-    setTaskFeedback(prev => prev.filter(fb => fb.id !== feedbackId))
-  }, [])
+    taskStore[projectId] = getTask(projectId).filter(fb => fb.id !== feedbackId)
+    emitTask(projectId)
+  }, [projectId])
 
-  // Get task feedback for a specific task
-  const getTaskFeedback = useCallback(
-    (taskId: string) => {
-      return taskFeedback.filter(fb => fb.taskId === taskId)
-    },
-    [taskFeedback]
-  )
+  const getTaskFeedback = useCallback((taskId: string) =>
+    getTask(projectId).filter(fb => fb.taskId === taskId)
+  , [projectId])
 
-  // Add project feedback (enforcing one-per-instructor is handled in UI)
-  const addProjectFeedback = useCallback(
-    (
-      instructorId: string,
-      instructorName: string,
-      comment: string,
-      feedbackType: 'general' | 'thesis_draft' = 'general',
-      relatedThesisDraftId?: string
-    ) => {
-      const newFeedback: ProjectFeedback = {
-        id: `pf-${Date.now()}`,
+  // ── Project feedback ─────────────────────────────────────────────────────
+
+  const addProjectFeedback = useCallback((
+    instructorId: string,
+    instructorName: string,
+    comment: string,
+    feedbackType: 'general' | 'thesis_draft' = 'general',
+    relatedThesisDraftId?: string
+  ) => {
+    const fb: ProjectFeedback = {
+      id: `pf-${Date.now()}`,
+      projectId,
+      instructorId,
+      instructorName,
+      feedbackType,
+      comment,
+      relatedThesisDraftId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    fbStore[projectId] = [...getFb(projectId), fb]
+    emitFb(projectId)
+    return fb
+  }, [projectId])
+
+  const editProjectFeedback = useCallback((feedbackId: string, newComment: string) => {
+    fbStore[projectId] = getFb(projectId).map(fb =>
+      fb.id === feedbackId ? { ...fb, comment: newComment, updatedAt: new Date().toISOString() } : fb
+    )
+    emitFb(projectId)
+  }, [projectId])
+
+  const removeProjectFeedback = useCallback((feedbackId: string) => {
+    fbStore[projectId] = getFb(projectId).filter(fb => fb.id !== feedbackId)
+    emitFb(projectId)
+  }, [projectId])
+
+  // ── Ratings ──────────────────────────────────────────────────────────────
+
+  const rateProject = useCallback((
+    instructorId: string,
+    instructorName: string,
+    rating: number,
+    comment?: string
+  ) => {
+    const clampedRating = Math.max(1, Math.min(5, rating))
+    const existing = getRating(projectId).find(r => r.instructorId === instructorId)
+    if (existing) {
+      ratingStore[projectId] = getRating(projectId).map(r =>
+        r.instructorId === instructorId
+          ? { ...r, rating: clampedRating, comment: comment ?? r.comment, createdAt: new Date().toISOString() }
+          : r
+      )
+    } else {
+      const newRating: ProjectRating = {
+        id: `rating-${Date.now()}`,
         projectId,
         instructorId,
         instructorName,
-        feedbackType,
+        rating: clampedRating,
         comment,
-        relatedThesisDraftId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        createdAt: new Date().toISOString()
       }
-      setProjectFeedback(prev => [...prev, newFeedback])
-      return newFeedback
-    },
-    [projectId]
-  )
+      ratingStore[projectId] = [...getRating(projectId), newRating]
+    }
+    emitRating(projectId)
+  }, [projectId])
 
-  // Edit project feedback
-  const editProjectFeedback = useCallback((feedbackId: string, newComment: string) => {
-    setProjectFeedback(prev =>
-      prev.map(fb =>
-        fb.id === feedbackId
-          ? { ...fb, comment: newComment, updatedAt: new Date().toISOString() }
-          : fb
-      )
-    )
-  }, [])
-
-  // Remove project feedback
-  const removeProjectFeedback = useCallback((feedbackId: string) => {
-    setProjectFeedback(prev => prev.filter(fb => fb.id !== feedbackId))
-  }, [])
-
-  // Add or update project rating (upsert by instructorId)
-  const rateProject = useCallback(
-    (
-      instructorId: string,
-      instructorName: string,
-      rating: number,
-      comment?: string
-    ) => {
-      const existing = projectRatings.find(r => r.instructorId === instructorId)
-      if (existing) {
-        setProjectRatings(prev =>
-          prev.map(r =>
-            r.instructorId === instructorId
-              ? { ...r, rating: Math.max(1, Math.min(5, rating)), comment: comment ?? r.comment, createdAt: new Date().toISOString() }
-              : r
-          )
-        )
-        return existing
-      } else {
-        const newRating: ProjectRating = {
-          id: `rating-${Date.now()}`,
-          projectId,
-          instructorId,
-          instructorName,
-          rating: Math.max(1, Math.min(5, rating)),
-          comment,
-          createdAt: new Date().toISOString()
-        }
-        setProjectRatings(prev => [...prev, newRating])
-        return newRating
-      }
-    },
-    [projectId, projectRatings]
-  )
-
-  // Edit an existing rating by ID
   const editProjectRating = useCallback((ratingId: string, newRating: number, newComment?: string) => {
-    setProjectRatings(prev =>
-      prev.map(r =>
-        r.id === ratingId
-          ? { ...r, rating: Math.max(1, Math.min(5, newRating)), comment: newComment ?? r.comment, createdAt: new Date().toISOString() }
-          : r
-      )
+    ratingStore[projectId] = getRating(projectId).map(r =>
+      r.id === ratingId
+        ? { ...r, rating: Math.max(1, Math.min(5, newRating)), comment: newComment ?? r.comment, createdAt: new Date().toISOString() }
+        : r
     )
-  }, [])
+    emitRating(projectId)
+  }, [projectId])
 
-  // Remove a rating by ID
   const removeProjectRating = useCallback((ratingId: string) => {
-    setProjectRatings(prev => prev.filter(r => r.id !== ratingId))
-  }, [])
+    ratingStore[projectId] = getRating(projectId).filter(r => r.id !== ratingId)
+    emitRating(projectId)
+  }, [projectId])
 
-  // Get average rating across all instructors
+  const getInstructorRating = useCallback((instructorId: string) =>
+    getRating(projectId).find(r => r.instructorId === instructorId)
+  , [projectId])
+
   const averageRating = useMemo(() => {
-    if (projectRatings.length === 0) return 0
-    const sum = projectRatings.reduce((acc, r) => acc + r.rating, 0)
-    return Number((sum / projectRatings.length).toFixed(1))
-  }, [projectRatings])
-
-  // Get this instructor's rating
-  const getInstructorRating = useCallback(
-    (instructorId: string) => {
-      return projectRatings.find(r => r.instructorId === instructorId)
-    },
-    [projectRatings]
-  )
+    const ratings = getRating(projectId)
+    if (!ratings.length) return 0
+    return Number((ratings.reduce((s, r) => s + r.rating, 0) / ratings.length).toFixed(1))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, ratingStore[projectId]])
 
   return {
-    // State
-    taskFeedback,
-    projectFeedback,
-    projectRatings,
+    taskFeedback:    getTask(projectId),
+    projectFeedback: getFb(projectId),
+    projectRatings:  getRating(projectId),
     averageRating,
 
-    // Task feedback actions
     addTaskFeedback,
     editTaskFeedback,
     removeTaskFeedback,
     getTaskFeedback,
 
-    // Project feedback actions
     addProjectFeedback,
     editProjectFeedback,
     removeProjectFeedback,
 
-    // Rating actions
     rateProject,
     editProjectRating,
     removeProjectRating,
