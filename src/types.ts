@@ -94,6 +94,7 @@ export interface Conversation {
   participantId: string
   participantName: string
   participantAvatar: string
+  participantProfilePicture?: string
   participantRole?: UserRole
   lastMessage: string
   lastTimestamp: string
@@ -108,6 +109,12 @@ export interface Notification {
   timestamp: string
   read: boolean
   link?: string
+  projectId?: string
+  projectTitle?: string
+  senderName?: string
+  feedbackType?: string
+  instructorName?: string
+  flagReason?: string
 }
 
 export interface EmployerStats {
@@ -153,6 +160,8 @@ export interface CourseLink {
 }
 
 export interface ProjectCollaborator {
+  id: string
+  projectId: string
   collaboratorId: string
   name: string
   email: string

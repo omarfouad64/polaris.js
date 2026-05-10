@@ -1,9 +1,25 @@
 import type {
-  StudentPortfolio, CompanyProfile, DocumentFile, EmployerStats, Internship,
+  StudentPortfolio, CompanyProfile, EmployerStats, Internship,
   InternshipApplication, CompletedInternship, InstructorProfile, Course, CourseLink,
   ProjectCollaborator, ProjectInvitation, TaskFeedback, ProjectFeedback,
-  ProjectRating, FlaggedProject, ProjectAppeal, FavoriteItem, Message, Conversation, Notification
+  ProjectRating, FlaggedProject, ProjectAppeal, FavoriteItem, Message, Conversation, Notification, UserRole
 } from '../types';
+
+export interface ProjectTask {
+  id: string;
+  description: string;
+  assigneeId: string;
+  status: 'pending' | 'post-poned' | 'completed';
+  importance: 'High' | 'Medium' | 'Low';
+  deadline: string;
+}
+
+export interface ThesisDraft {
+  id: string;
+  name: string;
+  uploadDate: string;
+  isFinal: boolean;
+}
 
 export interface Project {
   id: string;
@@ -11,6 +27,19 @@ export interface Project {
   description: string;
   courseId: string;
   ownerId: string;
+  // Extended fields matching ProjectData in useStudentProjects
+  course: string;
+  githubLink: string;
+  projectReport: string;
+  languages: string[];
+  demoVideoUrl?: string;
+  thesisDrafts: ThesisDraft[];
+  tasks: ProjectTask[];
+  createdDate: string;
+  updatedDate: string;
+  isPublic: boolean;
+  status: 'active' | 'flagged';
+  flagReason?: string;
 }
 
 export interface DatabaseState {
@@ -35,6 +64,7 @@ export interface DatabaseState {
   messages: Message[];
   conversations: Conversation[];
   notifications: Notification[];
+  users: { username: string; role: UserRole; password: string }[];
 }
 
 export const initialData: DatabaseState = {
@@ -52,11 +82,18 @@ export const initialData: DatabaseState = {
       code: "CSW502",
       semester: "Fall 2025",
       description: "Enterprise software design and architecture."
+    },
+    {
+      id: "course_3",
+      name: "Machine Learning",
+      code: "CSW601",
+      semester: "Spring 2026",
+      description: "Foundations of ML and statistical learning."
     }
   ],
   instructors: [
     {
-      instructorId: "instructor_1",
+      instructorId: "bob@guc.edu.eg",
       name: "Dr. Bob Jones",
       email: "bob@guc.edu.eg",
       biography: "Web Architecture Expert.",
@@ -66,36 +103,82 @@ export const initialData: DatabaseState = {
       profilePicture: null,
       createdAt: "2026-01-01T10:00:00Z",
       updatedAt: "2026-01-01T10:00:00Z"
+    },
+    {
+      instructorId: "sarah@guc.edu.eg",
+      name: "Dr. Sarah Connor",
+      email: "sarah@guc.edu.eg",
+      biography: "Machine Learning and AI specialist.",
+      researchInterests: ["Deep Learning", "Neural Networks", "Computer Vision"],
+      educationBackground: "PhD in AI from MIT",
+      linkedCourses: ["course_1"],
+      profilePicture: null,
+      createdAt: "2026-01-05T09:00:00Z",
+      updatedAt: "2026-01-05T09:00:00Z"
     }
   ],
   courseLinks: [
     {
-      instructorId: "instructor_1",
+      instructorId: "bob@guc.edu.eg",
       courseId: "course_1",
       status: "linked",
       linkedAt: "2026-01-10T12:00:00Z"
     },
     {
-      instructorId: "instructor_1",
+      instructorId: "bob@guc.edu.eg",
       courseId: "course_2",
       status: "linked",
       linkedAt: "2025-08-15T09:00:00Z"
+    },
+    {
+      instructorId: "sarah@guc.edu.eg",
+      courseId: "course_3",
+      status: "linked",
+      linkedAt: "2026-01-10T10:00:00Z"
     }
   ],
   students: [
     {
-      studentId: "student_1",
+      studentId: "alice.smith@student.guc.edu.eg",
       name: "Alice Smith",
       email: "alice.smith@student.guc.edu.eg",
       major: "Computer Science",
       year: "Senior",
-      projectCount: 2,
+      projectCount: 4,
       skills: ["React", "TypeScript", "Tailwind", "System Design"],
       linkedinUrl: "https://linkedin.com/in/alicesmith",
       bio: "Frontend enthusiast looking for internships.",
       profilePicture: null,
       createdAt: "2026-02-01T08:00:00Z",
       updatedAt: "2026-02-01T08:00:00Z"
+    },
+    {
+      studentId: "charlie@student.guc.edu.eg",
+      name: "Charlie Brown",
+      email: "charlie@student.guc.edu.eg",
+      major: "Artificial Intelligence",
+      year: "Senior",
+      projectCount: 2,
+      skills: ["Python", "TensorFlow", "Keras", "Data Analysis"],
+      linkedinUrl: "https://linkedin.com/in/charliebrown",
+      bio: "Aspiring data scientist with a focus on deep learning.",
+      profilePicture: null,
+      createdAt: "2026-02-05T10:00:00Z",
+      updatedAt: "2026-02-05T10:00:00Z"
+    },
+    {
+      studentId: "david.m@student.guc.edu.eg",
+      name: "David Miller",
+      email: "david.m@student.guc.edu.eg",
+      major: "Software Engineering",
+      year: "Junior",
+      projectCount: 1,
+      skills: ["Java", "Spring Boot", "MySQL", "Docker"],
+      linkedinUrl: "https://linkedin.com/in/davidmiller",
+      bio: "Backend developer interested in scalable microservices.",
+      profilePicture: null,
+      createdAt: "2026-02-10T14:00:00Z",
+      updatedAt: "2026-02-10T14:00:00Z"
     }
   ],
   completedInternships: [
@@ -109,49 +192,335 @@ export const initialData: DatabaseState = {
   ],
   projects: [
     {
-      id: "project_1",
-      title: "Polaris UI Engine",
-      description: "A dynamic rendering engine.",
-      courseId: "course_1",
-      ownerId: "student_1"
+      id: "proj-001",
+      title: "E-Commerce Platform",
+      description: "A full-stack e-commerce platform with payment integration and admin dashboard.",
+      courseId: "course_2",
+      ownerId: "alice.smith@student.guc.edu.eg",
+      course: "course_2",
+      githubLink: "https://github.com/student/ecommerce",
+      projectReport: "Built a full-stack e-commerce platform with React frontend and Node.js backend. Implemented shopping cart, payment integration, and admin dashboard.",
+      languages: ["TypeScript", "React", "Node.js", "MongoDB"],
+      demoVideoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      thesisDrafts: [],
+      tasks: [
+        { id: "task-1", description: "Setup database schema", assigneeId: "alice.smith@student.guc.edu.eg", status: "completed", importance: "High", deadline: "2026-01-20" },
+        { id: "task-2", description: "Implement authentication", assigneeId: "alice.smith@student.guc.edu.eg", status: "pending", importance: "Medium", deadline: "2026-02-15" },
+        { id: "task-3", description: "Add unit tests", assigneeId: "alice.smith@student.guc.edu.eg", status: "pending", importance: "Low", deadline: "2026-03-01" }
+      ],
+      createdDate: "2026-01-15",
+      updatedDate: "2026-02-10",
+      isPublic: true,
+      status: "active"
     },
     {
-      id: "project_2",
+      id: "proj-002",
+      title: "Machine Learning Classifier",
+      description: "Image recognition system using CNNs with 94% accuracy.",
+      courseId: "course_3",
+      ownerId: "alice.smith@student.guc.edu.eg",
+      course: "course_3",
+      githubLink: "https://github.com/student/ml-classifier",
+      projectReport: "Developed a machine learning classifier for image recognition using convolutional neural networks. Achieved 94% accuracy on test dataset.",
+      languages: ["Python", "TensorFlow", "Scikit-learn"],
+      demoVideoUrl: "https://www.youtube.com/embed/jNQXAC9IVRw",
+      thesisDrafts: [],
+      tasks: [],
+      createdDate: "2025-09-01",
+      updatedDate: "2026-03-20",
+      isPublic: true,
+      status: "flagged",
+      flagReason: "Copyrighted material detected in documentation."
+    },
+    {
+      id: "proj-003",
+      title: "Mobile Chat App",
+      description: "Cross-platform chat app with real-time messaging and push notifications.",
+      courseId: "course_1",
+      ownerId: "alice.smith@student.guc.edu.eg",
+      course: "course_1",
+      githubLink: "https://github.com/student/chat-app",
+      projectReport: "Cross-platform chat application with real-time messaging, user authentication, and push notifications.",
+      languages: ["React Native", "Firebase", "JavaScript"],
+      thesisDrafts: [],
+      tasks: [
+        { id: "task-p3-1", description: "Set up Firebase project", assigneeId: "alice.smith@student.guc.edu.eg", status: "completed", importance: "High", deadline: "2026-02-05" },
+        { id: "task-p3-2", description: "Implement real-time chat with Socket.io", assigneeId: "alice.smith@student.guc.edu.eg", status: "completed", importance: "High", deadline: "2026-02-15" },
+        { id: "task-p3-3", description: "Add push notifications", assigneeId: "alice.smith@student.guc.edu.eg", status: "pending", importance: "Medium", deadline: "2026-03-10" }
+      ],
+      createdDate: "2026-02-01",
+      updatedDate: "2026-02-28",
+      isPublic: true,
+      status: "active"
+    },
+    {
+      id: "proj-004",
+      title: "Polaris UI Engine",
+      description: "A dynamic rendering engine for component-based UI frameworks.",
+      courseId: "course_1",
+      ownerId: "alice.smith@student.guc.edu.eg",
+      course: "course_1",
+      githubLink: "https://github.com/student/polaris-ui",
+      projectReport: "Developed a high-performance rendering engine that supports virtual DOM diffing, lazy loading, and server-side rendering for large-scale React applications.",
+      languages: ["TypeScript", "React", "Webpack"],
+      thesisDrafts: [
+        { id: "draft-1", name: "thesis_v1.pdf", uploadDate: "2026-03-15", isFinal: false },
+        { id: "draft-2", name: "thesis_final.pdf", uploadDate: "2026-04-10", isFinal: true }
+      ],
+      tasks: [
+        { id: "task-p4-1", description: "Design rendering pipeline", assigneeId: "alice.smith@student.guc.edu.eg", status: "completed", importance: "High", deadline: "2026-03-01" },
+        { id: "task-p4-2", description: "Implement virtual DOM diff algorithm", assigneeId: "alice.smith@student.guc.edu.eg", status: "completed", importance: "High", deadline: "2026-03-20" },
+        { id: "task-p4-3", description: "Write performance benchmarks", assigneeId: "alice.smith@student.guc.edu.eg", status: "pending", importance: "Medium", deadline: "2026-05-01" }
+      ],
+      createdDate: "2026-02-15",
+      updatedDate: "2026-04-10",
+      isPublic: true,
+      status: "active"
+    },
+    {
+      id: "proj-005",
       title: "Distributed Task Queue",
-      description: "A scalable job queue architecture.",
+      description: "A scalable, fault-tolerant job queue using Redis and worker nodes.",
       courseId: "course_2",
-      ownerId: "student_1"
+      ownerId: "alice.smith@student.guc.edu.eg",
+      course: "course_2",
+      githubLink: "https://github.com/student/task-queue",
+      projectReport: "Built a distributed task queue system capable of handling 10,000+ concurrent jobs with Redis-backed persistence, retry logic, and a real-time dashboard for monitoring job statuses.",
+      languages: ["Node.js", "Redis", "Docker", "TypeScript"],
+      thesisDrafts: [],
+      tasks: [
+        { id: "task-p5-1", description: "Set up Redis cluster", assigneeId: "alice.smith@student.guc.edu.eg", status: "completed", importance: "High", deadline: "2026-01-30" },
+        { id: "task-p5-2", description: "Implement job retry logic", assigneeId: "alice.smith@student.guc.edu.eg", status: "completed", importance: "High", deadline: "2026-02-20" },
+        { id: "task-p5-3", description: "Build monitoring dashboard", assigneeId: "alice.smith@student.guc.edu.eg", status: "post-poned", importance: "Medium", deadline: "2026-04-15" }
+      ],
+      createdDate: "2026-01-20",
+      updatedDate: "2026-03-05",
+      isPublic: true,
+      status: "active"
+    },
+    {
+      id: "proj-007",
+      ownerId: "charlie@student.guc.edu.eg",
+      title: "Neural Network Optimizer",
+      description: "A tool to optimize hyperparameters for deep neural networks.",
+      courseId: "course_3",
+      course: "course_3",
+      githubLink: "https://github.com/charlie/nn-opt",
+      projectReport: "Developed a tool that uses genetic algorithms to find optimal hyperparameters for CNNs and RNNs.",
+      languages: ["Python", "PyTorch"],
+      thesisDrafts: [],
+      tasks: [],
+      createdDate: "2026-03-01",
+      updatedDate: "2026-03-05",
+      isPublic: true,
+      status: "active"
+    },
+    {
+      id: "proj-006",
+      ownerId: "david.m@student.guc.edu.eg",
+      title: "Microservices Gateway",
+      description: "API Gateway for a distributed microservices architecture.",
+      courseId: "course_2",
+      course: "course_2",
+      githubLink: "https://github.com/david/gateway",
+      projectReport: "Implemented a custom API gateway using Spring Cloud Gateway with integrated rate limiting and authentication.",
+      languages: ["Java", "Spring"],
+      thesisDrafts: [],
+      tasks: [],
+      createdDate: "2026-03-15",
+      updatedDate: "2026-03-15",
+      isPublic: true,
+      status: "active"
     }
   ],
   projectCollaborators: [
     {
-      collaboratorId: "student_1",
+      id: "collab-1",
+      projectId: "proj-001",
+      collaboratorId: "alice.smith@student.guc.edu.eg",
+      name: "Alice Smith",
+      email: "alice.smith@student.guc.edu.eg",
+      role: "owner",
+      invitationStatus: "accepted",
+      invitedAt: "2026-01-15T09:00:00Z",
+      profilePicture: null
+    },
+    {
+      id: "collab-2",
+      projectId: "proj-004",
+      collaboratorId: "alice.smith@student.guc.edu.eg",
       name: "Alice Smith",
       email: "alice.smith@student.guc.edu.eg",
       role: "owner",
       invitationStatus: "accepted",
       invitedAt: "2026-02-15T09:00:00Z",
       profilePicture: null
+    },
+    {
+      id: "collab-3",
+      projectId: "proj-004",
+      collaboratorId: "charlie@student.guc.edu.eg",
+      name: "Charlie Brown",
+      email: "charlie@student.guc.edu.eg",
+      role: "collaborator",
+      invitationStatus: "accepted",
+      invitedAt: "2026-02-16T10:00:00Z",
+      respondedAt: "2026-02-16T14:00:00Z",
+      profilePicture: null
+    },
+    {
+      id: "collab-4",
+      projectId: "proj-002",
+      collaboratorId: "alice.smith@student.guc.edu.eg",
+      name: "Alice Smith",
+      email: "alice.smith@student.guc.edu.eg",
+      role: "owner",
+      invitationStatus: "accepted",
+      invitedAt: "2025-09-01T08:00:00Z",
+      profilePicture: null
+    },
+    {
+      id: "collab-5",
+      projectId: "proj-003",
+      collaboratorId: "alice.smith@student.guc.edu.eg",
+      name: "Alice Smith",
+      email: "alice.smith@student.guc.edu.eg",
+      role: "owner",
+      invitationStatus: "accepted",
+      invitedAt: "2026-02-01T09:00:00Z",
+      profilePicture: null
+    },
+    {
+      id: "collab-6",
+      projectId: "proj-005",
+      collaboratorId: "alice.smith@student.guc.edu.eg",
+      name: "Alice Smith",
+      email: "alice.smith@student.guc.edu.eg",
+      role: "owner",
+      invitationStatus: "accepted",
+      invitedAt: "2026-01-20T10:00:00Z",
+      profilePicture: null
+    },
+    {
+      id: "collab-7",
+      projectId: "proj-006",
+      collaboratorId: "david.m@student.guc.edu.eg",
+      name: "David Miller",
+      email: "david.m@student.guc.edu.eg",
+      role: "owner",
+      invitationStatus: "accepted",
+      invitedAt: "2026-03-15T11:00:00Z",
+      profilePicture: null
+    },
+    {
+      id: "collab-8",
+      projectId: "proj-007",
+      collaboratorId: "charlie@student.guc.edu.eg",
+      name: "Charlie Brown",
+      email: "charlie@student.guc.edu.eg",
+      role: "owner",
+      invitationStatus: "accepted",
+      invitedAt: "2026-03-01T09:00:00Z",
+      profilePicture: null
     }
   ],
   projectInvitations: [
     {
       id: "invite_1",
-      projectId: "project_1",
+      projectId: "proj-004",
       projectTitle: "Polaris UI Engine",
       senderName: "Alice Smith",
-      senderId: "student_1",
+      senderId: "alice.smith@student.guc.edu.eg",
       recipientEmail: "charlie@student.guc.edu.eg",
-      recipientName: "Charlie",
+      recipientName: "Charlie Brown",
+      invitationStatus: "accepted",
+      createdAt: "2026-02-16T10:00:00Z",
+      respondedAt: "2026-02-16T14:00:00Z"
+    },
+    {
+      id: "invite_2",
+      projectId: "proj-001",
+      projectTitle: "E-Commerce Platform",
+      senderName: "Alice Smith",
+      senderId: "alice.smith@student.guc.edu.eg",
+      recipientEmail: "sara.hassan@student.guc.edu.eg",
+      recipientName: "Sara Hassan",
       invitationStatus: "pending",
-      createdAt: "2026-02-16T10:00:00Z"
+      createdAt: "2026-04-20T09:00:00Z"
+    },
+    {
+      id: "invite_3",
+      projectId: "proj-005",
+      projectTitle: "Distributed Task Queue",
+      senderName: "Alice Smith",
+      senderId: "alice.smith@student.guc.edu.eg",
+      recipientEmail: "bob@guc.edu.eg",
+      recipientName: "Dr. Bob Jones",
+      invitationStatus: "pending",
+      createdAt: "2026-04-22T11:00:00Z"
+    },
+    {
+      id: "invite_4",
+      projectId: "proj-007",
+      projectTitle: "Neural Network Optimizer",
+      senderName: "Charlie Brown",
+      senderId: "charlie@student.guc.edu.eg",
+      recipientEmail: "david.m@student.guc.edu.eg",
+      recipientName: "David Miller",
+      invitationStatus: "pending",
+      createdAt: "2026-05-01T10:00:00Z"
+    },
+    {
+      id: "invite_5",
+      projectId: "proj-006",
+      projectTitle: "Microservices Gateway",
+      senderName: "David Miller",
+      senderId: "david.m@student.guc.edu.eg",
+      recipientEmail: "sarah@guc.edu.eg",
+      recipientName: "Dr. Sarah Connor",
+      invitationStatus: "accepted",
+      createdAt: "2026-05-02T14:00:00Z",
+      respondedAt: "2026-05-03T09:00:00Z"
+    },
+    {
+      id: "invite_6",
+      projectId: "proj-007",
+      projectTitle: "Neural Network Optimizer",
+      senderName: "Charlie Brown",
+      senderId: "charlie@student.guc.edu.eg",
+      recipientEmail: "sarah@guc.edu.eg",
+      recipientName: "Dr. Sarah Connor",
+      invitationStatus: "pending",
+      createdAt: "2026-05-05T08:00:00Z"
+    },
+    {
+      id: "invite_7",
+      projectId: "proj-007",
+      projectTitle: "Neural Network Optimizer",
+      senderName: "Charlie Brown",
+      senderId: "charlie@student.guc.edu.eg",
+      recipientEmail: "alice.smith@student.guc.edu.eg",
+      recipientName: "Alice Smith",
+      invitationStatus: "pending",
+      createdAt: "2026-05-06T10:00:00Z"
+    },
+    {
+      id: "invite_8",
+      projectId: "proj-006",
+      projectTitle: "Microservices Gateway",
+      senderName: "David Miller",
+      senderId: "david.m@student.guc.edu.eg",
+      recipientEmail: "alice.smith@student.guc.edu.eg",
+      recipientName: "Alice Smith",
+      invitationStatus: "pending",
+      createdAt: "2026-05-07T11:00:00Z"
     }
   ],
   taskFeedback: [
     {
       id: "task_feedback_1",
       taskId: "task_101",
-      instructorId: "instructor_1",
+      instructorId: "bob@guc.edu.eg",
       instructorName: "Dr. Bob Jones",
       comment: "Your schema design looks good, but consider indexing the foreign keys.",
       createdAt: "2026-02-28T10:00:00Z",
@@ -162,7 +531,7 @@ export const initialData: DatabaseState = {
     {
       id: "feedback_1",
       projectId: "project_1",
-      instructorId: "instructor_1",
+      instructorId: "bob@guc.edu.eg",
       instructorName: "Dr. Bob Jones",
       feedbackType: "general",
       comment: "Excellent use of Tailwind and TypeScript. Needs better responsive design.",
@@ -174,7 +543,7 @@ export const initialData: DatabaseState = {
     {
       id: "rating_1",
       projectId: "project_1",
-      instructorId: "instructor_1",
+      instructorId: "bob@guc.edu.eg",
       instructorName: "Dr. Bob Jones",
       rating: 4,
       comment: "Solid A- work.",
@@ -186,7 +555,7 @@ export const initialData: DatabaseState = {
       id: "flag_1",
       projectId: "project_2",
       projectTitle: "Distributed Task Queue",
-      projectOwnerId: "student_1",
+      projectOwnerId: "alice.smith@student.guc.edu.eg",
       projectOwnerName: "Alice Smith",
       flaggedBy: "admin_1",
       flaggedByName: "System Admin",
@@ -201,7 +570,7 @@ export const initialData: DatabaseState = {
       id: "appeal_1",
       flaggedProjectId: "flag_1",
       projectId: "project_2",
-      studentId: "student_1",
+      studentId: "alice.smith@student.guc.edu.eg",
       studentName: "Alice Smith",
       appealMessage: "The API used is an open-source mock backend permitted by the syllabus.",
       submittedAt: "2026-03-06T11:00:00Z",
@@ -215,10 +584,26 @@ export const initialData: DatabaseState = {
       address: "New Cairo, Egypt",
       contactEmail: "hr@techcorp.com",
       phone: "01000000000",
-      logoUrl: "/dummy-logo.png",
+      logoUrl: "/techcorp_logo.png",
       approvalStatus: "Approved",
       location: { lat: 30.0444, lng: 31.2357 },
-      documents: []
+      documents: [
+        { id: "doc_1", name: "Tax_Registration.pdf", type: "PDF", size: 102450, uploadedAt: "2026-01-15T10:00:00Z" },
+        { id: "doc_2", name: "Commercial_License.pdf", type: "PDF", size: 204800, uploadedAt: "2026-01-15T10:05:00Z" }
+      ]
+    },
+    {
+      companyName: "Global Systems",
+      biography: "International IT consulting firm.",
+      address: "Maadi, Cairo",
+      contactEmail: "hr@globalsys.com",
+      phone: "01222222222",
+      logoUrl: "/dummy-logo-2.png",
+      approvalStatus: "Pending",
+      location: { lat: 29.9602, lng: 31.2569 },
+      documents: [
+        { id: "doc_3", name: "Company_Portfolio.pdf", type: "PDF", size: 512000, uploadedAt: "2026-03-01T14:00:00Z" }
+      ]
     }
   ],
   employerStats: {
@@ -260,6 +645,21 @@ export const initialData: DatabaseState = {
       companyName: "TechCorp",
       companyLogo: "/dummy-logo.png",
       applicantCount: 2
+    },
+    {
+      id: "internship_3",
+      title: "Data Scientist Intern",
+      description: "Analyze large datasets and build predictive models.",
+      skills: ["Python", "SQL", "Machine Learning"],
+      duration: "4 months",
+      applicationDeadline: "2026-06-01T00:00:00Z",
+      programmingLanguages: ["Python", "R"],
+      status: "Hiring",
+      archived: false,
+      postedAt: "2026-03-25T10:00:00Z",
+      companyName: "Global Systems",
+      companyLogo: "/dummy-logo-2.png",
+      applicantCount: 1
     }
   ],
   applications: [
@@ -268,13 +668,26 @@ export const initialData: DatabaseState = {
       internshipId: "internship_1",
       internshipTitle: "Frontend Developer Intern",
       companyName: "TechCorp",
-      studentId: "student_1",
+      studentId: "alice.smith@student.guc.edu.eg",
       studentName: "Alice Smith",
       studentEmail: "alice.smith@student.guc.edu.eg",
       coverLetter: "I would love to apply my React skills at TechCorp.",
       appliedAt: "2026-03-15T10:00:00Z",
       status: "Pending",
       contributionScore: 85
+    },
+    {
+      id: "application_2",
+      internshipId: "internship_1",
+      internshipTitle: "Frontend Developer Intern",
+      companyName: "TechCorp",
+      studentId: "charlie@student.guc.edu.eg",
+      studentName: "Charlie Brown",
+      studentEmail: "charlie@student.guc.edu.eg",
+      coverLetter: "I am a senior student with Python experience but eager to learn React.",
+      appliedAt: "2026-03-20T11:00:00Z",
+      status: "Rejected",
+      contributionScore: 40
     }
   ],
   favorites: [
@@ -298,10 +711,10 @@ export const initialData: DatabaseState = {
   messages: [
     {
       id: "msg_1",
-      senderId: "student_1",
+      senderId: "alice.smith@student.guc.edu.eg",
       senderName: "Alice Smith",
       senderRole: "Student",
-      receiverId: "employer_1",
+      receiverId: "hr@techcorp.com",
       receiverName: "TechCorp HR",
       receiverRole: "Employer",
       content: "Hello, I just submitted my application for the Frontend Intern position. Let me know if you need any additional documents.",
@@ -310,10 +723,10 @@ export const initialData: DatabaseState = {
     },
     {
       id: "msg_2",
-      senderId: "employer_1",
+      senderId: "hr@techcorp.com",
       senderName: "TechCorp HR",
       senderRole: "Employer",
-      receiverId: "student_1",
+      receiverId: "alice.smith@student.guc.edu.eg",
       receiverName: "Alice Smith",
       receiverRole: "Student",
       content: "Hi Alice, we received your application. Your portfolio looks great! We will be in touch soon.",
@@ -324,7 +737,7 @@ export const initialData: DatabaseState = {
   conversations: [
     {
       id: "conv_1",
-      participantId: "employer_1",
+      participantId: "hr@techcorp.com",
       participantName: "TechCorp HR",
       participantAvatar: "/dummy-logo.png",
       participantRole: "Employer",
@@ -366,9 +779,27 @@ export const initialData: DatabaseState = {
       type: "appeal_response",
       title: "Appeal Approved",
       body: "Your appeal for 'Distributed Task Queue' was approved. The flag has been removed.",
-      timestamp: "2026-03-07T10:00:00Z",
+      timestamp: "2026-04-10T11:00:00Z",
       read: false,
-      link: "/projects/project_2"
+      link: "/portal/student/projects/proj-004/view"
+    },
+    {
+      id: "notif_4",
+      type: "project_invitation",
+      title: "New Collaboration Request",
+      body: "Charlie Brown invited you to join 'Neural Network Optimizer'.",
+      timestamp: "2026-05-06T10:01:00Z",
+      read: false,
+      link: "/portal/student/invitations"
+    },
+    {
+      id: "notif_5",
+      type: "project_invitation",
+      title: "New Collaboration Request",
+      body: "David Miller invited you to join 'Microservices Gateway'.",
+      timestamp: "2026-05-07T11:02:00Z",
+      read: false,
+      link: "/portal/student/invitations"
     },
     {
       id: "notif_s4",
@@ -464,10 +895,25 @@ export const initialData: DatabaseState = {
       id: "notif_a3",
       type: "admin",
       title: "Course Link Pending",
-      body: "Dr. Bob Jones requested to link with 'System Architecture'.",
+      body: "Dr.Bob Jones requested to link with 'System Architecture'.",
       timestamp: "2025-08-10T09:00:00Z",
       read: true,
       link: "/admin/courses"
     }
+  ],
+  users: [
+    { username: "alice.smith@student.guc.edu.eg", role: "Student", password: "student123" },
+    { username: "bob@guc.edu.eg", role: "Course Instructor", password: "instructor123" },
+    { username: "hr@techcorp.com", role: "Employer", password: "employer123" },
+    { username: "admin@polaris.edu.eg", role: "Administrator", password: "admin123" },
+    { username: "charlie@student.guc.edu.eg", role: "Student", password: "password" },
+    { username: "david.m@student.guc.edu.eg", role: "Student", password: "password" },
+    { username: "sarah@guc.edu.eg", role: "Course Instructor", password: "password" },
+    { username: "hr@globalsys.com", role: "Employer", password: "password" },
+    // Legacy mock accounts
+    { username: "student@guc.edu.eg", role: "Student", password: "password" },
+    { username: "instructor@guc.edu.eg", role: "Course Instructor", password: "password" },
+    { username: "employer@company.com", role: "Employer", password: "password" },
+    { username: "admin@guc.edu.eg", role: "Administrator", password: "password" }
   ]
 };

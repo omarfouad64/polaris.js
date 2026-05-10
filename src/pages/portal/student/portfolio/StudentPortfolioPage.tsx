@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio'
 import useStudentProjects from '../projects/scripts/useStudentProjects'
 import ProjectList from '../projects/components/ProjectList'
@@ -39,7 +39,8 @@ export default function StudentPortfolioPage(): React.JSX.Element {
   const [editBio, setEditBio] = useState('')
   const [editLinkedin, setEditLinkedin] = useState('')
 
-  const location = useLocation()
+  const _location = useLocation()
+  void _location
 
   // Determine target portfolio and permissions
   const isStudent = user?.role === 'Student'
@@ -381,7 +382,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
 
               {projects.length > 0 ? (
                 <ProjectList
-                  projects={projects.filter(p => p.isPublic)}
+                  projects={projects.filter(p => p.ownerId === portfolio.studentId && p.isPublic)}
                   onEdit={isReadOnly ? undefined : handleEditProject}
                   onDelete={isReadOnly ? undefined : handleDeleteProject}
                   onView={handleViewProject}

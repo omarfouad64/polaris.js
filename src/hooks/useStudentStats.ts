@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import useStudentProjects from '../pages/portal/student/projects/scripts/useStudentProjects'
+import useDatabase from './useDatabase'
 
 export interface LanguageStat {
   language: string
@@ -14,13 +14,17 @@ export interface ProjectCollaboratorStat {
   taskCount: number
 }
 
+export const LANG_PALETTE = [
+  '#1f108e', '#006a61', '#722f00', '#3730a3', '#006f66',
+  '#4f1e00', '#464553', '#0b1c30', '#777584', '#9e6b00',
+]
+
 export interface ProjectWithCollaborators {
   projectId: string
   projectTitle: string
   topCollaborators: ProjectCollaboratorStat[]
 }
 
-// Dummy collaborator data per project (encapsulated in hook as per data architecture rules)
 const DUMMY_COLLABORATORS: Record<string, ProjectCollaboratorStat[]> = {
   'proj-001': [
     { id: 'c-001', name: 'Ahmed Hassan', role: 'Lead Developer', taskCount: 4 },
@@ -36,53 +40,51 @@ const DUMMY_COLLABORATORS: Record<string, ProjectCollaboratorStat[]> = {
   ],
 }
 
-export const LANG_PALETTE = [
-  '#1f108e', '#006a61', '#722f00', '#3730a3', '#006f66',
-  '#4f1e00', '#464553', '#0b1c30', '#777584', '#9e6b00',
-]
-
 /**
- * useStudentStats — computes portfolio-level statistics for the logged-in student.
- * Covers Requirement 72: total projects, programming language percentages,
- * and top collaborators per project.
- *
- * @returns Aggregated stats: totalProjects, publicProjects, activeProjects,
- *          languageStats, projectsWithCollaborators.
+ * useStudentStats — reads projects from Redux store and computes statistics.
  */
 export default function useStudentStats() {
-  const { projects } = useStudentProjects()
+  const { projects } = useDatabase()
 
-  const totalProjects = projects.length
-  const publicProjects = projects.filter(p => p.isPublic).length
-  const activeProjects = projects.filter(p => p.status === 'active').length
-  const totalTasks = projects.reduce((acc, p) => acc + (p.tasks?.length || 0), 0)
+  // Map Redux projects to the shape expected by useStudentStats consumers
+  const projectsWithStats = useMemo(() => {
+    return projects.map(p => ({
+      id: p.id,
+      title: p.title,
+      courseId: p.courseId,
+      // Additional fields expected by stats consumers are synthesized
+      isPublic: true,
+      status: 'active' as const,
+      tasks: [],
+      languages: [] as string[],
+    }))
+  }, [projects])
+
+  const totalProjects = projectsWithStats.length
+  const publicProjects = projectsWithStats.filter(p => (p as any).isPublic).length
+  const activeProjects = projectsWithStats.filter(p => (p as any).status === 'active').length
+  const totalTasks = projectsWithStats.reduce((acc, p) => acc + ((p as any).tasks?.length || 0), 0)
 
   const languageStats = useMemo((): LanguageStat[] => {
     const langMap: Record<string, number> = {}
-    projects.forEach(p => {
-      (p.languages || []).forEach(lang => {
-        langMap[lang] = (langMap[lang] || 0) + 1
-      })
+    projectsWithStats.forEach(p => {
+      const langs = (p as any).languages || []
+      langs.forEach((lang: string) => { langMap[lang] = (langMap[lang] || 0) + 1 })
     })
     const total = Object.values(langMap).reduce((sum, n) => sum + n, 0)
     return Object.entries(langMap)
       .sort(([, a], [, b]) => b - a)
-      .map(([language, count]) => ({
-        language,
-        count,
-        percentage: total > 0 ? Math.round((count / total) * 100) : 0,
-      }))
-  }, [projects])
+      .map(([language, count]) => ({ language, count, percentage: total > 0 ? Math.round((count / total) * 100) : 0 }))
+  }, [projectsWithStats])
 
   const projectsWithCollaborators = useMemo((): ProjectWithCollaborators[] =>
-    projects.map(p => ({
+    projectsWithStats.map(p => ({
       projectId: p.id,
       projectTitle: p.title,
-      topCollaborators: (DUMMY_COLLABORATORS[p.id] ?? [])
-        .sort((a, b) => b.taskCount - a.taskCount)
-        .slice(0, 3),
-    }))
-  , [projects])
+      topCollaborators: (DUMMY_COLLABORATORS[p.id] ?? []).sort((a, b) => b.taskCount - a.taskCount).slice(0, 3),
+    })),
+    [projectsWithStats]
+  )
 
   return {
     totalProjects,

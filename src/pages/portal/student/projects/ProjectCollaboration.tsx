@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useProjectInvitations } from '../../../../hooks/useProjectInvitations'
 import { useGlobalContext } from '../../../../globalContext'
-import useStudentProjects, { type ProjectData, type ProjectTask } from './scripts/useStudentProjects'
+import useStudentProjects, { type ProjectTask } from './scripts/useStudentProjects'
 import ProjectCollaborationPage from './components/ProjectCollaborationPage'
 import ProjectTaskManager from './components/ProjectTaskManager'
 
@@ -13,6 +13,7 @@ import ProjectTaskManager from './components/ProjectTaskManager'
  */
 export default function ProjectCollaboration() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const { user } = useGlobalContext()
   const { getProjectById, updateProject } = useStudentProjects()
   
@@ -33,6 +34,18 @@ export default function ProjectCollaboration() {
 
   return (
     <div className="min-h-screen bg-background p-6 lg:p-8">
+      {/* Back navigation */}
+      <button
+        onClick={() => {
+          const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
+          navigate(`/portal/${rolePath}/projects/${id}/view`)
+        }}
+        className="flex items-center gap-2 text-sm font-jakarta font-semibold text-primary hover:text-primary/80 transition-colors mb-6"
+      >
+        <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+        Back to Project Overview
+      </button>
+
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-jakarta font-bold text-on-surface mb-2">

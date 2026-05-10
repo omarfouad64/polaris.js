@@ -1,110 +1,80 @@
-import { useState, useMemo } from 'react'
-import type { Internship, InternshipApplication, CompletedInternship } from '../types'
-
-const allInternships: Internship[] = [
-  { id: 'si-1', title: 'Software Engineering Intern', description: 'Build scalable cloud-native applications with modern web technologies.', skills: ['React', 'TypeScript', 'Node.js'], duration: '3 months', applicationDeadline: '2026-07-15', programmingLanguages: ['TypeScript', 'Python'], status: 'Hiring', archived: false, postedAt: '2026-04-01', companyName: 'TechVentures Inc.', companyLogo: '', applicantCount: 42 },
-  { id: 'si-2', title: 'Frontend Developer Intern', description: 'Design and implement user interfaces for enterprise SaaS products.', skills: ['React', 'CSS', 'Figma'], duration: '2 months', applicationDeadline: '2026-06-30', programmingLanguages: ['JavaScript', 'TypeScript'], status: 'Hiring', archived: false, postedAt: '2026-03-20', companyName: 'CloudSync Ltd.', companyLogo: '', applicantCount: 28 },
-  { id: 'si-3', title: 'Data Science Intern', description: 'Analyze datasets and build ML models for business intelligence.', skills: ['Python', 'TensorFlow', 'SQL'], duration: '6 months', applicationDeadline: '2026-08-01', programmingLanguages: ['Python', 'R'], status: 'Hiring', archived: false, postedAt: '2026-04-10', companyName: 'DataMind Corp.', companyLogo: '', applicantCount: 17 },
-  { id: 'si-4', title: 'Mobile Developer Intern', description: 'Develop cross-platform mobile applications using Flutter.', skills: ['Flutter', 'Dart', 'Firebase'], duration: '3 months', applicationDeadline: '2026-07-20', programmingLanguages: ['Dart'], status: 'Hiring', archived: false, postedAt: '2026-04-15', companyName: 'AppFactory', companyLogo: '', applicantCount: 33 },
-  { id: 'si-5', title: 'DevOps Intern', description: 'Manage CI/CD pipelines and cloud infrastructure.', skills: ['Docker', 'Kubernetes', 'AWS'], duration: '3 months', applicationDeadline: '2026-07-01', programmingLanguages: ['Python', 'Bash'], status: 'Position Filled', archived: false, postedAt: '2026-02-10', companyName: 'TechVentures Inc.', companyLogo: '', applicantCount: 20 },
-  { id: 'si-6', title: 'UX Research Intern', description: 'Conduct user research and usability testing.', skills: ['User Testing', 'Figma', 'Prototyping'], duration: '2 months', applicationDeadline: '2026-06-15', programmingLanguages: [], status: 'Hiring', archived: false, postedAt: '2026-03-28', companyName: 'DesignCo', companyLogo: '', applicantCount: 55 }
-]
-
-const myApplications: InternshipApplication[] = [
-  { id: 'myapp-1', internshipId: 'si-5', internshipTitle: 'DevOps Intern', companyName: 'TechVentures Inc.', studentName: 'Student', studentEmail: 'student@guc.edu.eg', coverLetter: 'I am passionate about DevOps...', appliedAt: '2026-03-01', status: 'Accepted', contributionScore: 0 },
-  { id: 'myapp-2', internshipId: 'si-6', internshipTitle: 'UX Research Intern', companyName: 'DesignCo', studentName: 'Student', studentEmail: 'student@guc.edu.eg', coverLetter: 'I have experience in usability testing...', appliedAt: '2026-04-05', status: 'Rejected', contributionScore: 0 }
-]
-
-const completedInternships: CompletedInternship[] = [
-  { id: 'ci-1', title: 'DevOps Intern', companyName: 'TechVentures Inc.', duration: '3 months', completedAt: '2026-02-28' }
-]
+import { useState, useMemo, useCallback } from 'react'
+import useDatabase from './useDatabase'
+import { applyForInternship as applyForInternshipAction } from '../store/databaseSlice'
+import type { Internship } from '../types'
 
 /**
- * useInternshipSearch — provides internship search, filter, sort, and application functionality for students.
- *
- * @returns filtered internships, search/filter state, application functions, and completed internships.
+ * useInternshipSearch — reads internships and applications from Redux store.
  */
-export default function useInternshipSearch() {
+export default function useInternshipSearch(currentStudentId = 'student_1', currentStudentName = 'Alice Smith', currentStudentEmail = 'alice.smith@student.guc.edu.eg') {
+  const { internships, applications, completedInternships, dispatch } = useDatabase()
+
   const [searchQuery, setSearchQuery] = useState('')
   const [companyFilter, setCompanyFilter] = useState('')
   const [durationFilter, setDurationFilter] = useState<string[]>([])
   const [postedDateFrom, setPostedDateFrom] = useState('')
   const [postedDateTo, setPostedDateTo] = useState('')
   const [sortOrder, setSortOrder] = useState<'posted_desc' | 'posted_asc'>('posted_desc')
-  const [applications, setApplications] = useState<InternshipApplication[]>(myApplications)
 
   const filteredInternships = useMemo(() => {
-    let results = allInternships.filter(i => !i.archived)
-
+    let results = internships.filter((i: Internship) => !i.archived)
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
       results = results.filter(i =>
         i.title.toLowerCase().includes(q) || i.companyName.toLowerCase().includes(q)
       )
     }
-
     if (companyFilter) {
       const cf = companyFilter.toLowerCase()
       results = results.filter(i => i.companyName.toLowerCase().includes(cf))
     }
-
     if (durationFilter.length > 0) {
-      results = results.filter(i => durationFilter.includes(i.duration))
+      results = results.filter((i: Internship) => durationFilter.includes(i.duration))
     }
-
     if (postedDateFrom) {
       const from = new Date(postedDateFrom).getTime()
-      results = results.filter(i => new Date(i.postedAt).getTime() >= from)
+      results = results.filter((i: Internship) => new Date(i.postedAt).getTime() >= from)
     }
-
     if (postedDateTo) {
       const to = new Date(postedDateTo).getTime()
-      results = results.filter(i => new Date(i.postedAt).getTime() <= to)
+      results = results.filter((i: Internship) => new Date(i.postedAt).getTime() <= to)
     }
-
-    results.sort((a, b) => {
-      const dateA = new Date(a.postedAt).getTime()
-      const dateB = new Date(b.postedAt).getTime()
-      return sortOrder === 'posted_desc' ? dateB - dateA : dateA - dateB
+    results.sort((a: Internship, b: Internship) => {
+      const aT = new Date(a.postedAt).getTime()
+      const bT = new Date(b.postedAt).getTime()
+      return sortOrder === 'posted_desc' ? bT - aT : aT - bT
     })
-
     return results
-  }, [searchQuery, companyFilter, durationFilter, postedDateFrom, postedDateTo, sortOrder])
+  }, [searchQuery, companyFilter, durationFilter, postedDateFrom, postedDateTo, sortOrder, internships])
 
-  const applyForInternship = (internshipId: string, coverLetter: string): void => {
-    const internship = allInternships.find(i => i.id === internshipId)
+  const applyForInternship = useCallback((internshipId: string, coverLetter: string) => {
+    const internship = internships.find(i => i.id === internshipId)
     if (!internship) return
-
-    const app: InternshipApplication = {
-      id: `myapp-${Date.now()}`,
+    
+    dispatch(applyForInternshipAction({
       internshipId,
       internshipTitle: internship.title,
       companyName: internship.companyName,
-      studentName: 'Student',
-      studentEmail: 'student@guc.edu.eg',
-      coverLetter,
-      appliedAt: new Date().toISOString().split('T')[0],
-      status: 'Pending',
-      contributionScore: 0
-    }
-    setApplications(prev => [...prev, app])
-  }
+      studentId: currentStudentId,
+      studentName: currentStudentName,
+      studentEmail: currentStudentEmail,
+      coverLetter
+    }))
+  }, [dispatch, internships, currentStudentId, currentStudentName, currentStudentEmail])
 
-  const hasApplied = (internshipId: string): boolean => {
-    return applications.some(a => a.internshipId === internshipId)
-  }
+  const hasApplied = useCallback((internshipId: string) => {
+    return applications.some(a => a.internshipId === internshipId && a.studentId === currentStudentId)
+  }, [applications, currentStudentId])
 
-  const toggleDurationFilter = (duration: string): void => {
+  const toggleDurationFilter = (duration: string) => {
     setDurationFilter(prev =>
-      prev.includes(duration)
-        ? prev.filter(d => d !== duration)
-        : [...prev, duration]
+      prev.includes(duration) ? prev.filter(d => d !== duration) : [...prev, duration]
     )
   }
 
   return {
     internships: filteredInternships,
-    applications,
+    applications: applications.filter(a => a.studentId === currentStudentId),
     completedInternships,
     searchQuery,
     setSearchQuery,
@@ -119,6 +89,6 @@ export default function useInternshipSearch() {
     sortOrder,
     setSortOrder,
     applyForInternship,
-    hasApplied
+    hasApplied,
   }
 }

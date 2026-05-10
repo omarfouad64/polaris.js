@@ -1,29 +1,29 @@
-# Polaris Dummy Accounts
+# Polaris.js Account Credentials
 
-Since Polaris has no backend and uses hardcoded dummy data for authentication and state, you can log in using the following test accounts corresponding to each platform role. 
+Use the following credentials to log into the different portals. All accounts are now managed via the centralized Redux store.
 
-*Note: The password does not matter for local testing, you can type anything (e.g., `password123`).*
+## 1. Primary Test Accounts
 
-### 1. Student
-- **Name:** Alice Smith
-- **Email:** `alice.smith@student.guc.edu.eg`
-- **Role:** Student
-- **ID:** `student_1`
+| Role | Username | Password | Notes |
+| :--- | :--- | :--- | :--- |
+| **Student** | `alice.smith@student.guc.edu.eg` | `student123` | Main student account (Alice). |
+| **Student** | `charlie@student.guc.edu.eg` | `password` | Senior AI student. |
+| **Student** | `david.m@student.guc.edu.eg` | `password` | Junior Software student. |
+| **Course Instructor** | `bob@guc.edu.eg` | `instructor123` | Web Architecture expert. |
+| **Course Instructor** | `sarah@guc.edu.eg` | `password` | Machine Learning expert. |
+| **Employer** | `hr@techcorp.com` | `employer123` | TechCorp HR. |
+| **Employer** | `hr@globalsys.com` | `password` | Global Systems HR. |
+| **Administrator** | `admin@polaris.edu.eg` | `admin123` | Master administrator. |
 
-### 2. Course Instructor
-- **Name:** Dr. Bob Jones
-- **Email:** `bob@guc.edu.eg`
-- **Role:** Course Instructor
-- **ID:** `instructor_1`
+## 2. Legacy / Support Accounts
+Quick access accounts for development and debugging.
 
-### 3. Employer
-- **Name:** TechCorp HR
-- **Email:** `hr@techcorp.com`
-- **Role:** Employer
-- **ID:** `employer_1`
+| Role | Username | Password |
+| :--- | :--- | :--- |
+| **Student** | `student@guc.edu.eg` | `password` |
+| **Course Instructor** | `instructor@guc.edu.eg` | `password` |
+| **Employer** | `employer@company.com` | `password` |
+| **Administrator** | `admin@guc.edu.eg` | `password` |
 
-### 4. Administrator
-- **Name:** System Admin
-- **Email:** `admin@guc.edu.eg` *(or select Administrator from the role dropdown during login)*
-- **Role:** Administrator
-- **ID:** `admin_1`
+---
+**Technical Note:** User data is defined in `src/store/initialData.ts` and managed via the `useUsers` hook connected to the Redux store.

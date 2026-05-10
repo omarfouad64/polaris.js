@@ -1,4 +1,6 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import type { RootState } from '../store'
 import type { Notification } from '../types'
 
 const STORAGE_KEY = 'polaris_notifications'
@@ -11,11 +13,11 @@ const dummyNotifications: Notification[] = [
   { id: 'n-4', type: 'project_invitation', title: 'Project Invitation', body: 'You have been invited to collaborate on "AI Study Planner".', timestamp: '2026-04-27T14:00:00Z', read: true },
   { id: 'n-5', type: 'feedback', title: 'Instructor Feedback', body: 'Dr. Mona left feedback on your project task "API Integration".', timestamp: '2026-04-26T11:00:00Z', read: true },
   { id: 'n-6', type: 'internship_status', title: 'Application Rejected', body: 'Your application for "UX Research Intern" at DesignCo has been declined.', timestamp: '2026-04-25T09:00:00Z', read: true },
-  { id: 'n-7', type: 'message', title: 'New Message', body: 'Dr. Mona Farid updated the project feedback.', timestamp: '2026-04-24T15:45:00Z', read: true }
+  { id: 'n-7', type: 'message', title: 'New Message', body: 'Dr. Mona Farid updated the project feedback.', timestamp: '2026-04-24T15:45:00Z', read: true },
 ]
 
-// ── Shared module-level state ──────────────────────────────────────────────
 type Listener = () => void
+const listeners: Set<Listener> = new Set()
 
 const loadNotifications = (): Notification[] => {
   if (typeof window === 'undefined') return dummyNotifications
@@ -36,7 +38,6 @@ const loadMuted = (): boolean => {
 
 let sharedNotifications: Notification[] = loadNotifications()
 let sharedMuted: boolean = loadMuted()
-const listeners: Set<Listener> = new Set()
 
 function emit() {
   if (typeof window !== 'undefined') {
@@ -46,7 +47,12 @@ function emit() {
   listeners.forEach(fn => fn())
 }
 
+/**
+ * useNotifications — reads notifications from Redux store (falls back to localStorage).
+ */
 export default function useNotifications() {
+  const dispatch = useDispatch()
+  const reduxNotifications = useSelector((state: RootState) => state.database.notifications)
   const [, setTick] = useState(0)
 
   useEffect(() => {
@@ -55,23 +61,24 @@ export default function useNotifications() {
     return () => { listeners.delete(listener) }
   }, [])
 
-  const notifications = sharedNotifications
+  const notifications = reduxNotifications.length > 0 ? reduxNotifications : sharedNotifications
   const notificationsMuted = sharedMuted
 
-  const unreadCount = useMemo(() =>
-    notifications.filter(n => !n.read).length,
+  const unreadCount = useMemo(
+    () => notifications.filter((n: Notification) => !n.read).length,
     [notifications]
   )
 
   const toggleRead = useCallback((id: string): void => {
-    sharedNotifications = sharedNotifications.map(n =>
+    dispatch({ type: 'database/toggleNotificationRead', payload: id })
+    sharedNotifications = sharedNotifications.map((n: Notification) =>
       n.id === id ? { ...n, read: !n.read } : n
     )
     emit()
-  }, [])
+  }, [dispatch])
 
   const markAllRead = useCallback((): void => {
-    sharedNotifications = sharedNotifications.map(n => ({ ...n, read: true }))
+    sharedNotifications = sharedNotifications.map((n: Notification) => ({ ...n, read: true }))
     emit()
   }, [])
 
@@ -81,12 +88,16 @@ export default function useNotifications() {
         ...notification,
         id: `notif-${Date.now()}`,
         timestamp: new Date().toISOString(),
-        read: false
+        read: false,
       }
+      dispatch({
+        type: 'database/addNotification',
+        payload: { ...notification, type: notification.type },
+      })
       sharedNotifications = [newNotification, ...sharedNotifications]
       emit()
     },
-    []
+    [dispatch]
   )
 
   const toggleMuteAll = useCallback((): void => {
@@ -94,14 +105,13 @@ export default function useNotifications() {
     emit()
   }, [])
 
-  return { 
-    notifications, 
-    unreadCount, 
-    toggleRead, 
-    markAllRead, 
-    addNotification, 
-    notificationsMuted, 
-    toggleMuteAll 
+  return {
+    notifications,
+    unreadCount,
+    toggleRead,
+    markAllRead,
+    addNotification,
+    notificationsMuted,
+    toggleMuteAll,
   }
 }
-

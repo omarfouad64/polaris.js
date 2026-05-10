@@ -1,5 +1,18 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { initialData, type DatabaseState } from './initialData';
+import type { 
+  ProjectCollaborator, 
+  TaskFeedback, 
+  ProjectFeedback, 
+  ProjectRating,
+  Course,
+  Internship,
+  InternshipApplication,
+  CompanyProfile,
+  InstructorProfile,
+  StudentPortfolio,
+  UserRole
+} from '../types';
 
 const databaseSlice = createSlice({
   name: 'database',
@@ -7,13 +20,465 @@ const databaseSlice = createSlice({
   reducers: {
     resetDatabase: () => initialData,
 
-    // Add missing type mutations here if components actually dispatch them.
-    // For now, this defines basic state management.
     updateDatabase: (state, action: PayloadAction<Partial<DatabaseState>>) => {
       return { ...state, ...action.payload };
-    }
+    },
+
+    // ── Notifications ──────────────────────────────────────────────────────
+    toggleNotificationRead: (state, action: PayloadAction<string>) => {
+      const notif = state.notifications.find(n => n.id === action.payload);
+      if (notif) {
+        notif.read = !notif.read;
+      }
+    },
+
+    markNotificationsAllRead: state => {
+      state.notifications.forEach(n => { n.read = true; });
+    },
+
+    addNotification: (
+      state,
+      action: PayloadAction<Omit<DatabaseState['notifications'][number], 'id' | 'timestamp' | 'read'>>
+    ) => {
+      const newNotif = {
+        ...action.payload,
+        id: `notif-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        read: false,
+      };
+      state.notifications.unshift(newNotif);
+    },
+
+    removeNotification: (state, action: PayloadAction<string>) => {
+      state.notifications = state.notifications.filter(n => n.id !== action.payload);
+    },
+
+    // ── Favorites ──────────────────────────────────────────────────────────
+    addFavorite: (state, action: PayloadAction<Omit<DatabaseState['favorites'][number], 'savedAt'>>) => {
+      const newItem = { ...action.payload, savedAt: new Date().toISOString().split('T')[0] };
+      state.favorites.push(newItem);
+    },
+
+    removeFavorite: (state, action: PayloadAction<string>) => {
+      state.favorites = state.favorites.filter(f => f.id !== action.payload);
+    },
+
+    // ── Messages ───────────────────────────────────────────────────────────
+    sendMessage: (
+      state,
+      action: PayloadAction<{
+        content: string;
+        conversationId: string;
+        senderId: string;
+        senderName: string;
+        receiverId: string;
+        receiverName: string;
+      }>
+    ) => {
+      const { content, conversationId, senderId, senderName, receiverId, receiverName } = action.payload;
+      const msg: DatabaseState['messages'][number] = {
+        id: `msg-${Date.now()}`,
+        senderId, senderName, senderRole: undefined,
+        receiverId, receiverName, receiverRole: undefined,
+        content,
+        timestamp: new Date().toISOString(),
+        read: true,
+      };
+      state.messages.push(msg);
+
+      const conv = state.conversations.find(c => c.id === conversationId);
+      if (conv) {
+        conv.lastMessage = content.trim();
+        conv.lastTimestamp = msg.timestamp;
+        if (conv.participantId !== senderId) {
+          conv.unreadCount += 1;
+        }
+      }
+    },
+
+    selectConversation: (state, action: PayloadAction<string>) => {
+      const conv = state.conversations.find(c => c.id === action.payload);
+      if (conv) {
+        conv.unreadCount = 0;
+      }
+    },
+
+    startConversation: (state, action: PayloadAction<DatabaseState['conversations'][number]>) => {
+      const existing = state.conversations.find(c => 
+        c.participantId === action.payload.participantId || c.id === action.payload.id
+      );
+      if (existing) {
+        existing.id = action.payload.id; // ensure ID matches what's expected
+        return;
+      }
+      state.conversations.unshift(action.payload);
+    },
+
+    // ── Project Invitations & Collaborators ────────────────────────────────
+    acceptInvitation: (
+      state,
+      action: PayloadAction<{ invitationId: string; recipientEmail: string }>
+    ) => {
+      const { invitationId, recipientEmail } = action.payload;
+      const invitation = state.projectInvitations.find(inv => inv.id === invitationId);
+      if (invitation && invitation.recipientEmail === recipientEmail) {
+        invitation.invitationStatus = 'accepted';
+        invitation.respondedAt = new Date().toISOString();
+      }
+      state.projectInvitations = state.projectInvitations.filter(inv => 
+        !(inv.recipientEmail === recipientEmail && inv.id !== invitationId && inv.projectId === invitation?.projectId)
+      );
+    },
+
+    rejectInvitation: (
+      state,
+      action: PayloadAction<{ invitationId: string; recipientEmail: string }>
+    ) => {
+      const { invitationId, recipientEmail } = action.payload;
+      const invitation = state.projectInvitations.find(inv => inv.id === invitationId);
+      if (invitation && invitation.recipientEmail === recipientEmail) {
+        invitation.invitationStatus = 'rejected';
+        invitation.respondedAt = new Date().toISOString();
+      }
+      state.projectInvitations = state.projectInvitations.filter(inv => 
+        !(inv.recipientEmail === recipientEmail && inv.id !== invitationId && inv.projectId === invitation?.projectId)
+      );
+    },
+
+    sendInvitation: (state, action: PayloadAction<Omit<DatabaseState['projectInvitations'][number], 'id' | 'invitationStatus' | 'createdAt'>>) => {
+      state.projectInvitations.push({
+        ...action.payload,
+        id: `invite-${Date.now()}`,
+        invitationStatus: 'pending',
+        createdAt: new Date().toISOString(),
+      });
+    },
+
+    addCollaborator: (state, action: PayloadAction<ProjectCollaborator>) => {
+      state.projectCollaborators.push(action.payload);
+    },
+
+    removeCollaborator: (state, action: PayloadAction<{ projectId: string; email: string }>) => {
+      state.projectCollaborators = state.projectCollaborators.filter(
+        c => !(c.projectId === action.payload.projectId && c.email === action.payload.email)
+      );
+    },
+
+    updateCollaboratorStatus: (
+      state,
+      action: PayloadAction<{ projectId: string; email: string; status: ProjectCollaborator['invitationStatus'] }>
+    ) => {
+      const collab = state.projectCollaborators.find(
+        c => c.projectId === action.payload.projectId && c.email === action.payload.email
+      );
+      if (collab) {
+        collab.invitationStatus = action.payload.status;
+        collab.respondedAt = new Date().toISOString();
+      }
+    },
+
+    // ── Flagged Projects & Appeals ──────────────────────────────────────────
+    flagProject: (state, action: PayloadAction<Omit<DatabaseState['flaggedProjects'][number], 'id' | 'flaggedAt' | 'status'>>) => {
+      const { projectId } = action.payload;
+      const existing = state.flaggedProjects.find(f => f.projectId === projectId);
+      if (existing) {
+        Object.assign(existing, action.payload);
+        existing.status = 'flagged';
+        return;
+      }
+      state.flaggedProjects.push({
+        ...action.payload,
+        id: `flag-${Date.now()}`,
+        flaggedAt: new Date().toISOString(),
+        status: 'flagged',
+      });
+    },
+
+    submitAppeal: (state, action: PayloadAction<Omit<DatabaseState['projectAppeals'][number], 'id' | 'submittedAt' | 'status'>>) => {
+      const { flaggedProjectId } = action.payload;
+      state.projectAppeals.push({
+        ...action.payload,
+        id: `appeal-${Date.now()}`,
+        submittedAt: new Date().toISOString(),
+        status: 'pending',
+      });
+      const flag = state.flaggedProjects.find(f => f.id === flaggedProjectId);
+      if (flag) {
+        flag.status = 'appealed';
+      }
+    },
+
+    approveAppeal: (state, action: PayloadAction<{ appealId: string; adminResponse?: string }>) => {
+      const { appealId, adminResponse } = action.payload;
+      const appeal = state.projectAppeals.find(a => a.id === appealId);
+      if (appeal) {
+        appeal.status = 'approved';
+        appeal.adminResponse = adminResponse;
+        appeal.respondedAt = new Date().toISOString();
+        const flag = state.flaggedProjects.find(f => f.id === appeal.flaggedProjectId);
+        if (flag) { flag.status = 'resolved'; }
+      }
+    },
+
+    rejectAppeal: (state, action: PayloadAction<{ appealId: string; adminResponse?: string }>) => {
+      const { appealId, adminResponse } = action.payload;
+      const appeal = state.projectAppeals.find(a => a.id === appealId);
+      if (appeal) {
+        appeal.status = 'rejected';
+        appeal.adminResponse = adminResponse;
+        appeal.respondedAt = new Date().toISOString();
+        const flag = state.flaggedProjects.find(f => f.id === appeal.flaggedProjectId);
+        if (flag) { flag.status = 'flagged'; }
+      }
+    },
+
+    // ── Courses & Links ────────────────────────────────────────────────────────────
+    addCourse: (state, action: PayloadAction<Course>) => {
+      state.courses.push(action.payload);
+    },
+
+    editCourse: (state, action: PayloadAction<{ id: string } & Partial<Course>>) => {
+      const { id, ...updates } = action.payload;
+      const course = state.courses.find(c => c.id === id);
+      if (course) { Object.assign(course, updates); }
+    },
+
+    deleteCourse: (state, action: PayloadAction<string>) => {
+      state.courses = state.courses.filter(c => c.id !== action.payload);
+    },
+
+    linkCourse: (state, action: PayloadAction<{ instructorId: string; courseId: string }>) => {
+      const { instructorId, courseId } = action.payload;
+      const existing = state.courseLinks.find(l => l.instructorId === instructorId && l.courseId === courseId);
+      if (existing) {
+        existing.status = 'linked';
+        existing.linkedAt = new Date().toISOString();
+      } else {
+        state.courseLinks.push({
+          instructorId, courseId, status: 'linked', linkedAt: new Date().toISOString(),
+        });
+      }
+    },
+
+    unlinkCourse: (state, action: PayloadAction<{ instructorId: string; courseId: string }>) => {
+      const { instructorId, courseId } = action.payload;
+      state.courseLinks = state.courseLinks.map(l =>
+        (l.instructorId === instructorId && l.courseId === courseId)
+          ? { ...l, status: 'rejected', linkedAt: new Date().toISOString() }
+          : l
+      );
+    },
+
+    requestCourseLink: (state, action: PayloadAction<{ instructorId: string; courseId: string }>) => {
+      const { instructorId, courseId } = action.payload;
+      const existing = state.courseLinks.find(l => l.instructorId === instructorId && l.courseId === courseId);
+      if (existing) {
+        existing.status = 'pending';
+      } else {
+        state.courseLinks.push({
+          instructorId, courseId, status: 'pending', linkedAt: new Date().toISOString(),
+        });
+      }
+    },
+
+    // ── Internships & Applications ────────────────────────────────────────────────────────
+    addInternship: (state, action: PayloadAction<Internship>) => {
+      state.internships.push(action.payload);
+    },
+
+    updateInternship: (state, action: PayloadAction<{ id: string } & Partial<Internship>>) => {
+      const { id, ...updates } = action.payload;
+      const internship = state.internships.find(i => i.id === id);
+      if (internship) { Object.assign(internship, updates); }
+    },
+
+    deleteInternship: (state, action: PayloadAction<string>) => {
+      state.internships = state.internships.filter(i => i.id !== action.payload);
+    },
+
+    toggleArchive: (state, action: PayloadAction<string>) => {
+      const internship = state.internships.find(i => i.id === action.payload);
+      if (internship) { internship.archived = !internship.archived; }
+    },
+
+    toggleStatus: (state, action: PayloadAction<string>) => {
+      const internship = state.internships.find(i => i.id === action.payload);
+      if (internship) {
+        internship.status = internship.status === 'Hiring' ? 'Position Filled' : 'Hiring';
+      }
+    },
+
+    updateApplicationStatus: (state, action: PayloadAction<{ id: string; status: InternshipApplication['status'] }>) => {
+      const app = state.applications.find(a => a.id === action.payload.id);
+      if (app) { app.status = action.payload.status; }
+    },
+
+    applyForInternship: (state, action: PayloadAction<Omit<InternshipApplication, 'id' | 'appliedAt' | 'status' | 'contributionScore'>>) => {
+      state.applications.push({
+        ...action.payload,
+        id: `application-${Date.now()}`,
+        appliedAt: new Date().toISOString(),
+        status: 'Pending',
+        contributionScore: 0,
+      });
+    },
+
+    // ── Profile Updates ──────────────────────────────
+    updateInstructorProfile: (state, action: PayloadAction<{ instructorId: string } & Partial<InstructorProfile>>) => {
+      const { instructorId, ...updates } = action.payload;
+      const instructor = state.instructors.find(i => i.instructorId === instructorId);
+      if (instructor) {
+        Object.assign(instructor, updates);
+        instructor.updatedAt = new Date().toISOString();
+      }
+    },
+
+    updateStudentProfile: (state, action: PayloadAction<{ studentId: string } & Partial<StudentPortfolio>>) => {
+      const { studentId, ...updates } = action.payload;
+      const student = state.students.find(s => s.studentId === studentId);
+      if (student) {
+        Object.assign(student, updates);
+        student.updatedAt = new Date().toISOString();
+      }
+    },
+
+    updateCompanyProfile: (state, action: PayloadAction<{ id: string } & Partial<CompanyProfile>>) => {
+      // Find company by name for now if id is missing, but assume id is provided
+      const company = state.companies.find(c => (c as any).id === action.payload.id || c.companyName === (action.payload as any).companyName);
+      if (company) {
+        Object.assign(company, action.payload);
+      }
+    },
+
+    // ── Projects ───────────────────────────────────────────────────────────
+    addProject: (state, action: PayloadAction<any>) => {
+      state.projects.push(action.payload);
+    },
+    updateProject: (state, action: PayloadAction<{ id: string } & Partial<any>>) => {
+      const { id, ...updates } = action.payload;
+      const project = state.projects.find(p => p.id === id);
+      if (project) {
+        Object.assign(project, updates);
+        (project as any).updatedDate = new Date().toISOString().split('T')[0];
+      }
+    },
+    deleteProject: (state, action: PayloadAction<string>) => {
+      state.projects = state.projects.filter(p => p.id !== action.payload);
+    },
+
+    // ── Feedback & Ratings ──────────────────────────────────────────────────
+    addTaskFeedback: (state, action: PayloadAction<TaskFeedback>) => {
+      state.taskFeedback.push(action.payload);
+    },
+    editTaskFeedback: (state, action: PayloadAction<{ id: string; comment: string }>) => {
+      const fb = state.taskFeedback.find(f => f.id === action.payload.id);
+      if (fb) {
+        fb.comment = action.payload.comment;
+        fb.updatedAt = new Date().toISOString();
+      }
+    },
+    removeTaskFeedback: (state, action: PayloadAction<string>) => {
+      state.taskFeedback = state.taskFeedback.filter(f => f.id !== action.payload);
+    },
+    addProjectFeedback: (state, action: PayloadAction<ProjectFeedback>) => {
+      state.projectFeedback.push(action.payload);
+    },
+    editProjectFeedback: (state, action: PayloadAction<{ id: string; comment: string }>) => {
+      const fb = state.projectFeedback.find(f => f.id === action.payload.id);
+      if (fb) {
+        fb.comment = action.payload.comment;
+        fb.updatedAt = new Date().toISOString();
+      }
+    },
+    removeProjectFeedback: (state, action: PayloadAction<string>) => {
+      state.projectFeedback = state.projectFeedback.filter(f => f.id !== action.payload);
+    },
+    rateProject: (state, action: PayloadAction<ProjectRating>) => {
+      const existingIdx = state.projectRatings.findIndex(
+        r => r.projectId === action.payload.projectId && r.instructorId === action.payload.instructorId
+      );
+      if (existingIdx !== -1) {
+        state.projectRatings[existingIdx] = action.payload;
+      } else {
+        state.projectRatings.push(action.payload);
+      }
+    },
+    removeProjectRating: (state, action: PayloadAction<string>) => {
+      state.projectRatings = state.projectRatings.filter(r => r.id !== action.payload);
+    },
+
+    // ── Auth / Users ────────────────────────────────────────────────────────────
+    registerUser: (state, action: PayloadAction<{ username: string; role: UserRole; password?: string }>) => {
+      state.users.push({
+        username: action.payload.username,
+        role: action.payload.role,
+        password: action.payload.password || 'password'
+      });
+    },
   }
 });
 
-export const { resetDatabase, updateDatabase } = databaseSlice.actions;
+export const {
+  resetDatabase,
+  updateDatabase,
+
+  toggleNotificationRead,
+  markNotificationsAllRead,
+  addNotification,
+  removeNotification,
+
+  addFavorite,
+  removeFavorite,
+
+  sendMessage,
+  selectConversation,
+  startConversation,
+
+  acceptInvitation,
+  rejectInvitation,
+  sendInvitation,
+  addCollaborator,
+  removeCollaborator,
+  updateCollaboratorStatus,
+
+  flagProject,
+  submitAppeal,
+  approveAppeal,
+  rejectAppeal,
+
+  addCourse,
+  editCourse,
+  deleteCourse,
+  linkCourse,
+  unlinkCourse,
+  requestCourseLink,
+
+  addInternship,
+  updateInternship,
+  deleteInternship,
+  toggleArchive,
+  toggleStatus,
+  updateApplicationStatus,
+  applyForInternship,
+
+  updateInstructorProfile,
+  updateStudentProfile,
+  updateCompanyProfile,
+
+  addProject,
+  updateProject,
+  deleteProject,
+
+  addTaskFeedback,
+  editTaskFeedback,
+  removeTaskFeedback,
+  addProjectFeedback,
+  editProjectFeedback,
+  removeProjectFeedback,
+  rateProject,
+  removeProjectRating,
+
+  registerUser,
+} = databaseSlice.actions;
+
 export default databaseSlice.reducer;

@@ -7,6 +7,8 @@ import useNotifications from '../../../../hooks/useNotifications'
 import useFavorites from '../../../../hooks/useFavorites'
 import useMessages from '../../../../hooks/useMessages'
 import { useInstructorFeedback } from '../../../../hooks/useInstructorFeedback'
+import { useProjectInvitations } from '../../../../hooks/useProjectInvitations'
+import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio'
 import Button from '../../../../components/Button'
 import FeedbackDialog from '../../../../components/FeedbackDialog'
 import ConfirmDialog from '../../../../components/ConfirmDialog'
@@ -108,6 +110,10 @@ export default function ProjectDetailsPage(): React.JSX.Element {
     addProjectFeedback, editProjectFeedback, removeProjectFeedback,
     rateProject, getInstructorRating, removeProjectRating
   } = useInstructorFeedback(projectId)
+
+  const { portfolio } = useStudentPortfolio(user?.username)
+  const { collaborators } = useProjectInvitations(projectId, portfolio?.studentId || user?.username || '')
+
   const isInstructor = user?.role === 'Course Instructor'
   // One feedback per instructor
   const myFeedback = projectFeedback.find(fb => fb.instructorId === instructorId)
@@ -135,9 +141,9 @@ export default function ProjectDetailsPage(): React.JSX.Element {
         id: project.id,
         type: 'project',
         title: project.title,
-        subtitle: `${getCourseById(project.course)?.name ?? 'Independent'} • John Doe`,
+        subtitle: `${getCourseById(project.course)?.name ?? 'Independent'} • ${collaborators.find(c => c.role === 'owner')?.name || 'Project Owner'}`,
         tags: project.languages,
-        rating: 4.8
+        rating: averageRating || 0
       })
     }
   }
@@ -258,16 +264,6 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             actionLabel="OK"
             onClose={() => setShowAppealFeedback(false)}
           />
-          <button
-            onClick={() => {
-              const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
-              navigate(`/portal/${rolePath}/projects/${id}/collaboration`)
-            }}
-            className="flex items-center gap-2 px-6 py-3 bg-surface-container-high text-on-surface hover:bg-surface-container rounded-xl font-jakarta font-bold text-sm transition-all border border-outline-variant/30"
-          >
-            <span className="material-symbols-outlined text-[20px]">group</span>
-            View Team
-          </button>
           {user?.role !== 'Course Instructor' && (
             <button
               onClick={handleToggleFavorite}
@@ -378,27 +374,82 @@ export default function ProjectDetailsPage(): React.JSX.Element {
           <div className="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm">
             <h4 className="font-jakarta font-bold text-on-surface text-sm mb-4 uppercase tracking-wider">Collaborators</h4>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold">JD</div>
-                  <div>
-                    <p className="text-sm font-jakarta font-bold text-on-surface">John Doe</p>
-                    <p className="text-xs font-lexend text-on-surface-variant">Lead Developer</p>
-                  </div>
-                </div>
+              {collaborators.filter(c => c.invitationStatus === 'accepted').length === 0 ? (
+                <p className="text-xs font-lexend text-on-surface-variant">No collaborators confirmed yet.</p>
+              ) : (
+                collaborators
+                  .filter(c => c.invitationStatus === 'accepted')
+                  .slice(0, 3)
+                  .map(collab => (
+                    <div key={collab.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold overflow-hidden">
+                          {collab.profilePicture ? (
+                            <img src={collab.profilePicture} alt={collab.name} className="w-full h-full object-cover" />
+                          ) : (
+                            collab.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-jakarta font-bold text-on-surface truncate max-w-[120px]">{collab.name}</p>
+                          <p className="text-[10px] font-lexend text-on-surface-variant capitalize">{collab.role}</p>
+                        </div>
+                      </div>
+                      {collab.collaboratorId !== portfolio?.studentId && collab.collaboratorId !== user?.username && (
+                        <button
+                          onClick={() => handleStartChat(collab.collaboratorId, collab.name, collab.name.charAt(0))}
+                          className="p-2 rounded-xl hover:bg-primary/10 text-primary transition-colors"
+                          title={`Message ${collab.name}`}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">chat</span>
+                        </button>
+                      )}
+                    </div>
+                  ))
+              )}
+              <div className="pt-4 border-t border-outline-variant/20">
                 <button
-                  onClick={() => handleStartChat('u-student-001', 'John Doe', 'JD')}
-                  className="p-2 rounded-xl hover:bg-primary/10 text-primary transition-colors"
-                  title="Message John Doe"
+                  onClick={() => {
+                    const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
+                    navigate(`/portal/${rolePath}/projects/${id}/collaboration`)
+                  }}
+                  className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-primary/5 text-primary transition-all group"
                 >
-                  <span className="material-symbols-outlined text-[20px]">chat</span>
+                  <span className="text-xs font-jakarta font-bold">Manage Team</span>
+                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
               </div>
-              <div className="pt-4 border-t border-outline-variant/20">
-                <p className="text-xs font-lexend text-on-surface-variant italic leading-relaxed">
-                  "This project represents the core functionality developed during the course."
-                </p>
+            </div>
+          </div>
+
+          {/* Project Progress Card */}
+          <div className="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm">
+            <h4 className="font-jakarta font-bold text-on-surface text-sm mb-4 uppercase tracking-wider">Project Progress</h4>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-lexend text-on-surface-variant">
+                  <span>Tasks Completed</span>
+                  <span className="font-bold text-on-surface">
+                    {project.tasks.filter((t: any) => t.status === 'completed').length} / {project.tasks.length}
+                  </span>
+                </div>
+                <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-secondary transition-all duration-500" 
+                    style={{ width: `${project.tasks.length > 0 ? (project.tasks.filter((t: any) => t.status === 'completed').length / project.tasks.length) * 100 : 0}%` }}
+                  />
+                </div>
               </div>
+              <button
+                onClick={() => {
+                  const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
+                  navigate(`/portal/${rolePath}/projects/${id}/tasks`)
+                }}
+                className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-secondary/5 text-secondary transition-all group"
+              >
+                <span className="text-xs font-jakarta font-bold">Task Board</span>
+                <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </button>
             </div>
           </div>
 

@@ -219,7 +219,7 @@ export default function ProjectTaskManager({
                                                     </p>
                                                     {isInstructor && fb.instructorId === currentUserId && (
                                                         <button
-                                                            onClick={() => removeTaskFeedback(task.id, fb.id)}
+                                                            onClick={() => removeTaskFeedback(fb.id)}
                                                             className="opacity-0 group-hover:opacity-100 p-1 text-error hover:bg-error/10 rounded transition-all"
                                                             title="Delete feedback"
                                                         >

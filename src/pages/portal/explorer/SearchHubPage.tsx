@@ -22,6 +22,9 @@ export default function SearchHubPage(): React.JSX.Element {
         : 'student'
 
   const [searchQuery, setSearchQuery] = useState('')
+  const [showMoreInstructors, setShowMoreInstructors] = useState(false)
+  const [showMoreProjects, setShowMoreProjects] = useState(false)
+  const [showMorePortfolios, setShowMorePortfolios] = useState(false)
   const {
     filteredResults,
     allInstructors,
@@ -37,12 +40,17 @@ export default function SearchHubPage(): React.JSX.Element {
 
   const {
     portfolios,
-    recommendedPortfolios,
     filters: portfolioFilters,
     availableMajors,
     availableSkills,
     updateFilters: updatePortfolioFilters
   } = usePortfolioSearch()
+
+  const recommendedPortfolios = useMemo(() => {
+    return [...portfolios]
+      .sort((a, b) => b.projectCount - a.projectCount)
+      .slice(0, showMorePortfolios ? 9 : 3)
+  }, [portfolios, showMorePortfolios])
 
   useEffect(() => {
     setInstructorQuery(searchQuery)
@@ -64,14 +72,14 @@ export default function SearchHubPage(): React.JSX.Element {
   const recommendedInstructors = useMemo(() => {
     return [...allInstructors]
       .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
-      .slice(0, 3)
-  }, [allInstructors])
+      .slice(0, showMoreInstructors ? 9 : 3)
+  }, [allInstructors, showMoreInstructors])
 
   const recommendedProjects = useMemo(() => {
     return [...projects]
       .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
-      .slice(0, 3)
-  }, [projects])
+      .slice(0, showMoreProjects ? 9 : 3)
+  }, [projects, showMoreProjects])
 
   const handleViewProject = (id: string) => {
     navigate(`/portal/${rolePath}/projects/${id}/view`)
@@ -330,6 +338,19 @@ export default function SearchHubPage(): React.JSX.Element {
                 ))}
               </div>
             )}
+            {isDefaultSearch && allInstructors.length > 3 && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setShowMoreInstructors(!showMoreInstructors)}
+                  className="px-6 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-jakarta font-bold rounded-xl transition-all flex items-center gap-2"
+                >
+                  {showMoreInstructors ? 'Show Less' : 'Show More'}
+                  <span className="material-symbols-outlined text-sm">
+                    {showMoreInstructors ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                  </span>
+                </button>
+              </div>
+            )}
           </section>
 
           <section className="space-y-4">
@@ -382,6 +403,19 @@ export default function SearchHubPage(): React.JSX.Element {
                     </div>
                   )
                 })}
+              </div>
+            )}
+            {isDefaultSearch && projects.length > 3 && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setShowMoreProjects(!showMoreProjects)}
+                  className="px-6 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-jakarta font-bold rounded-xl transition-all flex items-center gap-2"
+                >
+                  {showMoreProjects ? 'Show Less' : 'Show More'}
+                  <span className="material-symbols-outlined text-sm">
+                    {showMoreProjects ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                  </span>
+                </button>
               </div>
             )}
           </section>
@@ -499,6 +533,19 @@ export default function SearchHubPage(): React.JSX.Element {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+            {isDefaultSearch && portfolios.length > 3 && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setShowMorePortfolios(!showMorePortfolios)}
+                  className="px-6 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-jakarta font-bold rounded-xl transition-all flex items-center gap-2"
+                >
+                  {showMorePortfolios ? 'Show Less' : 'Show More'}
+                  <span className="material-symbols-outlined text-sm">
+                    {showMorePortfolios ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                  </span>
+                </button>
               </div>
             )}
           </section>

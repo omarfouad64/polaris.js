@@ -5,6 +5,8 @@ import ProjectList from './components/ProjectList';
 import ProjectFilters from './components/ProjectFilters';
 import Button from '../../../../components/Button';
 import ConfirmationDialog from '../../../../components/ConfirmationDialog';
+import { useGlobalContext } from '../../../../globalContext';
+import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio';
 
 /**
  * MyProjectsPage — Displays student's project list with CRUD controls.
@@ -12,7 +14,9 @@ import ConfirmationDialog from '../../../../components/ConfirmationDialog';
  */
 export default function MyProjectsPage() {
   const navigate = useNavigate();
-  const { projects, updateProject, deleteProject, isLoading } = useStudentProjects();
+  const { user } = useGlobalContext();
+  const { portfolio } = useStudentPortfolio(user?.username);
+  const { projects, updateProject, deleteProject, isLoading } = useStudentProjects(portfolio?.studentId);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
@@ -40,9 +44,7 @@ export default function MyProjectsPage() {
     navigate(`/portal/student/projects/${id}/view`);
   };
 
-  const handleTeam = (id: string) => {
-    navigate(`/portal/student/projects/${id}/collaboration`);
-  };
+
 
   const handleToggleVisibility = (id: string) => {
     const project = projects.find(p => p.id === id);

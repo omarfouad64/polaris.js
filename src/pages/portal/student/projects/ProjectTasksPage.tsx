@@ -56,11 +56,14 @@ export default function ProjectTasksPage(): React.JSX.Element {
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Back navigation */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
+            navigate(`/portal/${rolePath}/projects/${id}/view`)
+          }}
           className="flex items-center gap-2 text-sm font-jakarta font-semibold text-primary hover:text-primary/80 transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          Back to Project
+          Back to Project Overview
         </button>
 
         {/* Project context header */}

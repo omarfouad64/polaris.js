@@ -31,7 +31,7 @@ export default function ProjectEditor({
   const existingProject = isEditMode ? getProjectById(projectId) : undefined;
 
   const [formData, setFormData] = useState<
-    Omit<ProjectData, 'id' | 'createdDate' | 'updatedDate'>
+    Omit<ProjectData, 'id' | 'ownerId' | 'createdDate' | 'updatedDate'>
   >({
     title: existingProject?.title || '',
     course: existingProject?.course || '',
@@ -40,6 +40,7 @@ export default function ProjectEditor({
     languages: existingProject?.languages || [],
     demoVideoUrl: existingProject?.demoVideoUrl || '',
     thesisDrafts: existingProject?.thesisDrafts || [],
+    tasks: existingProject?.tasks || [],
     isPublic: existingProject?.isPublic ?? true,
     status: existingProject?.status ?? 'active',
     flagReason: existingProject?.flagReason,

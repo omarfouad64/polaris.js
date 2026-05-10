@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import FeedbackDialog from '../../../../../components/FeedbackDialog'
 interface FlagAppealModalProps {
   projectId: string
   flagId: string
@@ -36,7 +37,7 @@ export default function FlagAppealModal({
 }: FlagAppealModalProps) {
   const [appealMessage, setAppealMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
 
   const handleSubmitAppeal = async () => {
     if (!appealMessage.trim()) return
@@ -46,7 +47,7 @@ export default function FlagAppealModal({
       await new Promise(resolve => setTimeout(resolve, 500))
 
       onSubmitAppeal(flagId, projectId, studentId, studentName, appealMessage.trim())
-      setSubmitted(true)
+      setShowFeedback(true)
       onAppealSubmitted()
     } finally {
       setIsSubmitting(false)
@@ -54,7 +55,7 @@ export default function FlagAppealModal({
   }
 
   const handleClose = () => {
-    setSubmitted(false)
+    setShowFeedback(false)
     setAppealMessage('')
     onClose()
   }
@@ -85,7 +86,7 @@ export default function FlagAppealModal({
 
         {/* Modal Content */}
         <div className="p-6 space-y-4">
-          {!submitted ? (
+          {!showFeedback ? (
             <>
               {/* Flag Details */}
               {flagDescription && (
@@ -159,28 +160,20 @@ export default function FlagAppealModal({
                 </button>
               </div>
             </>
-          ) : (
-            // Success State
-            <div className="text-center py-12">
-              <div className="text-5xl mb-4">✓</div>
-              <p className="font-jakarta font-bold text-on-surface mb-2">
-                Appeal Submitted!
-              </p>
-              <p className="text-body-sm text-on-surface-variant mb-4">
-                Your appeal has been received. An administrator will review it within 48 hours.
-              </p>
-              <p className="text-xs text-on-surface-variant">
-                You will receive a notification when the appeal is resolved.
-              </p>
-              <button
-                onClick={handleClose}
-                className="mt-6 px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          )}
+          ) : null}
         </div>
+
+        <FeedbackDialog
+          isOpen={showFeedback}
+          title="Appeal Submitted!"
+          message="Your appeal has been submitted and will be reviewed by an administrator within 48 hours."
+          actionLabel="Close"
+          onClose={() => {
+            setShowFeedback(false)
+            setAppealMessage('')
+            onClose()
+          }}
+        />
       </div>
     </div>
   )

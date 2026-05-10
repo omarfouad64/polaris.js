@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useProjectNotifications } from '../../../../hooks/useProjectNotifications'
 import { useProjectInvitationsList } from '../../../../hooks/useProjectInvitationsList'
+import Button from '../../../../components/Button'
 
 type TabType = 'pending' | 'accepted' | 'rejected'
 
@@ -124,21 +125,20 @@ export default function ProjectInvitationsPage() {
                 {/* Left Content */}
                 <div className="flex-1 text-left min-w-0">
                   {/* Status Badge */}
-                  <div className="mb-2 flex items-center gap-2">
+                  <div className="mb-3 flex items-center gap-2">
                     <span
-                      className={`text-xs font-jakarta font-semibold px-2 py-1 rounded-full ${
+                      className={`text-[10px] font-jakarta font-bold uppercase tracking-wider px-3 py-1 rounded-lg flex items-center gap-1.5 ${
                         invitation.status === 'pending'
-                          ? 'bg-surface-container text-on-surface-variant'
+                          ? 'bg-primary/10 text-primary border border-primary/20'
                           : invitation.status === 'accepted'
-                            ? 'bg-secondary-container text-on-secondary-container'
-                            : 'bg-error/10 text-error'
+                            ? 'bg-secondary/10 text-secondary border border-secondary/20'
+                            : 'bg-error/10 text-error border border-error/20'
                       }`}
                     >
-                      {invitation.status === 'pending'
-                        ? '⏳ Pending'
-                        : invitation.status === 'accepted'
-                          ? '✓ Accepted'
-                          : '✕ Rejected'}
+                      <span className="material-symbols-outlined text-[14px]">
+                        {invitation.status === 'pending' ? 'schedule' : invitation.status === 'accepted' ? 'check_circle' : 'cancel'}
+                      </span>
+                      {invitation.status}
                     </span>
                   </div>
 
@@ -163,13 +163,13 @@ export default function ProjectInvitationsPage() {
                 </div>
 
                 {/* Expand Arrow */}
-                <div
-                  className={`text-2xl text-on-surface-variant transition-transform shrink-0 ml-4 ${
+                <span
+                  className={`material-symbols-outlined text-on-surface-variant transition-transform duration-300 shrink-0 ml-4 ${
                     expandedInvitationId === invitation.id ? 'rotate-180' : ''
                   }`}
                 >
-                  ▼
-                </div>
+                  expand_more
+                </span>
               </button>
 
               {/* Expanded Content */}
@@ -208,18 +208,22 @@ export default function ProjectInvitationsPage() {
                   {/* Actions - Only for Pending Invitations */}
                   {invitation.status === 'pending' && (
                     <div className="flex gap-3 pt-4">
-                      <button
+                      <Button
                         onClick={() => handleAcceptInvitation(invitation.id)}
-                        className="flex-1 px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
+                        variant="secondary"
+                        className="flex-1 gap-2"
                       >
-                        ✓ Accept
-                      </button>
-                      <button
+                        <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                        Accept
+                      </Button>
+                      <Button
                         onClick={() => handleRejectInvitation(invitation.id)}
-                        className="flex-1 px-4 py-2 border border-error text-error rounded-lg font-jakarta font-semibold hover:bg-error/10 transition-colors"
+                        variant="outline"
+                        className="flex-1 gap-2 text-error border-error/30 hover:bg-error/5 hover:border-error"
                       >
-                        ✕ Reject
-                      </button>
+                        <span className="material-symbols-outlined text-[20px]">cancel</span>
+                        Reject
+                      </Button>
                     </div>
                   )}
 
@@ -243,9 +247,10 @@ export default function ProjectInvitationsPage() {
 
                   {/* View Project Button */}
                   {invitation.status === 'accepted' && (
-                    <button className="w-full px-4 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors">
+                    <Button className="w-full mt-2 gap-2">
+                      <span className="material-symbols-outlined text-[20px]">visibility</span>
                       View Project
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}

@@ -106,23 +106,29 @@ export default function CompanyProfilePage(): React.JSX.Element {
     }
   }
 
-  const handleLocationChange = async (location: { lat: number; lng: number }): Promise<void> => {
+  const handleLocationChange = (location: { lat: number; lng: number } | null): void => {
+    if (!location) {
+      setPendingLocation(null)
+      return
+    }
     setPendingLocation(location)
     setPendingAddress(null)
     setAddressStatus('loading')
     setSaveStatus('idle')
     const requestId = (reverseGeocodeRequestId.current += 1)
-    const address = await reverseGeocode(location.lat, location.lng)
 
-    if (requestId !== reverseGeocodeRequestId.current) return
+    void (async () => {
+      const address = await reverseGeocode(location.lat, location.lng)
+      if (requestId !== reverseGeocodeRequestId.current) return
 
-    if (address) {
-      setPendingAddress(address)
-      setAddressStatus('idle')
-    } else {
-      setPendingAddress(null)
-      setAddressStatus('error')
-    }
+      if (address) {
+        setPendingAddress(address)
+        setAddressStatus('idle')
+      } else {
+        setPendingAddress(null)
+        setAddressStatus('error')
+      }
+    })()
   }
 
   const handleSaveLocation = (): void => {

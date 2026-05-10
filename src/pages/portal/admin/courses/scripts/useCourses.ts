@@ -1,4 +1,11 @@
-import { useState } from 'react'
+import { useCallback, useMemo } from 'react'
+import useDatabase from '../../../../../hooks/useDatabase'
+import {
+  addCourse as addCourseAction,
+  editCourse as editCourseAction,
+  deleteCourse as deleteCourseAction
+} from '../../../../../store/databaseSlice'
+import type { Course as DBCourse } from '../../../../../types'
 
 export interface Course {
   id: string
@@ -7,33 +14,36 @@ export interface Course {
   instructorsCount: number
 }
 
-const dummyCourses: Course[] = [
-  { id: 'c1', code: 'CS311', name: 'Software Engineering', instructorsCount: 3 },
-  { id: 'c2', code: 'CS341', name: 'Web Programming', instructorsCount: 2 },
-  { id: 'c3', code: 'CS412', name: 'Project Management', instructorsCount: 1 },
-  { id: 'c4', code: 'IS498', name: 'Bachelor Project', instructorsCount: 5 },
-]
-
 export function useCourses() {
-  const [courses, setCourses] = useState<Course[]>(dummyCourses)
+  const { courses: dbCourses, courseLinks, dispatch } = useDatabase()
 
-  const addCourse = (data: { code: string; name: string }) => {
-    const newCourse: Course = {
-      id: Math.random().toString(36).substring(7),
+  const courses = useMemo((): Course[] => {
+    return dbCourses.map(c => ({
+      id: c.id,
+      code: c.code,
+      name: c.name,
+      instructorsCount: courseLinks.filter(l => l.courseId === c.id && l.status === 'linked').length
+    }))
+  }, [dbCourses, courseLinks])
+
+  const addCourse = useCallback((data: { code: string; name: string }) => {
+    const newCourse: DBCourse = {
+      id: `course-${Date.now()}`,
       code: data.code,
       name: data.name,
-      instructorsCount: 0
+      semester: 'Fall 2026', // Default or could be passed
+      description: ''
     }
-    setCourses([...courses, newCourse])
-  }
+    dispatch(addCourseAction(newCourse))
+  }, [dispatch])
 
-  const editCourse = (id: string, data: { code: string; name: string }) => {
-    setCourses(courses.map(c => c.id === id ? { ...c, code: data.code, name: data.name } : c))
-  }
+  const editCourse = useCallback((id: string, data: { code: string; name: string }) => {
+    dispatch(editCourseAction({ id, code: data.code, name: data.name }))
+  }, [dispatch])
 
-  const deleteCourse = (id: string) => {
-    setCourses(courses.filter(c => c.id !== id))
-  }
+  const deleteCourse = useCallback((id: string) => {
+    dispatch(deleteCourseAction(id))
+  }, [dispatch])
 
   return {
     courses,
@@ -42,3 +52,4 @@ export function useCourses() {
     deleteCourse
   }
 }
+

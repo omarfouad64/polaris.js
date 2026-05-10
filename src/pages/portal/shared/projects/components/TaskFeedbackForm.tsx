@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
 interface TaskFeedbackFormProps {
-    projectId: string
+
     taskId: string
     taskTitle: string
     instructorId: string
@@ -20,7 +20,7 @@ interface TaskFeedbackFormProps {
  * Allows adding comments and guidance for task completion.
  */
 export default function TaskFeedbackForm({
-    projectId,
+
     taskId,
     taskTitle,
     instructorId,
