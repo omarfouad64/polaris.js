@@ -86,6 +86,26 @@ export default function ProjectCard({
                                 )}
                             </div>
                         </div>
+
+                        {/* Visibility Toggle Icon (Req Refined) */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (!isFlagged && onToggleVisibility) {
+                                    onToggleVisibility(id);
+                                }
+                            }}
+                            disabled={isFlagged}
+                            className={`p-2 rounded-lg transition-all duration-200 ${isFlagged
+                                    ? 'text-outline-variant cursor-not-allowed'
+                                    : 'text-on-surface-variant hover:bg-primary/10 hover:text-primary'
+                                }`}
+                            title={isFlagged ? 'Visibility cannot be changed while flagged' : (isPublic ? 'Make Private' : 'Make Public')}
+                        >
+                            <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: isPublic ? "'FILL' 1" : "'FILL' 0" }}>
+                                {isPublic ? 'visibility' : 'visibility_off'}
+                            </span>
+                        </button>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-jakarta font-bold">

@@ -123,7 +123,6 @@ export default function StudentPortfolioPage(): React.JSX.Element {
       reader.onload = (e) => {
         const pictureUrl = e.target?.result as string
         updateProfilePicture(pictureUrl)
-        updateUser({ profilePicture: pictureUrl })
       }
       reader.readAsDataURL(file)
     }
@@ -533,6 +532,3 @@ export default function StudentPortfolioPage(): React.JSX.Element {
   )
 }
 
-function updateUser(arg0: { profilePicture: string }) {
-  throw new Error('Function not implemented.')
-}

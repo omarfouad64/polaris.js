@@ -60,11 +60,14 @@ export default function CourseDirectoryPage() {
       <div className="flex border-b border-surface-container">
         <button
           onClick={() => setActiveTab('courses')}
-          className={`px-6 py-3 font-jakarta font-bold text-sm transition-colors border-b-2 ${
+          className={`px-6 py-3 font-jakarta font-bold text-sm transition-colors border-b-2 flex items-center gap-2 ${
             activeTab === 'courses' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
           }`}
         >
           Course List
+          <span className="bg-error/10 text-error text-[10px] px-2 py-0.5 rounded-full font-bold">
+            {courses.length}
+          </span>
         </button>
         <button
           onClick={() => setActiveTab('requests')}

@@ -368,7 +368,7 @@ function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId
         isOpen={showSuccessDialog}
         title="Success"
         message={successMessage}
-        actionLabel="Excellent"
+        actionLabel="OK"
         onClose={() => setShowSuccessDialog(false)}
       />
     </div>

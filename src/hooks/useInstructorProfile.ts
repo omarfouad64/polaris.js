@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { InstructorProfile } from '../types'
 
 // Dummy initial instructor profile data
@@ -15,6 +15,32 @@ const DUMMY_INSTRUCTOR_PROFILE: InstructorProfile = {
   updatedAt: new Date('2024-01-20').toISOString()
 }
 
+const STORAGE_KEY = 'polaris_instructor_profile'
+
+// ── Shared module-level state for synchronization ──────────────────────────
+type Listener = () => void
+const listeners: Set<Listener> = new Set()
+
+const loadProfile = (): InstructorProfile => {
+  if (typeof window === 'undefined') return DUMMY_INSTRUCTOR_PROFILE
+  const saved = window.localStorage.getItem(STORAGE_KEY)
+  if (!saved) return DUMMY_INSTRUCTOR_PROFILE
+  try {
+    return JSON.parse(saved)
+  } catch {
+    return DUMMY_INSTRUCTOR_PROFILE
+  }
+}
+
+let sharedProfile: InstructorProfile = loadProfile()
+
+function emit() {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sharedProfile))
+  }
+  listeners.forEach(fn => fn())
+}
+
 /**
  * useInstructorProfile – manages instructor profile data with CRUD operations.
  * Provides access to profile information, research interests, and education background.
@@ -22,14 +48,23 @@ const DUMMY_INSTRUCTOR_PROFILE: InstructorProfile = {
  * @returns Object containing profile state and update functions.
  */
 export function useInstructorProfile() {
-  const [profile, setProfile] = useState<InstructorProfile>(DUMMY_INSTRUCTOR_PROFILE)
+  const [, setTick] = useState(0)
+
+  useEffect(() => {
+    const listener = () => setTick(t => t + 1)
+    listeners.add(listener)
+    return () => { listeners.delete(listener) }
+  }, [])
+
+  const profile = sharedProfile
 
   const updateProfile = useCallback((updates: Partial<InstructorProfile>) => {
-    setProfile(prev => ({
-      ...prev,
+    sharedProfile = {
+      ...sharedProfile,
       ...updates,
       updatedAt: new Date().toISOString()
-    }))
+    }
+    emit()
   }, [])
 
   const updateBiography = useCallback((biography: string) => {
@@ -41,26 +76,26 @@ export function useInstructorProfile() {
   }, [updateProfile])
 
   const addResearchInterest = useCallback((interest: string) => {
-    setProfile(prev => {
-      const interestExists = prev.researchInterests.some(
-        r => r.toLowerCase() === interest.toLowerCase()
-      )
-      if (interestExists) return prev
+    const interestExists = sharedProfile.researchInterests.some(
+      r => r.toLowerCase() === interest.toLowerCase()
+    )
+    if (interestExists) return
 
-      return {
-        ...prev,
-        researchInterests: [...prev.researchInterests, interest],
-        updatedAt: new Date().toISOString()
-      }
-    })
+    sharedProfile = {
+      ...sharedProfile,
+      researchInterests: [...sharedProfile.researchInterests, interest],
+      updatedAt: new Date().toISOString()
+    }
+    emit()
   }, [])
 
   const removeResearchInterest = useCallback((interest: string) => {
-    setProfile(prev => ({
-      ...prev,
-      researchInterests: prev.researchInterests.filter(r => r !== interest),
+    sharedProfile = {
+      ...sharedProfile,
+      researchInterests: sharedProfile.researchInterests.filter(r => r !== interest),
       updatedAt: new Date().toISOString()
-    }))
+    }
+    emit()
   }, [])
 
   const updateProfilePicture = useCallback((pictureUrl: string | null) => {

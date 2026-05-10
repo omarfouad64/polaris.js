@@ -12,6 +12,8 @@ export default function EmployerVerificationPage() {
 
   const displayedApplications = applications.filter(app => app.status === activeTab)
   const pendingCount = applications.filter(app => app.status === 'Pending').length
+  const approvedCount = applications.filter(app => app.status === 'Approved').length
+  const rejectedCount = applications.filter(app => app.status === 'Rejected').length
 
   const handleViewDetails = (app: EmployerApplication) => {
     setSelectedApp(app)
@@ -20,8 +22,8 @@ export default function EmployerVerificationPage() {
 
   const tabs = [
     { id: 'Pending', label: `Pending (${pendingCount})` },
-    { id: 'Approved', label: 'Approved' },
-    { id: 'Rejected', label: 'Rejected' },
+    { id: 'Approved', label: `Approved (${approvedCount})` },
+    { id: 'Rejected', label: `Rejected (${rejectedCount})` },
   ] as const
 
   return (

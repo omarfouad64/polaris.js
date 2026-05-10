@@ -294,6 +294,7 @@ export default function ProjectTaskManager({
                                     </label>
                                     <input
                                         type="date"
+                                        min={new Date().toISOString().split('T')[0]}
                                         value={isAddingTask ? taskForm.deadline : tasks.find(t => t.id === editingTaskId)?.deadline}
                                         onChange={(e) => isAddingTask ? setTaskForm({ ...taskForm, deadline: e.target.value }) : handleUpdateTask(editingTaskId!, { deadline: e.target.value })}
                                         className="w-full bg-surface-container-low border border-surface-container-high rounded-lg px-4 py-2.5 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"

@@ -14,9 +14,9 @@ import type { UserRole } from '../../../types'
 // and avoids any cross-role data contamination in the header.
 // ---------------------------------------------------------------------------
 
-function StudentAvatar() {
-  const { portfolio } = useStudentPortfolio()
-  const initial = portfolio.name.charAt(0).toUpperCase()
+function StudentAvatar({ studentId }: { studentId?: string }) {
+  const { portfolio } = useStudentPortfolio(studentId)
+  const initial = (portfolio.name || 'S').charAt(0).toUpperCase()
   return portfolio.profilePicture ? (
     <img src={portfolio.profilePicture} alt="Profile" className="w-full h-full object-cover" />
   ) : (
@@ -24,9 +24,9 @@ function StudentAvatar() {
   )
 }
 
-function InstructorAvatar() {
+function InstructorAvatar({ instructorId }: { instructorId?: string }) {
   const { profile } = useInstructorProfile()
-  const initial = profile.name.charAt(0).toUpperCase()
+  const initial = (profile.name || 'I').charAt(0).toUpperCase()
   return profile.profilePicture ? (
     <img src={profile.profilePicture} alt="Profile" className="w-full h-full object-cover" />
   ) : (
@@ -45,8 +45,8 @@ function EmployerAvatar() {
 }
 
 function RoleAvatar({ role, username }: { role: UserRole | undefined; username: string | undefined }) {
-  if (role === 'Student') return <StudentAvatar />
-  if (role === 'Course Instructor') return <InstructorAvatar />
+  if (role === 'Student') return <StudentAvatar studentId={username} />
+  if (role === 'Course Instructor') return <InstructorAvatar instructorId={username} />
   if (role === 'Employer') return <EmployerAvatar />
   // Administrator — just use username initial, no profile hook needed
   return (
@@ -61,7 +61,7 @@ function RoleAvatar({ role, username }: { role: UserRole | undefined; username: 
 export default function Header() {
   const location = useLocation()
   const { user } = useGlobalContext()
-  const { unreadCount: generalUnread } = useNotifications()
+  const { unreadCount: generalUnread, notificationsMuted } = useNotifications()
   const { unreadCount: invitationUnread } = useProjectNotifications()
 
   const unreadCount = generalUnread + invitationUnread
@@ -90,12 +90,20 @@ export default function Header() {
             to={`/portal/${rolePath}/notifications`}
             className="p-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors"
           >
-            <span className="material-symbols-outlined">notifications</span>
-          </Link>
-          {unreadCount > 0 && (
-            <span className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 bg-error text-on-error text-[10px] font-jakarta font-bold rounded-full min-w-4.5 h-4.5 flex items-center justify-center px-1">
-              {unreadCount}
+            <span className="material-symbols-outlined">
+              {notificationsMuted ? 'notifications_paused' : 'notifications'}
             </span>
+          </Link>
+          {notificationsMuted ? (
+            <span className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 bg-surface-container-highest text-on-surface-variant text-[10px] font-jakarta font-bold rounded-full w-4.5 h-4.5 flex items-center justify-center border border-surface-container shadow-sm">
+              <span className="material-symbols-outlined text-[12px]">volume_off</span>
+            </span>
+          ) : (
+            unreadCount > 0 && (
+              <span className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 bg-error text-on-error text-[10px] font-jakarta font-bold rounded-full min-w-4.5 h-4.5 flex items-center justify-center px-1">
+                {unreadCount}
+              </span>
+            )
           )}
         </div>
         <div className="h-8 w-px bg-surface-container mx-2"></div>
