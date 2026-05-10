@@ -3,11 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { useGlobalContext } from '../../../../globalContext'
 import useStudentProjects, { type ProjectTask } from '../../student/projects/scripts/useStudentProjects'
 import { useInstructorFeedback } from '../../../../hooks/useInstructorFeedback'
-import { useProjectInvitations } from '../../../../hooks/useProjectInvitations'
 import useNotifications from '../../../../hooks/useNotifications'
 import Button from '../../../../components/Button'
 import FeedbackDialog from '../../../../components/FeedbackDialog'
+import ConfirmDialog from '../../../../components/ConfirmDialog'
 import ProjectTaskSection from '../../shared/projects/components/ProjectTaskSection'
+
+/** Inline style for a filled Material Symbol star. */
+const FILLED_STAR_STYLE: React.CSSProperties = { fontVariationSettings: "'FILL' 1" }
 
 /**
  * ProjectOversightPage — main dashboard for instructors to review and evaluate projects.
@@ -17,21 +20,16 @@ export default function ProjectOversightPage() {
   const { user } = useGlobalContext()
   const navigate = useNavigate()
   const { projects } = useStudentProjects()
-  const { addNotification } = useNotifications()
-  
-  // For demo purposes, we'll filter projects where the instructor is a collaborator
-  // In a real app, this would be a backend query for "assigned projects"
+
   const assignedProjects = useMemo(() => {
-    // Mocking assignment: if instructor teaches course-001 or course-002 (Dr. Fatima)
-    // or if they are explicitly in the collaborator list.
-    return projects.filter(p => 
+    return projects.filter(p =>
       p.course === 'course-001' || p.course === 'course-002' || p.id === 'proj-001'
     )
   }, [projects])
 
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
-  
-  const selectedProject = useMemo(() => 
+
+  const selectedProject = useMemo(() =>
     assignedProjects.find(p => p.id === selectedProjectId),
     [assignedProjects, selectedProjectId]
   )
@@ -104,12 +102,12 @@ export default function ProjectOversightPage() {
 
               {/* Evaluation Components */}
               <div className="p-8 space-y-10">
-                <ProjectEvaluationSection 
-                  projectId={selectedProject.id} 
+                <ProjectEvaluationSection
+                  projectId={selectedProject.id}
                   projectTitle={selectedProject.title}
                   tasks={selectedProject.tasks || []}
-                  instructorId={user?.username || 'instructor-001'}
-                  instructorName={user?.username || 'Dr. Fatima Al-Mansouri'}
+                  instructorId={user?.username ?? 'instructor@guc.edu.eg'}
+                  instructorName={user?.username ?? 'Dr. Fatima Al-Mansouri'}
                 />
               </div>
             </div>
@@ -125,40 +123,104 @@ export default function ProjectOversightPage() {
   )
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Star component — renders a single star icon, filled or outline.
+// ─────────────────────────────────────────────────────────────────────────────
+function Star({ filled, size = 48 }: { filled: boolean; size?: number }) {
+  return (
+    <span
+      className="material-symbols-outlined text-secondary transition-colors duration-150"
+      style={{
+        fontSize: size,
+        color: filled ? undefined : 'var(--color-outline-variant)',
+        fontVariationSettings: filled ? "'FILL' 1" : "'FILL' 0",
+      }}
+    >
+      star
+    </span>
+  )
+}
+
+const ratingLabel = (v: number) =>
+  v === 5 ? 'Excellent!' : v === 4 ? 'Very Good' : v === 3 ? 'Good' : v === 2 ? 'Fair' : 'Needs Improvement'
+
 /**
  * ProjectEvaluationSection — Handles rating and feedback for a specific project.
+ * One rating + one feedback per instructor per project.
  */
-function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId, instructorName }: { 
-  projectId: string, 
-  projectTitle: string,
-  tasks: ProjectTask[],
-  instructorId: string, 
-  instructorName: string 
+function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId, instructorName }: {
+  projectId: string
+  projectTitle: string
+  tasks: ProjectTask[]
+  instructorId: string
+  instructorName: string
 }) {
-  const { 
-    projectFeedback, 
-    projectRatings, 
-    addProjectFeedback, 
-    editProjectFeedback, 
+  const {
+    projectFeedback,
+    addProjectFeedback,
+    editProjectFeedback,
     removeProjectFeedback,
-    rateProject 
+    rateProject,
+    getInstructorRating,
+    removeProjectRating,
   } = useInstructorFeedback(projectId)
-  
+
   const { addNotification } = useNotifications()
-  
-  const [feedbackText, setFeedbackText] = useState('')
-  const [feedbackType, setFeedbackType] = useState<'general' | 'thesis_draft'>('general')
+
+  // ── Rating state ──────────────────────────────────────────────────────────
+  const myRating = getInstructorRating(instructorId)
   const [ratingValue, setRatingValue] = useState(0)
   const [ratingHover, setRatingHover] = useState(0)
   const [ratingComment, setRatingComment] = useState('')
-  const [editingFeedbackId, setEditingFeedbackId] = useState<string | null>(null)
+  const [isEditingRating, setIsEditingRating] = useState(false)
+  const [confirmDeleteRating, setConfirmDeleteRating] = useState(false)
+
+  // ── Project feedback state ─────────────────────────────────────────────────
+  const myFeedback = projectFeedback.find(fb => fb.instructorId === instructorId)
+  const [feedbackText, setFeedbackText] = useState('')
+  const [feedbackType, setFeedbackType] = useState<'general' | 'thesis_draft'>('general')
+  const [isEditingFeedback, setIsEditingFeedback] = useState(false)
   const [editingText, setEditingText] = useState('')
+  const [confirmDeleteFeedback, setConfirmDeleteFeedback] = useState(false)
+
+  // ── Success dialog ────────────────────────────────────────────────────────
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
 
+  // ── Rating handlers ───────────────────────────────────────────────────────
+  const handleSubmitRating = () => {
+    if (ratingValue === 0) return
+    rateProject(instructorId, instructorName, ratingValue, ratingComment)
+    addNotification({
+      type: 'feedback',
+      title: 'Project Rated',
+      body: `${instructorName} rated your project "${projectTitle}" ${ratingValue}/5`
+    })
+    setSuccessMessage(`Project rated ${ratingValue}/5 stars successfully.`)
+    setShowSuccessDialog(true)
+    setRatingValue(0)
+    setRatingComment('')
+    setIsEditingRating(false)
+  }
+
+  const handleStartEditRating = () => {
+    if (myRating) {
+      setRatingValue(myRating.rating)
+      setRatingComment(myRating.comment ?? '')
+    }
+    setIsEditingRating(true)
+  }
+
+  const handleCancelEditRating = () => {
+    setRatingValue(0)
+    setRatingComment('')
+    setIsEditingRating(false)
+  }
+
+  // ── Project feedback handlers ─────────────────────────────────────────────
   const handleAddFeedback = () => {
     if (!feedbackText.trim()) return
-    addProjectFeedback(instructorId, instructorName, feedbackText, feedbackType)
+    addProjectFeedback(instructorId, instructorName, feedbackText.trim(), feedbackType)
     addNotification({
       type: 'feedback',
       title: 'New Project Feedback',
@@ -169,87 +231,131 @@ function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId
     setShowSuccessDialog(true)
   }
 
-  const handleRate = () => {
-    if (ratingValue === 0) return
-    rateProject(instructorId, instructorName, ratingValue, ratingComment)
-    addNotification({
-      type: 'feedback',
-      title: 'Project Rated',
-      body: `${instructorName} rated your project "${projectTitle}" ${ratingValue}/5`
-    })
-    setRatingValue(0)
-    setRatingComment('')
-    setSuccessMessage(`Project rated ${ratingValue}/5 stars successfully.`)
-    setShowSuccessDialog(true)
+  const handleSaveEditFeedback = () => {
+    if (myFeedback && editingText.trim()) {
+      editProjectFeedback(myFeedback.id, editingText.trim())
+      setIsEditingFeedback(false)
+      setSuccessMessage('Feedback updated successfully.')
+      setShowSuccessDialog(true)
+    }
   }
+
+  // The star value to display (hover takes priority, then selected)
+  const displayStar = ratingHover || ratingValue
 
   return (
     <div className="space-y-12">
-      {/* Rating Section */}
+
+      {/* ── Rating Section ──────────────────────────────────────────────────── */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center font-bold">
-            <span className="material-symbols-outlined">star</span>
+          <span className="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
+            <span className="material-symbols-outlined" style={FILLED_STAR_STYLE}>star</span>
           </span>
           <h3 className="text-xl font-jakarta font-bold text-on-surface">Project Rating</h3>
         </div>
 
-        <div className="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/30 space-y-6">
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-sm font-lexend text-on-surface-variant">Rate the overall quality and implementation of this project</p>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map(star => (
+        <div className="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/30">
+          {myRating && !isEditingRating ? (
+            /* ── Existing rating: show stars + Edit / Delete ── */
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <p className="text-xs font-lexend text-on-surface-variant uppercase tracking-wider">Your current rating</p>
+                <div className="flex gap-1 items-center">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <Star key={star} filled={star <= myRating.rating} size={36} />
+                  ))}
+                  <span className="ml-2 text-sm font-jakarta font-bold text-secondary">{myRating.rating}/5</span>
+                </div>
+                <p className="text-sm font-jakarta font-semibold text-secondary">{ratingLabel(myRating.rating)}</p>
+                {myRating.comment && (
+                  <p className="text-sm font-lexend text-on-surface-variant italic">"{myRating.comment}"</p>
+                )}
+              </div>
+              <div className="flex flex-col gap-2 flex-shrink-0">
+                <Button variant="outline" size="sm" onClick={handleStartEditRating} className="flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">edit</span>
+                  Edit
+                </Button>
                 <button
-                  key={star}
-                  onMouseEnter={() => setRatingHover(star)}
-                  onMouseLeave={() => setRatingHover(0)}
-                  onClick={() => setRatingValue(star)}
-                  className="text-4xl transition-all duration-200 hover:scale-110"
+                  onClick={() => setConfirmDeleteRating(true)}
+                  className="inline-flex items-center justify-center gap-1.5 h-8 px-3 text-sm rounded-lg font-jakarta font-semibold text-error hover:bg-error/10 transition-all duration-200"
                 >
-                  <span className={`material-symbols-outlined text-[48px] ${
-                    (ratingHover || ratingValue) >= star ? 'text-secondary fill-1' : 'text-outline-variant'
-                  }`}>
-                    star
-                  </span>
+                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                  Delete
                 </button>
-              ))}
+              </div>
             </div>
-            {ratingValue > 0 && (
-              <p className="text-sm font-jakarta font-bold text-secondary">
-                {ratingValue === 5 ? 'Excellent!' : ratingValue === 4 ? 'Very Good' : ratingValue === 3 ? 'Good' : ratingValue === 2 ? 'Fair' : 'Needs Improvement'}
+          ) : (
+            /* ── Add / Edit rating form ── */
+            <div className="space-y-5">
+              <p className="text-sm font-lexend text-on-surface-variant text-center">
+                {isEditingRating ? 'Update your rating for this project' : 'Rate the overall quality and implementation of this project'}
               </p>
-            )}
-          </div>
 
-          <div className="space-y-3">
-            <textarea
-              value={ratingComment}
-              onChange={(e) => setRatingComment(e.target.value)}
-              placeholder="Add a comment to your rating (optional)..."
-              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 text-sm font-lexend focus:outline-none focus:ring-2 focus:ring-secondary/20"
-              rows={2}
-            />
-            <Button 
-              variant="primary" 
-              className="w-full !bg-secondary hover:!bg-secondary/90 !text-on-secondary"
-              disabled={ratingValue === 0}
-              onClick={handleRate}
-            >
-              Submit Rating
-            </Button>
-          </div>
+              {/* Star picker */}
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <button
+                      key={star}
+                      type="button"
+                      onMouseEnter={() => setRatingHover(star)}
+                      onMouseLeave={() => setRatingHover(0)}
+                      onClick={() => setRatingValue(star)}
+                      className="transition-transform duration-150 hover:scale-110 active:scale-95 focus:outline-none"
+                      aria-label={`Rate ${star} out of 5`}
+                    >
+                      <Star filled={displayStar >= star} size={44} />
+                    </button>
+                  ))}
+                </div>
+                {ratingValue > 0 && (
+                  <p className="text-sm font-jakarta font-bold text-secondary animate-in fade-in duration-150">
+                    {ratingLabel(ratingValue)}
+                  </p>
+                )}
+              </div>
+
+              {/* Optional comment */}
+              <textarea
+                value={ratingComment}
+                onChange={(e) => setRatingComment(e.target.value)}
+                placeholder="Add a comment to your rating (optional)..."
+                className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 text-sm font-lexend focus:outline-none focus:ring-2 focus:ring-secondary/20 resize-none"
+                rows={2}
+              />
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                {isEditingRating && (
+                  <Button variant="outline" className="flex-1" onClick={handleCancelEditRating}>
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  variant="primary"
+                  className={`!bg-secondary hover:!bg-secondary/90 !text-on-secondary ${isEditingRating ? 'flex-1' : 'w-full'}`}
+                  disabled={ratingValue === 0}
+                  onClick={handleSubmitRating}
+                >
+                  {isEditingRating ? 'Update Rating' : 'Submit Rating'}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Task Feedback Section */}
+      {/* ── Task Feedback Section ────────────────────────────────────────────── */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center font-bold">
+          <span className="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center">
             <span className="material-symbols-outlined">assignment</span>
           </span>
           <h3 className="text-xl font-jakarta font-bold text-on-surface">Task-Specific Feedback</h3>
         </div>
-        <ProjectTaskSection 
+        <ProjectTaskSection
           projectId={projectId}
           tasks={tasks}
           currentUserId={instructorId}
@@ -257,32 +363,88 @@ function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId
         />
       </section>
 
-      {/* Feedback Section */}
+      {/* ── Project Feedback Section ─────────────────────────────────────────── */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+          <span className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <span className="material-symbols-outlined">rate_review</span>
           </span>
           <h3 className="text-xl font-jakarta font-bold text-on-surface">Project Feedback</h3>
         </div>
 
-        <div className="space-y-6">
-          {/* Add Feedback */}
+        {myFeedback ? (
+          /* ── Already posted: show feedback with Edit / Delete only ── */
+          <div className="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/30">
+            {isEditingFeedback ? (
+              <div className="space-y-4">
+                <p className="text-sm font-jakarta font-semibold text-on-surface">Edit your feedback</p>
+                <textarea
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 text-sm font-lexend focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                  rows={5}
+                  autoFocus
+                />
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" size="sm" onClick={() => setIsEditingFeedback(false)}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={handleSaveEditFeedback} disabled={!editingText.trim()}>
+                    Save Changes
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-jakarta font-bold px-2 py-0.5 rounded-full uppercase tracking-widest ${
+                      myFeedback.feedbackType === 'thesis_draft' ? 'bg-tertiary/10 text-tertiary' : 'bg-primary/10 text-primary'
+                    }`}>
+                      {myFeedback.feedbackType === 'thesis_draft' ? 'Thesis Draft' : 'General'}
+                    </span>
+                    <span className="text-xs font-lexend text-on-surface-variant">
+                      {new Date(myFeedback.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => { setEditingText(myFeedback.comment); setIsEditingFeedback(true) }}
+                      className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors"
+                      aria-label="Edit feedback"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteFeedback(true)}
+                      className="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors"
+                      aria-label="Delete feedback"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  </div>
+                </div>
+                <p className="text-sm font-lexend text-on-surface leading-relaxed">{myFeedback.comment}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ── No feedback yet: show the post form ── */
           <div className="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/30 space-y-4">
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  checked={feedbackType === 'general'} 
+                <input
+                  type="radio"
+                  checked={feedbackType === 'general'}
                   onChange={() => setFeedbackType('general')}
                   className="w-4 h-4 text-primary"
                 />
                 <span className="text-sm font-jakarta font-semibold text-on-surface">General</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  checked={feedbackType === 'thesis_draft'} 
+                <input
+                  type="radio"
+                  checked={feedbackType === 'thesis_draft'}
                   onChange={() => setFeedbackType('thesis_draft')}
                   className="w-4 h-4 text-primary"
                 />
@@ -293,7 +455,7 @@ function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId
               value={feedbackText}
               onChange={(e) => setFeedbackText(e.target.value)}
               placeholder={`Write your ${feedbackType === 'general' ? 'general' : 'thesis draft'} feedback...`}
-              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 text-sm font-lexend focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 text-sm font-lexend focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
               rows={4}
             />
             <div className="flex justify-end">
@@ -302,74 +464,44 @@ function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId
               </Button>
             </div>
           </div>
-
-          {/* Feedback List */}
-          <div className="space-y-4">
-            {projectFeedback.length > 0 ? (
-              projectFeedback.map(fb => (
-                <div key={fb.id} className="bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/20 shadow-sm relative group">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-jakarta font-bold px-2 py-0.5 rounded-full uppercase tracking-widest ${
-                        fb.feedbackType === 'thesis_draft' ? 'bg-tertiary/10 text-tertiary' : 'bg-primary/10 text-primary'
-                      }`}>
-                        {fb.feedbackType === 'thesis_draft' ? 'Thesis Draft' : 'General'}
-                      </span>
-                      <span className="text-xs font-lexend text-on-surface-variant">
-                        {new Date(fb.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {fb.instructorId === instructorId && (
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={() => { setEditingFeedbackId(fb.id); setEditingText(fb.comment); }}
-                          className="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
-                        </button>
-                        <button 
-                          onClick={() => { if(window.confirm('Delete this feedback?')) removeProjectFeedback(fb.id) }}
-                          className="p-1.5 rounded-lg hover:bg-error/10 text-error"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {editingFeedbackId === fb.id ? (
-                    <div className="space-y-3">
-                      <textarea
-                        value={editingText}
-                        onChange={(e) => setEditingText(e.target.value)}
-                        className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl p-3 text-sm font-lexend focus:outline-none"
-                        rows={3}
-                      />
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setEditingFeedbackId(null)}>Cancel</Button>
-                        <Button size="sm" onClick={() => { editProjectFeedback(fb.id, editingText); setEditingFeedbackId(null); }}>Save</Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm font-lexend text-on-surface leading-relaxed">{fb.comment}</p>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-10 opacity-50">
-                <p className="text-sm font-lexend text-on-surface-variant italic">No feedback comments added yet.</p>
-              </div>
-            )}
-          </div>
-        </div>
+        )}
       </section>
 
+      {/* ── Dialogs ─────────────────────────────────────────────────────────── */}
       <FeedbackDialog
         isOpen={showSuccessDialog}
         title="Success"
         message={successMessage}
         actionLabel="OK"
         onClose={() => setShowSuccessDialog(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDeleteRating}
+        title="Delete Rating"
+        message="Are you sure you want to delete your rating for this project? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Keep Rating"
+        variant="danger"
+        onConfirm={() => {
+          if (myRating) removeProjectRating(myRating.id)
+          setConfirmDeleteRating(false)
+        }}
+        onCancel={() => setConfirmDeleteRating(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDeleteFeedback}
+        title="Delete Project Feedback"
+        message="Are you sure you want to delete your feedback for this project? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Keep Feedback"
+        variant="danger"
+        onConfirm={() => {
+          if (myFeedback) removeProjectFeedback(myFeedback.id)
+          setConfirmDeleteFeedback(false)
+        }}
+        onCancel={() => setConfirmDeleteFeedback(false)}
       />
     </div>
   )

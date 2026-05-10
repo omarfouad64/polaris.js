@@ -126,17 +126,19 @@ export function useStudentPortfolio(studentId?: string) {
     p.studentId === studentId ||
     p.email === studentId ||
     (studentId === 'student-001' && p.studentId === 'student-001')
-  ) || DUMMY_PORTFOLIOS[0]
+  ) ?? portfolios[0]
 
   const updatePortfolio = useCallback((updates: Partial<StudentPortfolio>) => {
-    const targetId = studentId || 'student-001'
+    // Use the resolved portfolio's actual studentId, not the raw prop
+    // (the prop may be a login email that doesn't match any studentId directly)
+    const resolvedId = portfolio.studentId
     sharedPortfolios = sharedPortfolios.map(p =>
-      p.studentId === targetId
+      p.studentId === resolvedId
         ? { ...p, ...updates, updatedAt: new Date().toISOString() }
         : p
     )
     emit()
-  }, [studentId])
+  }, [portfolio.studentId])
 
   const updateMajor = useCallback((major: string) => {
     updatePortfolio({ major })
@@ -151,9 +153,9 @@ export function useStudentPortfolio(studentId?: string) {
   }, [updatePortfolio])
 
   const addSkill = useCallback((skill: string) => {
-    const targetId = studentId || 'student-001'
+    const resolvedId = portfolio.studentId
     sharedPortfolios = sharedPortfolios.map(p => {
-      if (p.studentId !== targetId) return p
+      if (p.studentId !== resolvedId) return p
       const skillExists = p.skills.some(s => s.toLowerCase() === skill.toLowerCase())
       if (skillExists) return p
       return {
@@ -163,17 +165,17 @@ export function useStudentPortfolio(studentId?: string) {
       }
     })
     emit()
-  }, [studentId])
+  }, [portfolio.studentId])
 
   const removeSkill = useCallback((skill: string) => {
-    const targetId = studentId || 'student-001'
+    const resolvedId = portfolio.studentId
     sharedPortfolios = sharedPortfolios.map(p =>
-      p.studentId === targetId
+      p.studentId === resolvedId
         ? { ...p, skills: p.skills.filter(s => s !== skill), updatedAt: new Date().toISOString() }
         : p
     )
     emit()
-  }, [studentId])
+  }, [portfolio.studentId])
 
   const updateProfilePicture = useCallback((pictureUrl: string | null) => {
     updatePortfolio({ profilePicture: pictureUrl })

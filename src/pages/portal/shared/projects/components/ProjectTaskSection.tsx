@@ -4,6 +4,7 @@ import { useProjectInvitations } from '../../../../../hooks/useProjectInvitation
 import { useInstructorFeedback } from '../../../../../hooks/useInstructorFeedback';
 import { useGlobalContext } from '../../../../../globalContext';
 import TaskFeedbackForm from './TaskFeedbackForm';
+import ConfirmDialog from '../../../../../components/ConfirmDialog';
 
 interface ProjectTaskSectionProps {
   projectId: string;
@@ -14,6 +15,8 @@ interface ProjectTaskSectionProps {
 
 /**
  * ProjectTaskSection — Displays a list of project tasks with instructor feedback capabilities.
+ * Shows the latest feedback per task from any instructor.
+ * Instructors can only edit/delete their own feedback.
  */
 export default function ProjectTaskSection({
   projectId,
@@ -30,6 +33,9 @@ export default function ProjectTaskSection({
   const [selectedTask, setSelectedTask] = useState<{ id: string; title: string } | null>(null);
   const [editingFeedback, setEditingFeedback] = useState<{ id: string; comment: string } | null>(null);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+
+  // Confirm dialog state for task feedback deletion
+  const [confirmDelete, setConfirmDelete] = useState<{ feedbackId: string } | null>(null);
 
   const getAssigneeName = (id: string) => {
     const collaborator = collaborators.find((c) => c.collaboratorId === id);
@@ -74,10 +80,19 @@ export default function ProjectTaskSection({
     setIsFeedbackModalOpen(true);
   };
 
-  const handleEditFeedback = (task: ProjectTask, feedback: any) => {
+  const handleEditFeedback = (task: ProjectTask, feedback: { id: string; comment: string }) => {
     setSelectedTask({ id: task.id, title: task.description });
     setEditingFeedback({ id: feedback.id, comment: feedback.comment });
     setIsFeedbackModalOpen(true);
+  };
+
+  /** Get the latest feedback for a task (most recently created). */
+  const getLatestTaskFeedback = (taskId: string) => {
+    const all = getTaskFeedback(taskId);
+    if (all.length === 0) return null;
+    return all.reduce((latest, fb) =>
+      new Date(fb.createdAt) > new Date(latest.createdAt) ? fb : latest
+    );
   };
 
   if (tasks.length === 0) {
@@ -114,8 +129,7 @@ export default function ProjectTaskSection({
         {sortedTasks.map((task) => {
           const config = statusConfig[task.status] || statusConfig.pending;
           const impClass = importanceConfig[task.importance] || importanceConfig.Low;
-          const feedback = getTaskFeedback(task.id)[0]; // Assuming one feedback per instructor for now
-          
+
           return (
             <div
               key={task.id}
@@ -157,44 +171,76 @@ export default function ProjectTaskSection({
                 </span>
               </div>
 
-              {/* Feedback Section */}
-              <div className="space-y-3">
-                {feedback ? (
-                  <div className="bg-primary/5 rounded-xl p-3 border border-primary/10">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="text-[10px] font-jakarta font-bold text-primary uppercase tracking-wider">Instructor Feedback</span>
-                      {isInstructor && !readOnly && (
-                        <div className="flex gap-1">
-                          <button 
-                            onClick={() => handleEditFeedback(task, feedback)}
-                            className="text-[18px] material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors"
-                          >
-                            edit_note
-                          </button>
-                          <button 
-                            onClick={() => removeTaskFeedback(feedback.id)}
-                            className="text-[18px] material-symbols-outlined text-on-surface-variant hover:text-error transition-colors"
-                          >
-                            delete
-                          </button>
+              {/* Feedback Section — all instructor feedback, newest first */}
+              <div className="space-y-2">
+                {(() => {
+                  const allFeedback = getTaskFeedback(task.id)
+                    .slice()
+                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+                  const myFeedback = allFeedback.find(fb => fb.instructorId === currentUserId)
+                  const hasMyFeedback = Boolean(myFeedback)
+
+                  return (
+                    <>
+                      {allFeedback.length > 0 ? (
+                        <div className="space-y-2">
+                          {allFeedback.map(fb => {
+                            const isOwn = fb.instructorId === currentUserId
+                            return (
+                              <div
+                                key={fb.id}
+                                className={`rounded-xl p-3 border ${isOwn ? 'bg-primary/5 border-primary/15' : 'bg-surface-container border-outline-variant/20'}`}
+                              >
+                                <div className="flex justify-between items-start mb-1">
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className={`text-[10px] font-jakarta font-bold uppercase tracking-wider ${isOwn ? 'text-primary' : 'text-on-surface-variant'}`}>
+                                      {isOwn ? 'Your Feedback' : 'Instructor Feedback'}
+                                    </span>
+                                    <span className="text-[10px] font-lexend text-on-surface-variant">
+                                      by {fb.instructorName} · {new Date(fb.createdAt).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                  {/* Edit/Delete only on own feedback */}
+                                  {isInstructor && !readOnly && isOwn && (
+                                    <div className="flex gap-1">
+                                      <button
+                                        onClick={() => handleEditFeedback(task, fb)}
+                                        className="text-[18px] material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors"
+                                        aria-label="Edit feedback"
+                                      >
+                                        edit_note
+                                      </button>
+                                      <button
+                                        onClick={() => setConfirmDelete({ feedbackId: fb.id })}
+                                        className="text-[18px] material-symbols-outlined text-on-surface-variant hover:text-error transition-colors"
+                                        aria-label="Delete feedback"
+                                      >
+                                        delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                                <p className="text-xs font-lexend text-on-surface leading-relaxed">{fb.comment}</p>
+                              </div>
+                            )
+                          })}
                         </div>
+                      ) : null}
+
+                      {/* Add Feedback button — only if this instructor hasn't commented yet */}
+                      {isInstructor && !readOnly && !hasMyFeedback && (
+                        <button
+                          onClick={() => handleAddFeedback(task)}
+                          className="w-full py-2 border border-dashed border-outline-variant hover:border-primary/40 hover:bg-primary/5 rounded-xl text-xs font-jakarta font-bold text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-2"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">add_comment</span>
+                          Add Feedback
+                        </button>
                       )}
-                    </div>
-                    <p className="text-xs font-lexend text-on-surface-variant leading-relaxed">
-                      {feedback.comment}
-                    </p>
-                  </div>
-                ) : (
-                  isInstructor && !readOnly && (
-                    <button
-                      onClick={() => handleAddFeedback(task)}
-                      className="w-full py-2 border border-dashed border-outline-variant hover:border-primary/40 hover:bg-primary/5 rounded-xl text-xs font-jakarta font-bold text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">add_comment</span>
-                      Add Feedback
-                    </button>
+                    </>
                   )
-                )}
+                })()}
               </div>
             </div>
           );
@@ -217,6 +263,23 @@ export default function ProjectTaskSection({
           editTaskFeedback={editTaskFeedback}
         />
       )}
+
+      {/* Confirmation dialog for task feedback deletion */}
+      <ConfirmDialog
+        isOpen={confirmDelete !== null}
+        title="Delete Task Feedback"
+        message="Are you sure you want to delete this feedback? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={() => {
+          if (confirmDelete) {
+            removeTaskFeedback(confirmDelete.feedbackId)
+            setConfirmDelete(null)
+          }
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

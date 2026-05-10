@@ -1,5 +1,8 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useGlobalContext } from '../../../globalContext'
+import { useStudentPortfolio } from '../../../hooks/useStudentPortfolio'
+import { useInstructorProfile } from '../../../hooks/useInstructorProfile'
+import useCompanyProfile from '../employer/profile/scripts/useCompanyProfile'
 import Button from '../../../components/Button'
 import { type UserRole } from '../../../types'
 
@@ -46,6 +49,93 @@ const roleTabs: Record<UserRole, Tab[]> = {
     ]
 }
 
+// ── Role-specific user card sub-components ────────────────────────────────────
+// Each only mounts when the correct role is active, avoiding cross-role hook side effects.
+
+function StudentUserCard({ username }: { username: string }) {
+    const { portfolio } = useStudentPortfolio(username)
+    const displayName = portfolio.name || username
+    const initial = displayName.charAt(0).toUpperCase()
+    return (
+        <Link to="/portal/student/portfolio" className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-surface-container transition-colors group" title="Go to my portfolio">
+            <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold shadow-sm overflow-hidden flex-shrink-0">
+                {portfolio.profilePicture
+                    ? <img src={portfolio.profilePicture} alt={displayName} className="w-full h-full object-cover" />
+                    : <span>{initial}</span>
+                }
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-jakarta font-bold text-on-surface truncate group-hover:text-primary transition-colors">{displayName}</p>
+                <p className="text-xs text-on-surface-variant truncate">Student</p>
+            </div>
+        </Link>
+    )
+}
+
+function InstructorUserCard({ username }: { username: string }) {
+    const { profile } = useInstructorProfile()
+    const displayName = profile.name || username
+    const initial = displayName.charAt(0).toUpperCase()
+    return (
+        <Link to="/portal/instructor/profile" className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-surface-container transition-colors group" title="Go to my profile">
+            <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold shadow-sm overflow-hidden flex-shrink-0">
+                {profile.profilePicture
+                    ? <img src={profile.profilePicture} alt={displayName} className="w-full h-full object-cover" />
+                    : <span>{initial}</span>
+                }
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-jakarta font-bold text-on-surface truncate group-hover:text-primary transition-colors">{displayName}</p>
+                <p className="text-xs text-on-surface-variant truncate">Course Instructor</p>
+            </div>
+        </Link>
+    )
+}
+
+function EmployerUserCard({ username }: { username: string }) {
+    const { profile } = useCompanyProfile()
+    const displayName = profile.companyName || username
+    const initial = displayName.charAt(0).toUpperCase()
+    return (
+        <Link to="/portal/employer/profile" className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-surface-container transition-colors group" title="Go to my profile">
+            <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold shadow-sm overflow-hidden flex-shrink-0">
+                {profile.logoUrl
+                    ? <img src={profile.logoUrl} alt={displayName} className="w-full h-full object-cover" />
+                    : <span>{initial}</span>
+                }
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-jakarta font-bold text-on-surface truncate group-hover:text-primary transition-colors">{displayName}</p>
+                <p className="text-xs text-on-surface-variant truncate">Employer</p>
+            </div>
+        </Link>
+    )
+}
+
+function AdminUserCard({ username }: { username: string }) {
+    const initial = username.charAt(0).toUpperCase()
+    return (
+        <div className="flex items-center gap-3 px-2 py-2">
+            <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold shadow-sm flex-shrink-0">
+                {initial}
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-jakarta font-bold text-on-surface truncate">{username}</p>
+                <p className="text-xs text-on-surface-variant truncate">Administrator</p>
+            </div>
+        </div>
+    )
+}
+
+function RoleUserCard({ role, username }: { role: UserRole | undefined; username: string }) {
+    if (role === 'Student') return <StudentUserCard username={username} />
+    if (role === 'Course Instructor') return <InstructorUserCard username={username} />
+    if (role === 'Employer') return <EmployerUserCard username={username} />
+    return <AdminUserCard username={username} />
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * Sidebar — persistent sidebar navigation with role-based tabs, user profile, and logout.
  */
@@ -66,12 +156,9 @@ export default function Sidebar(): React.JSX.Element {
     const tabs = roleTabs[user?.role || 'Student']
 
     const isActive = (path: string): boolean => {
-        // Special handling for Administrator Dashboard to highlight for all sub-routes except search
         if (path === '/portal/administrator') {
             return location.pathname.startsWith(path) && !location.pathname.includes('/search')
         }
-
-        // Default behavior: portal root matches exactly, other paths match if they start with the path
         if (path === `/portal/${location.pathname.split('/')[2]}`) {
             return location.pathname === path
         }
@@ -107,16 +194,8 @@ export default function Sidebar(): React.JSX.Element {
                 ))}
             </nav>
 
-            <div className="p-6 border-t border-surface-container bg-surface-container-low/30">
-                <div className="flex items-center gap-3 mb-6 px-2">
-                    <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold shadow-sm">
-                        {user?.username[0].toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-jakarta font-bold text-on-surface truncate">{user?.username}</p>
-                        <p className="text-xs text-on-surface-variant truncate lowercase">{user?.role}</p>
-                    </div>
-                </div>
+            <div className="p-6 border-t border-surface-container bg-surface-container-low/30 space-y-3">
+                <RoleUserCard role={user?.role} username={user?.username || ''} />
                 <Button
                     variant="outline"
                     className="w-full justify-start gap-2 border-error/20 text-error hover:bg-error/5 hover:border-error/40"

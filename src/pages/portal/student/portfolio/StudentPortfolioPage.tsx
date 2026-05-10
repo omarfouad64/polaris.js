@@ -170,7 +170,9 @@ export default function StudentPortfolioPage(): React.JSX.Element {
                 )}
               </div>
               {!isReadOnly && (
-                <label className="mt-4 block">
+                <label className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-jakarta font-semibold text-sm cursor-pointer hover:bg-surface-container transition-colors">
+                  <span className="material-symbols-outlined text-[18px]">upload</span>
+                  Change Photo
                   <input
                     type="file"
                     accept="image/*"
@@ -178,12 +180,6 @@ export default function StudentPortfolioPage(): React.JSX.Element {
                     className="hidden"
                     aria-label="Upload profile picture"
                   />
-                  <button
-                    onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
-                    className="w-full px-3 py-2 text-sm font-jakarta font-semibold text-primary hover:bg-primary-container/20 rounded-lg transition-colors"
-                  >
-                    Change Photo
-                  </button>
                 </label>
               )}
             </div>

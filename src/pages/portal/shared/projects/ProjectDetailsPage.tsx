@@ -9,7 +9,7 @@ import useMessages from '../../../../hooks/useMessages'
 import { useInstructorFeedback } from '../../../../hooks/useInstructorFeedback'
 import Button from '../../../../components/Button'
 import FeedbackDialog from '../../../../components/FeedbackDialog'
-import ProjectTaskManager from '../../student/projects/components/ProjectTaskManager'
+import ConfirmDialog from '../../../../components/ConfirmDialog'
 import ProjectTaskSection from './components/ProjectTaskSection'
 
 /**
@@ -101,21 +101,30 @@ export default function ProjectDetailsPage(): React.JSX.Element {
 
   // Instructor feedback state
   const projectId = id || ''
+  const instructorId = user?.username ?? ''
+  const instructorName = user?.username ?? 'Course Instructor'
   const {
-    taskFeedback, projectFeedback, projectRatings, averageRating,
+    projectFeedback, projectRatings, averageRating,
     addProjectFeedback, editProjectFeedback, removeProjectFeedback,
-    rateProject
+    rateProject, getInstructorRating, removeProjectRating
   } = useInstructorFeedback(projectId)
   const isInstructor = user?.role === 'Course Instructor'
+  // One feedback per instructor
+  const myFeedback = projectFeedback.find(fb => fb.instructorId === instructorId)
+  const myRating = getInstructorRating(instructorId)
   const [showFeedbackForm, setShowFeedbackForm] = useState(false)
   const [feedbackText, setFeedbackText] = useState('')
   const [feedbackType, setFeedbackType] = useState<'general' | 'thesis_draft'>('general')
   const [editingFeedbackId, setEditingFeedbackId] = useState<string | null>(null)
   const [editingFeedbackText, setEditingFeedbackText] = useState('')
-  const [showRatingForm, setShowRatingForm] = useState(false)
+  const [isEditingRating, setIsEditingRating] = useState(false)
   const [ratingValue, setRatingValue] = useState<number>(0)
   const [ratingHover, setRatingHover] = useState<number>(0)
   const [ratingComment, setRatingComment] = useState('')
+  const [confirmDeleteFeedbackId, setConfirmDeleteFeedbackId] = useState<string | null>(null)
+  const [confirmDeleteRating, setConfirmDeleteRating] = useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   const handleToggleFavorite = () => {
     if (!project) return
@@ -321,22 +330,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             </div>
           </div>
 
-          {/* Project Tasks (Req 37) */}
-          <div className="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/30 shadow-sm">
-            <ProjectTaskManager
-              projectId={projectId}
-              tasks={project.tasks || []}
-              onTasksChange={(newTasks) => {
-                updateProject(projectId, { tasks: newTasks })
-                setProject((prev: any) => ({ ...prev, tasks: newTasks }))
-              }}
-              isOwner={user?.username === 'student-001'} // Simplified for demo
-              isInstructor={isInstructor}
-              currentUserId={user?.username || 'Unknown'}
-              userName={user?.username || 'Unknown User'}
-            />
-          </div>
-          {/* Project Tasks (Requirement 33) */}
+          {/* Project Tasks (Req 33, 37) */}
           <ProjectTaskSection
             projectId={project.id}
             tasks={project.tasks}
@@ -406,7 +400,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             </div>
           </div>
 
-          {/* Evaluation — real average rating */}
+          {/* Evaluation — average rating */}
           <div className="p-6 bg-secondary/5 rounded-3xl border border-secondary/10">
             <div className="flex items-center gap-3 mb-2 text-secondary">
               <span className="material-symbols-outlined">grade</span>
@@ -421,21 +415,34 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             ) : (
               <p className="text-xs font-lexend text-on-surface-variant">No ratings yet.</p>
             )}
-            {isInstructor && (
+            {isInstructor && !myRating && !isEditingRating && (
               <button
-                onClick={() => setShowRatingForm(!showRatingForm)}
+                onClick={() => { setRatingValue(0); setRatingComment(''); setIsEditingRating(true) }}
                 className="mt-3 w-full px-4 py-2 bg-secondary text-on-secondary rounded-xl font-jakarta font-bold text-sm hover:shadow-raised transition-all flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-[18px]">star</span>
-                {showRatingForm ? 'Cancel' : 'Rate Project'}
+                Rate Project
               </button>
+            )}
+            {isInstructor && myRating && !isEditingRating && (
+              <div className="mt-3 space-y-2">
+                <p className="text-xs font-lexend text-on-surface-variant">Your rating: <strong className="text-secondary">{myRating.rating}/5</strong></p>
+                <div className="flex gap-2">
+                  <button onClick={() => { setRatingValue(myRating.rating); setRatingComment(myRating.comment ?? ''); setIsEditingRating(true) }} className="flex-1 px-3 py-1.5 text-xs font-jakarta font-bold border border-outline-variant rounded-lg hover:bg-surface-container flex items-center justify-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">edit</span>Edit
+                  </button>
+                  <button onClick={() => setConfirmDeleteRating(true)} className="flex-1 px-3 py-1.5 text-xs font-jakarta font-bold text-error hover:bg-error/10 rounded-lg flex items-center justify-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">delete</span>Delete
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 
           {/* Rating Form (Instructor Only) */}
-          {isInstructor && showRatingForm && (
+          {isInstructor && isEditingRating && (
             <div className="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm space-y-4">
-              <h4 className="font-jakarta font-bold text-on-surface text-sm">Your Rating</h4>
+              <h4 className="font-jakarta font-bold text-on-surface text-sm">{myRating ? 'Update Your Rating' : 'Rate This Project'}</h4>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map(star => (
                   <button
@@ -444,6 +451,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                     onMouseEnter={() => setRatingHover(star)}
                     onMouseLeave={() => setRatingHover(0)}
                     className="text-3xl transition-transform hover:scale-110"
+                    aria-label={`Rate ${star} stars`}
                   >
                     {(ratingHover || ratingValue) >= star ? '⭐' : '☆'}
                   </button>
@@ -456,20 +464,25 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                 rows={2}
                 className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl p-3 font-lexend text-sm text-on-surface focus:border-secondary focus:ring-2 focus:ring-secondary/10 outline-none"
               />
-              <button
-                onClick={() => {
-                  if (ratingValue === 0) return
-                  rateProject('instructor-001', 'Dr. Fatima Al-Mansouri', ratingValue, ratingComment)
-                  addNotification({ type: 'feedback', title: 'Project Rated', body: `Dr. Fatima Al-Mansouri rated your project "${project?.title}" ${ratingValue}/5` })
-                  setShowRatingForm(false)
-                  setRatingValue(0)
-                  setRatingComment('')
-                }}
-                disabled={ratingValue === 0}
-                className={`w-full px-4 py-2 rounded-xl font-jakarta font-bold text-sm transition-all ${ratingValue > 0 ? 'bg-secondary text-on-secondary hover:shadow-raised' : 'bg-surface-container text-on-surface-variant cursor-not-allowed'}`}
-              >
-                Submit Rating
-              </button>
+              <div className="flex gap-2">
+                <button onClick={() => setIsEditingRating(false)} className="flex-1 px-4 py-2 rounded-xl font-jakarta font-bold text-sm border border-outline-variant hover:bg-surface-container">Cancel</button>
+                <button
+                  onClick={() => {
+                    if (ratingValue === 0) return
+                    rateProject(instructorId, instructorName, ratingValue, ratingComment)
+                    addNotification({ type: 'feedback', title: 'Project Rated', body: `${instructorName} rated "${project?.title}" ${ratingValue}/5` })
+                    setSuccessMessage(`Project rated ${ratingValue}/5 stars.`)
+                    setShowSuccessDialog(true)
+                    setIsEditingRating(false)
+                    setRatingValue(0)
+                    setRatingComment('')
+                  }}
+                  disabled={ratingValue === 0}
+                  className={`flex-1 px-4 py-2 rounded-xl font-jakarta font-bold text-sm transition-all ${ratingValue > 0 ? 'bg-secondary text-on-secondary hover:shadow-raised' : 'bg-surface-container text-on-surface-variant cursor-not-allowed'}`}
+                >
+                  {myRating ? 'Update Rating' : 'Submit Rating'}
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -485,7 +498,8 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             </h3>
             <p className="text-sm font-lexend text-on-surface-variant mt-1">Comments and evaluations from course instructors</p>
           </div>
-          {isInstructor && (
+          {/* Only show Add button if instructor has no feedback yet */}
+          {isInstructor && !myFeedback && (
             <button
               onClick={() => setShowFeedbackForm(!showFeedbackForm)}
               className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-jakarta font-bold text-sm hover:shadow-raised transition-all flex items-center gap-2"
@@ -496,49 +510,37 @@ export default function ProjectDetailsPage(): React.JSX.Element {
           )}
         </div>
 
-        {/* Inline Add Feedback Form */}
-        {isInstructor && showFeedbackForm && (
+        {/* Add Feedback Form — only when no existing feedback */}
+        {isInstructor && !myFeedback && showFeedbackForm && (
           <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 space-y-4">
             <div className="flex gap-4 mb-2">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={feedbackType === 'general'}
-                  onChange={() => setFeedbackType('general')}
-                  className="w-4 h-4 text-primary"
-                />
+                <input type="radio" checked={feedbackType === 'general'} onChange={() => setFeedbackType('general')} className="w-4 h-4 text-primary" />
                 <span className="text-sm font-jakarta font-semibold text-on-surface">General Feedback</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={feedbackType === 'thesis_draft'}
-                  onChange={() => setFeedbackType('thesis_draft')}
-                  className="w-4 h-4 text-primary"
-                />
+                <input type="radio" checked={feedbackType === 'thesis_draft'} onChange={() => setFeedbackType('thesis_draft')} className="w-4 h-4 text-primary" />
                 <span className="text-sm font-jakarta font-semibold text-on-surface">Thesis Draft Feedback</span>
               </label>
             </div>
             <textarea
               value={feedbackText}
               onChange={e => setFeedbackText(e.target.value)}
-              placeholder={feedbackType === 'general' ? "Write your general feedback..." : "Write your feedback on the thesis draft..."}
+              placeholder={feedbackType === 'general' ? 'Write your general feedback...' : 'Write your feedback on the thesis draft...'}
               rows={4}
               className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 font-lexend text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
               autoFocus
             />
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => { setShowFeedbackForm(false); setFeedbackText(''); setFeedbackType('general'); }}>Cancel</Button>
+              <Button variant="outline" onClick={() => { setShowFeedbackForm(false); setFeedbackText(''); setFeedbackType('general') }}>Cancel</Button>
               <Button
                 variant="primary"
                 disabled={!feedbackText.trim()}
                 onClick={() => {
-                  addProjectFeedback('instructor-001', 'Dr. Fatima Al-Mansouri', feedbackText.trim(), feedbackType)
-                  addNotification({
-                    type: 'feedback',
-                    title: feedbackType === 'general' ? 'New Project Feedback' : 'New Thesis Feedback',
-                    body: `Dr. Fatima Al-Mansouri left ${feedbackType === 'general' ? 'feedback' : 'thesis feedback'} on your project "${project?.title}"`
-                  })
+                  addProjectFeedback(instructorId, instructorName, feedbackText.trim(), feedbackType)
+                  addNotification({ type: 'feedback', title: 'New Project Feedback', body: `${instructorName} left feedback on "${project?.title}"` })
+                  setSuccessMessage('Feedback posted successfully.')
+                  setShowSuccessDialog(true)
                   setFeedbackText('')
                   setFeedbackType('general')
                   setShowFeedbackForm(false)
@@ -569,7 +571,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                     <span className="text-xs font-jakarta font-semibold px-2 py-1 rounded-full bg-primary-container text-on-primary-container">
                       {fb.feedbackType === 'thesis_draft' ? 'Thesis' : 'General'}
                     </span>
-                    {isInstructor && fb.instructorId === 'instructor-001' && (
+                    {isInstructor && fb.instructorId === instructorId && (
                       <>
                         <button
                           onClick={() => { setEditingFeedbackId(fb.id); setEditingFeedbackText(fb.comment) }}
@@ -579,7 +581,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                           <span className="material-symbols-outlined text-[16px]">edit</span>
                         </button>
                         <button
-                          onClick={() => { if (window.confirm('Delete this feedback?')) removeProjectFeedback(fb.id) }}
+                          onClick={() => setConfirmDeleteFeedbackId(fb.id)}
                           className="p-1.5 rounded-lg hover:bg-error/10 text-error transition-colors"
                           title="Delete"
                         >
@@ -637,6 +639,35 @@ export default function ProjectDetailsPage(): React.JSX.Element {
           </div>
         )}
       </div>
+
+      {/* ── Dialogs ── */}
+      <FeedbackDialog
+        isOpen={showSuccessDialog}
+        title="Success"
+        message={successMessage}
+        actionLabel="OK"
+        onClose={() => setShowSuccessDialog(false)}
+      />
+      <ConfirmDialog
+        isOpen={confirmDeleteFeedbackId !== null}
+        title="Delete Feedback"
+        message="Are you sure you want to delete this feedback? This cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={() => { if (confirmDeleteFeedbackId) removeProjectFeedback(confirmDeleteFeedbackId); setConfirmDeleteFeedbackId(null) }}
+        onCancel={() => setConfirmDeleteFeedbackId(null)}
+      />
+      <ConfirmDialog
+        isOpen={confirmDeleteRating}
+        title="Delete Rating"
+        message="Are you sure you want to delete your rating? This cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={() => { if (myRating) removeProjectRating(myRating.id); setConfirmDeleteRating(false) }}
+        onCancel={() => setConfirmDeleteRating(false)}
+      />
     </div>
   )
 }

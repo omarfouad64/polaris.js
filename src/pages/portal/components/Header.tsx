@@ -107,9 +107,18 @@ export default function Header() {
           )}
         </div>
         <div className="h-8 w-px bg-surface-container mx-2"></div>
-        <div className="w-10 h-10 rounded-full bg-surface-container-high border-2 border-surface-container overflow-hidden flex items-center justify-center">
+        <Link
+          to={
+            user?.role === 'Student' ? `/portal/student/portfolio` :
+            user?.role === 'Course Instructor' ? `/portal/instructor/profile` :
+            user?.role === 'Employer' ? `/portal/employer/profile` :
+            `/portal/administrator/profile`
+          }
+          className="w-10 h-10 rounded-full bg-surface-container-high border-2 border-surface-container overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-primary/40 transition-all"
+          title="Go to my profile"
+        >
           <RoleAvatar role={user?.role} username={user?.username} />
-        </div>
+        </Link>
       </div>
     </header>
   )
