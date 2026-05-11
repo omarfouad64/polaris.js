@@ -50,6 +50,17 @@ export default function CompanyProfilePage(): React.JSX.Element {
   }, [activeTab, profile.location, profile.locationAddress])
 
   useEffect(() => {
+    if (!isEditing) {
+      setForm({
+        biography: profile.biography,
+        address: profile.address,
+        contactEmail: profile.contactEmail,
+        phone: profile.phone
+      })
+    }
+  }, [profile.biography, profile.address, profile.contactEmail, profile.phone, isEditing])
+
+  useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
         window.clearTimeout(saveTimeoutRef.current)

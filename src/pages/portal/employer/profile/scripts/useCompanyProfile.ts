@@ -1,8 +1,14 @@
-import { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useState, useEffect, useCallback } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { useGlobalContext } from '../../../../../globalContext'
 import type { CompanyProfile } from '../../../../../types'
 import type { RootState } from '../../../../../store'
+import {
+  updateCompanyProfile,
+  setLocation,
+  uploadDocument,
+  removeDocument
+} from '../../../../../store/databaseSlice'
 
 const defaultProfile: CompanyProfile = {
   companyName: 'TechVentures Inc.',
@@ -31,6 +37,7 @@ export default function useCompanyProfile(): {
   removeDocument: (docId: string) => void
 } {
   const { user } = useGlobalContext()
+  const dispatch = useDispatch()
   const companies = useSelector((state: RootState) => state.database.companies)
   const [profile, setProfile] = useState<CompanyProfile>(defaultProfile)
 
@@ -52,14 +59,17 @@ export default function useCompanyProfile(): {
     }
   }, [companies, user])
 
-  const updateProfile = (updates: Partial<CompanyProfile>): void => {
+  const updateProfile = useCallback((updates: Partial<CompanyProfile>): void => {
+    const myEmail = user?.username || profile.contactEmail || 'employer@company.com'
     setProfile(prev => {
       const next = { ...prev, ...updates }
       return next
     })
-  }
+    dispatch(updateCompanyProfile({ contactEmail: myEmail, ...updates }))
+  }, [dispatch, user?.username, profile.contactEmail])
 
-  const setLocation = (lat: number, lng: number, address?: string | null): void => {
+  const setLocationAction = useCallback((lat: number, lng: number, address?: string | null): void => {
+    const myEmail = user?.username || profile.contactEmail || 'employer@company.com'
     setProfile(prev => {
       const next = {
         ...prev,
@@ -69,9 +79,11 @@ export default function useCompanyProfile(): {
       }
       return next
     })
-  }
+    dispatch(setLocation({ contactEmail: myEmail, lat, lng, address: address ?? null }))
+  }, [dispatch, user?.username, profile.contactEmail])
 
-  const uploadDocument = (file: File): void => {
+  const uploadDocumentAction = useCallback((file: File): void => {
+    const myEmail = user?.username || profile.contactEmail || 'employer@company.com'
     const newDoc = {
       id: `doc-${Date.now()}`,
       name: file.name,
@@ -83,9 +95,11 @@ export default function useCompanyProfile(): {
       const next = { ...prev, documents: [...prev.documents, newDoc] }
       return next
     })
-  }
+    dispatch(uploadDocument({ contactEmail: myEmail, doc: newDoc }))
+  }, [dispatch, user?.username, profile.contactEmail])
 
-  const removeDocument = (docId: string): void => {
+  const removeDocumentAction = useCallback((docId: string): void => {
+    const myEmail = user?.username || profile.contactEmail || 'employer@company.com'
     setProfile(prev => {
       const next = {
         ...prev,
@@ -93,7 +107,8 @@ export default function useCompanyProfile(): {
       }
       return next
     })
-  }
+    dispatch(removeDocument({ contactEmail: myEmail, docId }))
+  }, [dispatch, user?.username, profile.contactEmail])
 
-  return { profile, updateProfile, setLocation, uploadDocument, removeDocument }
+ return { profile, updateProfile, setLocation: setLocationAction, uploadDocument: uploadDocumentAction, removeDocument: removeDocumentAction }
 }

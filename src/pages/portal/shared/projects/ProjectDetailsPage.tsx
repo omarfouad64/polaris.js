@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import useStudentProjects from '../../student/projects/scripts/useStudentProjects'
@@ -15,6 +15,89 @@ import FeedbackDialog from '../../../../components/FeedbackDialog'
 import ConfirmDialog from '../../../../components/ConfirmDialog'
 import ProjectTaskSection from './components/ProjectTaskSection'
 import type { RootState } from '../../../../store'
+
+function resolveBackNavigation(
+  origin: string | null,
+  rolePath: string,
+  navigate: (path: string) => void,
+  project: any,
+  id: string | undefined
+) {
+  if (!origin) {
+    navigate(`/portal/${rolePath}/search`)
+    return
+  }
+
+  const studentProjectsPattern = `/portal/student/projects/${id}`
+  const studentProfilePattern = `/portal/student/profile`
+  const instructorProfilePattern = `/portal/instructor/projects`
+  const instructorOversightPattern = `/portal/instructor/oversight`
+  const employerInternshipsPattern = `/portal/employer/internships`
+  const employerProfilePattern = `/portal/employer/profile`
+
+  if (origin.includes('/student/projects/') || origin === `/portal/student/projects`) {
+    navigate('/portal/student/projects')
+    return
+  }
+
+  if (origin.includes('/student/profile')) {
+    navigate('/portal/student/profile')
+    return
+  }
+
+  if (origin.includes('/instructor/projects') || origin === `/portal/instructor/projects`) {
+    navigate('/portal/instructor/projects')
+    return
+  }
+
+  if (origin.includes('/instructor/oversight')) {
+    navigate('/portal/instructor/projects')
+    return
+  }
+
+  if (origin.includes('/employer/internships')) {
+    navigate('/portal/employer/internships')
+    return
+  }
+
+  if (origin.includes('/employer/profile')) {
+    navigate('/portal/employer/profile')
+    return
+  }
+
+  if (origin.includes('/administrator')) {
+    navigate('/portal/administrator/projects')
+    return
+  }
+
+  navigate(`/portal/${rolePath}/search`)
+}
+
+function getBackLabel(origin: string | null, rolePath: string, project: any, id: string | undefined): string {
+  if (!origin) return 'Back to Search'
+
+  if (origin.includes('/student/projects/') || origin === `/portal/student/projects`) {
+    return 'Back to My Projects'
+  }
+
+  if (origin.includes('/student/profile')) {
+    return 'Back to Profile'
+  }
+
+  if (origin.includes('/instructor/projects') || origin.includes('/instructor/oversight')) {
+    return 'Back to Projects'
+  }
+
+  if (origin.includes('/employer/internships') || origin.includes('/employer/profile')) {
+    return 'Back to Internships'
+  }
+
+  if (origin.includes('/administrator')) {
+    return 'Back to Projects'
+  }
+
+  return 'Go Back'
+}
 
 /**
  * FlagModal — handles the reasoning for flagging a project.
@@ -91,6 +174,7 @@ function AppealModal({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose:
 export default function ProjectDetailsPage(): React.JSX.Element {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useGlobalContext()
   const dispatch = useDispatch()
   const { getProjectById, updateProject } = useStudentProjects()
@@ -100,6 +184,8 @@ export default function ProjectDetailsPage(): React.JSX.Element {
   const { startConversation } = useMessages()
 
   const [project, setProject] = useState<any>(null)
+  const [backOrigin, setBackOrigin] = useState<string | null>(null)
+  const [backLabel, setBackLabel] = useState<string | null>(null)
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false)
   const [isAppealModalOpen, setIsAppealModalOpen] = useState(false)
   const [showAppealFeedback, setShowAppealFeedback] = useState(false)
@@ -154,6 +240,28 @@ export default function ProjectDetailsPage(): React.JSX.Element {
       dispatch({ type: 'database/markProjectNotifications', payload: id })
     }
   }, [id])
+
+  useEffect(() => {
+    const stored = localStorage.getItem('polaris_back_origin')
+    if (stored) {
+      setBackOrigin(stored)
+      const label = localStorage.getItem('polaris_back_label')
+      const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
+      setBackLabel(getBackLabel(stored, rolePath, null, id))
+    } else {
+      localStorage.setItem('polaris_back_origin', location.pathname)
+      const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
+      const newLabel = getBackLabel(location.pathname, rolePath, null, id)
+      localStorage.setItem('polaris_back_label', newLabel)
+      setBackOrigin(location.pathname)
+      setBackLabel(newLabel)
+    }
+  }, [id, location.pathname, user, navigate])
+
+  const handleBack = () => {
+    const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
+    resolveBackNavigation(backOrigin, rolePath, navigate, project, id)
+  }
 
   const handleToggleFavorite = () => {
     if (!project) return
@@ -214,7 +322,15 @@ export default function ProjectDetailsPage(): React.JSX.Element {
         <span className="material-symbols-outlined text-6xl text-outline/30 mb-4">search_off</span>
         <h2 className="text-2xl font-jakarta font-bold text-on-surface">Project Not Found</h2>
         <p className="font-lexend text-on-surface-variant mt-2 mb-8">The project you are looking for does not exist or is private.</p>
-        <Button onClick={() => navigate(-1)}>Go Back</Button>
+        <Button onClick={() => {
+          const stored = localStorage.getItem('polaris_back_origin')
+          if (stored) {
+            const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
+            resolveBackNavigation(stored, rolePath, navigate, null, id)
+          } else {
+            navigate(-1)
+          }
+        }}>Go Back</Button>
       </div>
     )
   }
@@ -227,14 +343,11 @@ export default function ProjectDetailsPage(): React.JSX.Element {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4">
           <button
-            onClick={() => {
-              const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
-              navigate(`/portal/${rolePath}/search`)
-            }}
+            onClick={handleBack}
             className="flex items-center gap-2 text-sm font-jakarta font-bold text-primary hover:underline"
           >
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-            Back to Search
+            {backLabel || 'Go Back'}
           </button>
           <div className="space-y-2">
             <div className="flex items-center gap-3">

@@ -400,11 +400,39 @@ const databaseSlice = createSlice({
       }
     },
 
-    updateCompanyProfile: (state, action: PayloadAction<{ id: string } & Partial<CompanyProfile>>) => {
-      // Find company by name for now if id is missing, but assume id is provided
-      const company = state.companies.find(c => (c as any).id === action.payload.id || c.companyName === (action.payload as any).companyName);
+    updateCompanyProfile: (state, action: PayloadAction<{ contactEmail: string } & Partial<CompanyProfile>>) => {
+      const { contactEmail, ...updates } = action.payload;
+      const company = state.companies.find(c => c.contactEmail === contactEmail);
       if (company) {
-        Object.assign(company, action.payload);
+        Object.assign(company, { ...updates });
+      }
+    },
+
+    setLocation: (state, action: PayloadAction<{ contactEmail: string; lat: number; lng: number; address?: string | null }>) => {
+      const { contactEmail, lat, lng, address } = action.payload;
+      const company = state.companies.find(c => c.contactEmail === contactEmail);
+      if (company) {
+        company.location = { lat, lng };
+        company.locationAddress = address ?? company.locationAddress ?? null;
+        if (address) {
+          company.address = address;
+        }
+      }
+    },
+
+    uploadDocument: (state, action: PayloadAction<{ contactEmail: string; doc: { id: string; name: string; type: string; size: number; uploadedAt: string } }>) => {
+      const { contactEmail, doc } = action.payload;
+      const company = state.companies.find(c => c.contactEmail === contactEmail);
+      if (company) {
+        company.documents = [...company.documents, doc];
+      }
+    },
+
+    removeDocument: (state, action: PayloadAction<{ contactEmail: string; docId: string }>) => {
+      const { contactEmail, docId } = action.payload;
+      const company = state.companies.find(c => c.contactEmail === contactEmail);
+      if (company) {
+        company.documents = company.documents.filter(d => d.id !== docId);
       }
     },
 
@@ -580,6 +608,9 @@ export const {
   updateInstructorProfile,
   updateStudentProfile,
   updateCompanyProfile,
+  setLocation,
+  uploadDocument,
+  removeDocument,
 
   addProject,
   updateProject,

@@ -1,4 +1,5 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useGlobalContext } from '../../../../globalContext';
 import ProjectEditor from './components/ProjectEditor';
 
@@ -9,14 +10,34 @@ import ProjectEditor from './components/ProjectEditor';
 export default function ProjectEditorPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useGlobalContext();
+
+  const [backLabel, setBackLabel] = useState('← Back to Projects');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('polaris_back_origin');
+    if (stored) {
+      if (stored.includes('/student/projects/')) {
+        const originProject = stored.split('/').pop();
+        setBackLabel(`← Back to ${originProject === id ? 'Project' : 'Other Projects'}`);
+      }
+    } else {
+      localStorage.setItem('polaris_back_origin', location.pathname);
+    }
+  }, [id, location.pathname]);
 
   const handleSave = () => {
     navigate('/portal/student/projects');
   };
 
   const handleCancel = () => {
-    navigate('/portal/student/projects');
+    const stored = localStorage.getItem('polaris_back_origin');
+    if (stored && stored.includes('/student/projects/') && !stored.includes('/collaboration') && !stored.includes('/tasks') && !stored.includes('/settings')) {
+      navigate(stored);
+    } else {
+      navigate('/portal/student/projects');
+    }
   };
 
   return (
@@ -27,7 +48,7 @@ export default function ProjectEditorPage() {
             onClick={handleCancel}
             className="text-sm font-jakarta font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-2"
           >
-            ← Back to Projects
+            {backLabel}
           </button>
         </div>
         <ProjectEditor

@@ -14,6 +14,7 @@ const INSTRUCTOR_SECTIONS: { id: InstructorSection; label: string }[] = [
 export default function InstructorProfileViewPage(): React.JSX.Element {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useGlobalContext()
   const [activeSection, setActiveSection] = useState<InstructorSection>('about')
   const { allInstructors, getCourseById } = useInstructorSearch()
@@ -25,6 +26,76 @@ export default function InstructorProfileViewPage(): React.JSX.Element {
       : user?.role === 'Employer'
         ? 'employer'
         : 'student'
+
+  const storedOrigin = localStorage.getItem('polaris_back_origin')
+
+  const handleBack = () => {
+    if (!storedOrigin) {
+      navigate(`/portal/${rolePath}/search`)
+      return
+    }
+
+    if (storedOrigin.includes('/instructor/oversight') || storedOrigin.includes('/instructor/projects')) {
+      navigate('/portal/instructor/oversight')
+      return
+    }
+
+    if (storedOrigin.includes('/student/projects')) {
+      navigate('/portal/student/projects')
+      return
+    }
+
+    if (storedOrigin.includes('/employer/internships')) {
+      navigate('/portal/employer/internships')
+      return
+    }
+
+    if (storedOrigin.includes('/administrator')) {
+      navigate('/portal/administrator/dashboard')
+      return
+    }
+
+    navigate(`/portal/${rolePath}/search`)
+  }
+
+  const getBackLabel = (): string => {
+    if (!storedOrigin) return 'Back to Search'
+
+    if (storedOrigin.includes('/instructor/oversight') || storedOrigin.includes('/instructor/projects')) {
+      return 'Back to Oversight'
+    }
+
+    if (storedOrigin.includes('/student/projects')) {
+      return 'Back to My Projects'
+    }
+
+    if (storedOrigin.includes('/employer/internships')) {
+      return 'Back to Internships'
+    }
+
+    if (storedOrigin.includes('/administrator')) {
+      return 'Back to Dashboard'
+    }
+
+    return 'Back to Search'
+  }
+
+  if (!instructor) {
+    return (
+      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-8">
+        <h2 className="text-2xl font-jakarta font-bold text-on-surface mb-2">Instructor not found</h2>
+        <p className="text-sm font-lexend text-on-surface-variant mb-6">
+          We could not find the requested instructor profile.
+        </p>
+        <button
+          onClick={() => navigate(`/portal/${rolePath}/search`)}
+          className="px-4 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
+        >
+          Back to Search
+        </button>
+      </div>
+    )
+  }
 
   const instructor = useMemo(() => {
     return allInstructors.find(item => item.instructorId === id) ?? null
@@ -58,11 +129,11 @@ export default function InstructorProfileViewPage(): React.JSX.Element {
     <div className="space-y-6">
       <div className="flex flex-col gap-3">
         <button
-          onClick={() => navigate(`/portal/${rolePath}/search`)}
+          onClick={handleBack}
           className="inline-flex items-center gap-2 text-sm font-lexend text-on-surface-variant hover:text-on-surface"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          Back to Search
+          {getBackLabel()}
         </button>
         <div>
           <h1 className="text-3xl font-jakarta font-bold text-on-surface">Instructor Profile</h1>

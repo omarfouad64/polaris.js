@@ -1,5 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useSelector } from 'react-redux'
 import type { TaskFeedback, ProjectFeedback, ProjectRating } from '../types'
+import type { RootState } from '../store'
 
 // ── Seed data (only applied once on first load) ──────────────────────────
 
@@ -88,6 +90,22 @@ function emitTask(pid: string) { localStorage.setItem(TASK_KEY(pid), JSON.string
 function emitFb(pid: string) { localStorage.setItem(FB_KEY(pid), JSON.stringify(fbStore[pid])); fbListeners[pid]?.forEach(fn => fn()) }
 function emitRating(pid: string) { localStorage.setItem(RATING_KEY(pid), JSON.stringify(ratingStore[pid])); ratingListeners[pid]?.forEach(fn => fn()) }
 
+function mergeWithStore<T extends { id: string; projectId?: string }>(
+  localData: T[],
+  storeData: T[],
+  hasLocalStorage: boolean,
+  projectId: string
+): T[] {
+  if (hasLocalStorage && localData.length > 0) {
+    return localData
+  }
+  const projectItems = storeData.filter(item => item.projectId === projectId)
+  if (projectItems.length > 0) {
+    return projectItems
+  }
+  return localData
+}
+
 /**
  * useInstructorFeedback — manages instructor feedback on projects and tasks.
  */
@@ -95,6 +113,13 @@ export function useInstructorFeedback(projectId: string) {
   const [, setTaskTick] = useState(0)
   const [, setFbTick] = useState(0)
   const [, setRatingTick] = useState(0)
+  const storeTaskFeedback = useSelector((state: RootState) => state.database.taskFeedback)
+  const storeProjectFeedback = useSelector((state: RootState) => state.database.projectFeedback)
+  const storeProjectRatings = useSelector((state: RootState) => state.database.projectRatings)
+
+  const hasTaskLs = Boolean(localStorage.getItem(TASK_KEY(projectId)))
+  const hasFbLs = Boolean(localStorage.getItem(FB_KEY(projectId)))
+  const hasRatingLs = Boolean(localStorage.getItem(RATING_KEY(projectId)))
 
   useEffect(() => {
     if (!taskListeners[projectId]) taskListeners[projectId] = new Set()
@@ -132,7 +157,11 @@ export function useInstructorFeedback(projectId: string) {
     emitTask(projectId)
   }, [projectId])
 
-  const getTaskFeedback = useCallback((taskId: string) => getTask(projectId).filter(fb => fb.taskId === taskId), [projectId])
+  const getTaskFeedback = useCallback((taskId: string) => {
+    const local = getTask(projectId)
+    const merged = mergeWithStore<TaskFeedback>(local, storeTaskFeedback, hasTaskLs, projectId)
+    return merged.filter(fb => fb.taskId === taskId)
+  }, [projectId, storeTaskFeedback, hasTaskLs])
 
   const addProjectFeedback = useCallback((instructorId: string, instructorName: string, comment: string, feedbackType: 'general' | 'thesis_draft' = 'general', relatedThesisDraftId?: string) => {
     const fb: ProjectFeedback = { id: `pf-${Date.now()}`, projectId, instructorId, instructorName, feedbackType, comment, relatedThesisDraftId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
@@ -172,19 +201,37 @@ export function useInstructorFeedback(projectId: string) {
     emitRating(projectId)
   }, [projectId])
 
-  const getInstructorRating = useCallback((instructorId: string) => getRating(projectId).find(r => r.instructorId === instructorId), [projectId])
+  const getInstructorRating = useCallback((instructorId: string) => {
+    const ratings = getRating(projectId)
+    const merged = mergeWithStore<ProjectRating>(ratings, storeProjectRatings, hasRatingLs, projectId)
+    return merged.find(r => r.instructorId === instructorId)
+  }, [projectId, storeProjectRatings, hasRatingLs])
+
+  const projectFeedback = useMemo(() => {
+    const local = getFb(projectId)
+    return mergeWithStore<ProjectFeedback>(local, storeProjectFeedback, hasFbLs, projectId)
+  }, [projectId, storeProjectFeedback, hasFbLs])
+
+  const projectRatings = useMemo(() => {
+    const local = getRating(projectId)
+    return mergeWithStore<ProjectRating>(local, storeProjectRatings, hasRatingLs, projectId)
+  }, [projectId, storeProjectRatings, hasRatingLs])
+
+  const taskFeedback = useMemo(() => {
+    const local = getTask(projectId)
+    return mergeWithStore<TaskFeedback>(local, storeTaskFeedback, hasTaskLs, projectId)
+  }, [projectId, storeTaskFeedback, hasTaskLs])
 
   const averageRating = useMemo(() => {
-    const ratings = getRating(projectId)
-    if (!ratings.length) return 0
-    return Number((ratings.reduce((s, r) => s + r.rating, 0) / ratings.length).toFixed(1))
+    if (!projectRatings.length) return 0
+    return Number((projectRatings.reduce((s, r) => s + r.rating, 0) / projectRatings.length).toFixed(1))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, ratingStore[projectId]])
+  }, [projectId, projectRatings])
 
   return {
-    taskFeedback: getTask(projectId),
-    projectFeedback: getFb(projectId),
-    projectRatings: getRating(projectId),
+    taskFeedback,
+    projectFeedback,
+    projectRatings,
     averageRating,
     addTaskFeedback, editTaskFeedback, removeTaskFeedback, getTaskFeedback,
     addProjectFeedback, editProjectFeedback, removeProjectFeedback,

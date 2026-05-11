@@ -128,7 +128,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Active Listings', value: activeInternships.length, icon: 'work', color: 'primary' },
-          { label: 'Total Applicants', value: activeInternships.reduce((s, i) => s + i.applicantCount, 0), icon: 'group', color: 'secondary' },
+          { label: 'Total Applicants', value: activeInternships.reduce((s, i) => s + (i.applicantCount ?? 0), 0), icon: 'group', color: 'secondary' },
           { label: 'Total Participants', value: studentsPlaced, icon: 'people', color: 'secondary' },
           { label: 'Archived', value: archivedInternships.length, icon: 'archive', color: 'outline' }
         ].map(stat => (
@@ -223,11 +223,11 @@ export default function InternshipManagementPage(): React.JSX.Element {
                 </span>
               </div>
               <div className="flex flex-wrap gap-1.5 mb-4">
-                {internship.skills.slice(0, 4).map(s => (
+                {(internship.skills ?? []).slice(0, 4).map(s => (
                   <span key={s} className="px-2.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-lexend">{s}</span>
                 ))}
-                {internship.skills.length > 4 && (
-                  <span className="px-2.5 py-0.5 bg-surface-container text-on-surface-variant rounded-full text-xs font-lexend">+{internship.skills.length - 4} more</span>
+                {(internship.skills ?? []).length > 4 && (
+                  <span className="px-2.5 py-0.5 bg-surface-container text-on-surface-variant rounded-full text-xs font-lexend">+{(internship.skills ?? []).length - 4} more</span>
                 )}
               </div>
               <div className="flex items-center justify-between border-t border-outline-variant/30 pt-3">
@@ -301,11 +301,11 @@ export default function InternshipManagementPage(): React.JSX.Element {
               )}
 
               {/* Skills */}
-              {sel.skills.length > 0 && (
+              {(sel.skills ?? []).length > 0 && (
                 <div>
                   <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Required Skills</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {sel.skills.map(s => (
+                    {(sel.skills ?? []).map(s => (
                       <span key={s} className="px-2.5 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-jakarta font-semibold">{s}</span>
                     ))}
                   </div>
@@ -313,11 +313,11 @@ export default function InternshipManagementPage(): React.JSX.Element {
               )}
 
               {/* Languages */}
-              {sel.programmingLanguages.length > 0 && (
+              {(sel.programmingLanguages ?? []).length > 0 && (
                 <div>
                   <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Programming Languages</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {sel.programmingLanguages.map(l => (
+                    {(sel.programmingLanguages ?? []).map(l => (
                       <span key={l} className="px-2.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-lexend">{l}</span>
                     ))}
                   </div>
