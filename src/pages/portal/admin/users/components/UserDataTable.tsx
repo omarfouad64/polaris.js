@@ -41,17 +41,9 @@ export default function UserDataTable({ users, onToggleStatus }: UserDataTablePr
               >
                 <td className={`py-4 px-6 ${user.status === 'Deactivated' ? 'opacity-75' : ''}`}>
                   <div className="flex items-center gap-3">
-                    {user.avatarUrl ? (
-                      <img 
-                        src={user.avatarUrl} 
-                        alt="" 
-                        className={`w-10 h-10 rounded-full object-cover border border-outline-variant/20 ${user.status === 'Deactivated' ? 'grayscale' : ''}`}
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-tertiary/20 flex items-center justify-center font-jakarta font-bold text-tertiary-container border border-outline-variant/20">
-                        {user.initials}
-                      </div>
-                    )}
+                    <div className={`w-10 h-10 rounded-full bg-tertiary/20 flex items-center justify-center font-jakarta font-bold text-tertiary-container border border-outline-variant/20 ${user.status === 'Deactivated' ? 'grayscale' : ''}`}>
+                      {(user.name || user.email).split(' ')[0].charAt(0).toUpperCase()}
+                    </div>
                     <div>
                       <p className={`font-jakarta text-sm font-semibold text-on-surface ${user.status === 'Deactivated' ? 'line-through decoration-outline/50' : ''}`}>
                         {user.name}

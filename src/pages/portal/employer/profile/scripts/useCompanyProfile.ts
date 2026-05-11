@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { useGlobalContext } from '../../../../../globalContext'
 import type { CompanyProfile } from '../../../../../types'
+import type { RootState } from '../../../../../store'
 
 const defaultProfile: CompanyProfile = {
   companyName: 'TechVentures Inc.',
@@ -17,13 +20,8 @@ const defaultProfile: CompanyProfile = {
   ]
 }
 
-const STORAGE_KEY = 'polaris_company_profile'
-const PROFILE_UPDATED_EVENT = 'polaris_company_profile_updated'
-
 /**
- * useCompanyProfile — provides company profile data and CRUD operations.
- *
- * @returns profile data, update function, document management functions.
+ * useCompanyProfile — provides company profile data from Redux store.
  */
 export default function useCompanyProfile(): {
   profile: CompanyProfile
@@ -32,46 +30,21 @@ export default function useCompanyProfile(): {
   uploadDocument: (file: File) => void
   removeDocument: (docId: string) => void
 } {
-  const [profile, setProfile] = useState<CompanyProfile>(() => {
-    if (typeof window === 'undefined') return defaultProfile
-    const saved = window.localStorage.getItem(STORAGE_KEY)
-    if (!saved) return defaultProfile
-    try {
-      return JSON.parse(saved)
-    } catch {
-      return defaultProfile
-    }
-  })
+  const { user } = useGlobalContext()
+  const companies = useSelector((state: RootState) => state.database.companies)
+  const [profile, setProfile] = useState<CompanyProfile>(defaultProfile)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
+    const myEmail = user?.username || ''
+    const found = (companies || []).find((c: CompanyProfile) => c.contactEmail === myEmail)
+    if (found) {
+      setProfile(found)
     }
-  }, [profile])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const handleProfileSync = () => {
-      const saved = window.localStorage.getItem(STORAGE_KEY)
-      if (!saved) return
-      try {
-        setProfile(JSON.parse(saved) as CompanyProfile)
-      } catch {
-        // Ignore malformed storage payloads.
-      }
-    }
-
-    window.addEventListener(PROFILE_UPDATED_EVENT, handleProfileSync)
-    return () => window.removeEventListener(PROFILE_UPDATED_EVENT, handleProfileSync)
-  }, [])
+  }, [companies, user])
 
   const updateProfile = (updates: Partial<CompanyProfile>): void => {
     setProfile(prev => {
       const next = { ...prev, ...updates }
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
-      }
       return next
     })
   }
@@ -83,10 +56,6 @@ export default function useCompanyProfile(): {
         location: { lat, lng },
         locationAddress: address ?? null,
         address: address ?? prev.address
-      }
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
       }
       return next
     })
@@ -102,10 +71,6 @@ export default function useCompanyProfile(): {
     }
     setProfile(prev => {
       const next = { ...prev, documents: [...prev.documents, newDoc] }
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
-      }
       return next
     })
   }
@@ -115,10 +80,6 @@ export default function useCompanyProfile(): {
       const next = {
         ...prev,
         documents: prev.documents.filter(d => d.id !== docId)
-      }
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
       }
       return next
     })

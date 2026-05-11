@@ -36,6 +36,38 @@ const databaseSlice = createSlice({
       state.notifications.forEach(n => { n.read = true; });
     },
 
+    markInvitationsAllRead: (state) => {
+      for (const n of state.notifications) {
+        if (n.type === 'project_invitation') {
+          n.read = true;
+        }
+      }
+    },
+
+    markInternshipsAllRead: (state) => {
+      for (const n of state.notifications) {
+        if (n.type === 'internship_status') {
+          n.read = true;
+        }
+      }
+    },
+
+    markProjectsAllRead: (state) => {
+      for (const n of state.notifications) {
+        if (n.type === 'feedback' || n.type === 'flag' || n.type === 'appeal_response') {
+          n.read = true;
+        }
+      }
+    },
+
+    markProjectNotifications: (state, action: PayloadAction<string>) => {
+      for (const n of state.notifications) {
+        if ((n.type === 'feedback' || n.type === 'flag' || n.type === 'appeal_response') && (n as any).projectId === action.payload) {
+          n.read = true;
+        }
+      }
+    },
+
     addNotification: (
       state,
       action: PayloadAction<Omit<DatabaseState['notifications'][number], 'id' | 'timestamp' | 'read'>>
@@ -77,13 +109,14 @@ const databaseSlice = createSlice({
     ) => {
       const { content, conversationId, senderId, senderName, receiverId, receiverName } = action.payload;
       const msg: DatabaseState['messages'][number] = {
-        id: `msg-${Date.now()}`,
-        senderId, senderName, senderRole: undefined,
-        receiverId, receiverName, receiverRole: undefined,
-        content,
-        timestamp: new Date().toISOString(),
-        read: true,
-      };
+         id: `msg-${Date.now()}`,
+         senderId, senderName, senderRole: undefined,
+         receiverId, receiverName, receiverRole: undefined,
+         content,
+         timestamp: new Date().toISOString(),
+         read: true,
+         conversationId
+       };
       state.messages.push(msg);
 
       const conv = state.conversations.find(c => c.id === conversationId);
@@ -101,6 +134,10 @@ const databaseSlice = createSlice({
       if (conv) {
         conv.unreadCount = 0;
       }
+    },
+
+    markConversationsAllRead: (state) => {
+      state.conversations.forEach(c => { c.unreadCount = 0; });
     },
 
     startConversation: (state, action: PayloadAction<DatabaseState['conversations'][number]>) => {
@@ -409,11 +446,34 @@ const databaseSlice = createSlice({
 
     // ── Auth / Users ────────────────────────────────────────────────────────────
     registerUser: (state, action: PayloadAction<{ username: string; role: UserRole; password?: string }>) => {
-      state.users.push({
-        username: action.payload.username,
-        role: action.payload.role,
-        password: action.payload.password || 'password'
-      });
+      const existing = state.users.find(u => u.username === action.payload.username)
+      if (!existing) {
+        state.users.push({
+          username: action.payload.username,
+          role: action.payload.role,
+          password: action.payload.password || 'password'
+        });
+      }
+    },
+    addCompanyProfile: (state, action: PayloadAction<{
+      companyId: string
+      name: string
+      contactEmail: string
+      description: string
+      location: string
+      industry: string
+      size: string
+      website: string
+      approvalStatus: 'Pending' | 'Approved' | 'Rejected'
+    }>) => {
+      const existing = state.companies.find((c: any) => c.contactEmail === action.payload.contactEmail)
+      if (!existing) {
+        state.companies.push({
+          ...action.payload,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        })
+      }
     },
   }
 });
@@ -421,9 +481,14 @@ const databaseSlice = createSlice({
 export const {
   resetDatabase,
   updateDatabase,
+  addCompanyProfile,
 
   toggleNotificationRead,
-  markNotificationsAllRead,
+ markNotificationsAllRead,
+  markInvitationsAllRead,
+  markInternshipsAllRead,
+  markProjectsAllRead,
+  markProjectNotifications,
   addNotification,
   removeNotification,
 
@@ -431,10 +496,11 @@ export const {
   removeFavorite,
 
   sendMessage,
-  selectConversation,
-  startConversation,
+   selectConversation,
+   markConversationsAllRead,
+   startConversation,
 
-  acceptInvitation,
+   acceptInvitation,
   rejectInvitation,
   sendInvitation,
   addCollaborator,

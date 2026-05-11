@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import { useProjectInvitations } from '../../../../hooks/useProjectInvitations'
 import { useGlobalContext } from '../../../../globalContext'
 import useStudentProjects, { type ProjectTask } from './scripts/useStudentProjects'
@@ -14,6 +15,7 @@ import ProjectTaskManager from './components/ProjectTaskManager'
 export default function ProjectCollaboration() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const { user } = useGlobalContext()
   const { getProjectById, updateProject } = useStudentProjects()
   
@@ -26,6 +28,12 @@ export default function ProjectCollaboration() {
   const isInstructor = user?.role === 'Course Instructor'
 
   const [activeTab, setActiveTab] = useState<'team' | 'tasks'>('team')
+
+  useEffect(() => {
+    if (id) {
+      dispatch({ type: 'database/markProjectNotifications', payload: id })
+    }
+  }, [id, dispatch])
   const { collaborators = [] } = useProjectInvitations(projectId, currentUserId)
 
   const handleTasksChange = (tasks: ProjectTask[]) => {

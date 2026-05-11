@@ -1,8 +1,16 @@
-import type {
-  StudentPortfolio, CompanyProfile, EmployerStats, Internship,
-  InternshipApplication, CompletedInternship, InstructorProfile, Course, CourseLink,
-  ProjectCollaborator, ProjectInvitation, TaskFeedback, ProjectFeedback,
-  ProjectRating, FlaggedProject, ProjectAppeal, FavoriteItem, Message, Conversation, Notification, UserRole
+﻿import type { 
+  ProjectCollaborator, 
+  TaskFeedback, 
+  ProjectFeedback, 
+  ProjectRating,
+  Course,
+  Internship,
+  InternshipApplication,
+  CompanyProfile,
+  InstructorProfile,
+  StudentPortfolio,
+  UserRole,
+  LinkRequest
 } from '../types';
 
 export interface ProjectTask {
@@ -46,6 +54,7 @@ export interface DatabaseState {
   courses: Course[];
   instructors: InstructorProfile[];
   courseLinks: CourseLink[];
+  linkRequests: LinkRequest[];
   students: StudentPortfolio[];
   completedInternships: CompletedInternship[];
   projects: Project[];
@@ -135,6 +144,34 @@ export const initialData: DatabaseState = {
       courseId: "course_3",
       status: "linked",
       linkedAt: "2026-01-10T10:00:00Z"
+    },
+    {
+      instructorId: "sarah@guc.edu.eg",
+      courseId: "course_2",
+      status: "pending",
+      linkedAt: null
+    }
+  ],
+  linkRequests: [
+    {
+      id: "link_req_1",
+      instructorId: "bob@guc.edu.eg",
+      instructorName: "Dr. Bob Jones",
+      courseId: "course_2",
+      courseName: "System Architecture",
+      type: "link",
+      status: "pending",
+      createdAt: "2026-04-22T11:00:00Z"
+    },
+    {
+      id: "link_req_2",
+      instructorId: "sarah@guc.edu.eg",
+      instructorName: "Dr. Sarah Connor",
+      courseId: "course_1",
+      courseName: "Advanced Web Development",
+      type: "unlink",
+      status: "pending",
+      createdAt: "2026-04-25T14:30:00Z"
     }
   ],
   students: [
@@ -604,6 +641,45 @@ export const initialData: DatabaseState = {
       documents: [
         { id: "doc_3", name: "Company_Portfolio.pdf", type: "PDF", size: 512000, uploadedAt: "2026-03-01T14:00:00Z" }
       ]
+    },
+    {
+      companyName: "Siemens Healthineers",
+      biography: "Pioneering breakthroughs in healthcare. For everyone. Everywhere.",
+      address: "Henkestr. 127, 91052 Erlangen, Germany",
+      contactEmail: "hr@siemens-healthineers.com",
+      phone: "0049912345678",
+      logoUrl: "/dummy-logo-2.png",
+      approvalStatus: "Pending",
+      location: null,
+      documents: [
+        { id: "doc_siemens_1", name: "Tax_Certificate.pdf", type: "PDF", size: 245000, uploadedAt: "2026-04-01T09:00:00Z" }
+      ]
+    },
+    {
+      companyName: "TechFlow Solutions",
+      biography: "Agile software consulting and custom enterprise development.",
+      address: "100 Tech Park Way, Suite 400, San Jose, CA",
+      contactEmail: "recruiting@techflow.io",
+      phone: "0014085551234",
+      logoUrl: "/dummy-logo.png",
+      approvalStatus: "Pending",
+      location: null,
+      documents: [
+        { id: "doc_techflow_1", name: "Business_Registration.pdf", type: "PDF", size: 189000, uploadedAt: "2026-04-15T14:00:00Z" }
+      ]
+    },
+    {
+      companyName: "Global Corp",
+      biography: "A multinational conglomerate.",
+      address: "123 Global Ave, New York, NY",
+      contactEmail: "contact@globalcorp.com",
+      phone: "0012125559876",
+      logoUrl: "/techcorp_logo.png",
+      approvalStatus: "Pending",
+      location: null,
+      documents: [
+        { id: "doc_global_1", name: "Incorporation_Documents.pdf", type: "PDF", size: 312000, uploadedAt: "2026-04-20T11:00:00Z" }
+      ]
     }
   ],
   employerStats: {
@@ -719,7 +795,8 @@ export const initialData: DatabaseState = {
       receiverRole: "Employer",
       content: "Hello, I just submitted my application for the Frontend Intern position. Let me know if you need any additional documents.",
       timestamp: "2026-03-15T10:05:00Z",
-      read: true
+      read: true,
+      conversationId: "conv_1"
     },
     {
       id: "msg_2",
@@ -731,19 +808,250 @@ export const initialData: DatabaseState = {
       receiverRole: "Student",
       content: "Hi Alice, we received your application. Your portfolio looks great! We will be in touch soon.",
       timestamp: "2026-03-15T14:30:00Z",
-      read: false
+      read: false,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a1",
+      senderId: "alice.smith@student.guc.edu.eg",
+      senderName: "Alice Smith",
+      senderRole: "Student",
+      receiverId: "hr@techcorp.com",
+      receiverName: "TechCorp HR",
+      receiverRole: "Employer",
+      content: "Hi! I saw your internship posting for Frontend Developer. I just applied and wanted to introduce myself.",
+      timestamp: "2026-04-20T09:30:00Z",
+      read: true,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a2",
+      senderId: "hr@techcorp.com",
+      senderName: "TechCorp HR",
+      senderRole: "Employer",
+      receiverId: "alice.smith@student.guc.edu.eg",
+      receiverName: "Alice Smith",
+      content: "Hi Alice! Thanks for reaching out. Your portfolio looks impressive, especially the Polaris UI Engine project.",
+      timestamp: "2026-04-20T11:00:00Z",
+      read: true,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a3",
+      senderId: "alice.smith@student.guc.edu.eg",
+      senderName: "Alice Smith",
+      senderRole: "Student",
+      receiverId: "hr@techcorp.com",
+      receiverName: "TechCorp HR",
+      receiverRole: "Employer",
+      content: "Thank you! I've been working really hard on it. Are there any other open positions you'd recommend?",
+      timestamp: "2026-04-20T11:30:00Z",
+      read: true,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a4",
+      senderId: "hr@techcorp.com",
+      senderName: "TechCorp HR",
+      senderRole: "Employer",
+      receiverId: "alice.smith@student.guc.edu.eg",
+      receiverName: "Alice Smith",
+      content: "We also have a UI/UX Designer Intern role. Would you be interested in that as well?",
+      timestamp: "2026-04-21T10:00:00Z",
+      read: true,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a5",
+      senderId: "alice.smith@student.guc.edu.eg",
+      senderName: "Alice Smith",
+      senderRole: "Student",
+      receiverId: "hr@techcorp.com",
+      receiverName: "TechCorp HR",
+      receiverRole: "Employer",
+      content: "That sounds amazing! I have experience with Figma and wireframing. Could we schedule a call to discuss?",
+      timestamp: "2026-04-21T14:00:00Z",
+      read: false,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a6",
+      senderId: "alice.smith@student.guc.edu.eg",
+      senderName: "Alice Smith",
+      senderRole: "Student",
+      receiverId: "hr@techcorp.com",
+      receiverName: "TechCorp HR",
+      receiverRole: "Employer",
+      content: "I also wanted to ask — do you offer any mentorship programs for interns? I'd love to learn from experienced developers.",
+      timestamp: "2026-04-22T09:00:00Z",
+      read: true,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a7",
+      senderId: "hr@techcorp.com",
+      senderName: "TechCorp HR",
+      senderRole: "Employer",
+      receiverId: "alice.smith@student.guc.edu.eg",
+      receiverName: "Alice Smith",
+      content: "Absolutely! Every intern is paired with a senior developer mentor. We also have weekly tech talks.",
+      timestamp: "2026-04-22T11:00:00Z",
+      read: true,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a8",
+      senderId: "alice.smith@student.guc.edu.eg",
+      senderName: "Alice Smith",
+      senderRole: "Student",
+      receiverId: "hr@techcorp.com",
+      receiverName: "TechCorp HR",
+      receiverRole: "Employer",
+      content: "That's exactly what I was hoping to hear! Looking forward to the possibility of joining the team.",
+      timestamp: "2026-04-22T12:30:00Z",
+      read: false,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a9",
+      senderId: "alice.smith@student.guc.edu.eg",
+      senderName: "Alice Smith",
+      senderRole: "Student",
+      receiverId: "hr@techcorp.com",
+      receiverName: "TechCorp HR",
+      content: "Hi! I just submitted my application for the Frontend Developer Intern role.",
+      timestamp: "2026-04-19T16:00:00Z",
+      read: true,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a10",
+      senderId: "hr@techcorp.com",
+      senderName: "TechCorp HR",
+      senderRole: "Employer",
+      receiverId: "alice.smith@student.guc.edu.eg",
+      receiverName: "Alice Smith",
+      content: "Hi Alice! I've reviewed your portfolio and I'm impressed with your React skills. Let's set up an interview.",
+      timestamp: "2026-04-25T10:00:00Z",
+      read: false,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_bob_1",
+      senderId: "bob@guc.edu.eg",
+      senderName: "Dr. Bob Jones",
+      senderRole: "Course Instructor",
+      receiverId: "alice.smith@student.guc.edu.eg",
+      receiverName: "Alice Smith",
+      content: "Alice, I've updated the feedback on your project. Please check the comments.",
+      timestamp: "2026-04-24T15:30:00Z",
+      read: true,
+      conversationId: "conv_bob_alice"
+    },
+    {
+      id: "msg_bob_2",
+      senderId: "alice.smith@student.guc.edu.eg",
+      senderName: "Alice Smith",
+      senderRole: "Student",
+      receiverId: "bob@guc.edu.eg",
+      receiverName: "Dr. Bob Jones",
+      receiverRole: "Course Instructor",
+      content: "Thank you Dr. Bob! I'll review the feedback right away.",
+      timestamp: "2026-04-24T16:00:00Z",
+      read: false,
+      conversationId: "conv_bob_alice"
+    },
+    {
+      id: "msg_charlie_1",
+      senderId: "david.m@student.guc.edu.eg",
+      senderName: "David Miller",
+      senderRole: "Student",
+      receiverId: "charlie@student.guc.edu.eg",
+      receiverName: "Charlie Brown",
+      content: "Hey Charlie, are you working on the same project for CSW502?",
+      timestamp: "2026-04-23T09:00:00Z",
+      read: false,
+      conversationId: "conv_charlie_david"
+    },
+    {
+      id: "msg_charlie_2",
+      senderId: "charlie@student.guc.edu.eg",
+      senderName: "Charlie Brown",
+      senderRole: "Student",
+      receiverId: "david.m@student.guc.edu.eg",
+      receiverName: "David Miller",
+      receiverRole: "Student",
+      content: "Yeah! We should collaborate. What stack are you planning to use?",
+      timestamp: "2026-04-23T10:00:00Z",
+      read: false,
+      conversationId: "conv_charlie_david"
+    },
+    {
+      id: "msg_david_1",
+      senderId: "bob@guc.edu.eg",
+      senderName: "Dr. Bob Jones",
+      senderRole: "Course Instructor",
+      receiverId: "david.m@student.guc.edu.eg",
+      receiverName: "David Miller",
+      content: "David, your project submission is due next week. Make sure to include the API documentation.",
+      timestamp: "2026-04-25T09:00:00Z",
+      read: true,
+      conversationId: "conv_bob_david"
+    },
+    {
+      id: "msg_david_2",
+      senderId: "david.m@student.guc.edu.eg",
+      senderName: "David Miller",
+      senderRole: "Student",
+      receiverId: "bob@guc.edu.eg",
+      receiverName: "Dr. Bob Jones",
+      receiverRole: "Course Instructor",
+      content: "Will do, Dr. Bob. I'll have everything submitted by Friday.",
+      timestamp: "2026-04-25T11:00:00Z",
+      read: true,
+      conversationId: "conv_bob_david"
     }
-  ],
+],
   conversations: [
     {
       id: "conv_1",
       participantId: "hr@techcorp.com",
       participantName: "TechCorp HR",
-      participantAvatar: "/dummy-logo.png",
+      participantAvatar: "TH",
       participantRole: "Employer",
-      lastMessage: "Hi Alice, we received your application...",
-      lastTimestamp: "2026-03-15T14:30:00Z",
+      lastMessage: "Hi Alice! I've reviewed your portfolio and I'm impressed with your React skills. Let's set up an interview.",
+      lastTimestamp: "2026-04-25T10:00:00Z",
+      unreadCount: 2
+    },
+    {
+      id: "conv_bob_alice",
+      participantId: "bob@guc.edu.eg",
+      participantName: "Dr. Bob Jones",
+      participantAvatar: "BJ",
+      participantRole: "Course Instructor",
+      lastMessage: "Thank you Dr. Bob! I'll review the feedback right away.",
+      lastTimestamp: "2026-04-24T16:00:00Z",
       unreadCount: 1
+    },
+    {
+      id: "conv_charlie_david",
+      participantId: "david.m@student.guc.edu.eg",
+      participantName: "David Miller",
+      participantAvatar: "DM",
+      participantRole: "Student",
+      lastMessage: "Yeah! We should collaborate. What stack are you planning to use?",
+      lastTimestamp: "2026-04-23T10:00:00Z",
+      unreadCount: 0
+    },
+    {
+      id: "conv_bob_david",
+      participantId: "david.m@student.guc.edu.eg",
+      participantName: "David Miller",
+      participantAvatar: "DM",
+      participantRole: "Student",
+      lastMessage: "Will do, Dr. Bob. I'll have everything submitted by Friday.",
+      lastTimestamp: "2026-04-25T11:00:00Z",
+      unreadCount: 0
     }
   ],
   notifications: [
@@ -754,6 +1062,7 @@ export const initialData: DatabaseState = {
       body: "Dr. Bob Jones left feedback on your project 'Polaris UI Engine'.",
       timestamp: "2026-03-01T14:00:00Z",
       read: false,
+      recipientId: "alice.smith@student.guc.edu.eg",
       link: "/projects/project_1",
       // @ts-ignore (Specific interface extending Notification)
       projectId: "project_1",
@@ -768,6 +1077,7 @@ export const initialData: DatabaseState = {
       body: "Your project 'Distributed Task Queue' has been flagged for review.",
       timestamp: "2026-03-05T09:00:00Z",
       read: true,
+      recipientId: "alice.smith@student.guc.edu.eg",
       link: "/projects/project_2/settings",
       // @ts-ignore
       projectId: "project_2",
@@ -781,6 +1091,7 @@ export const initialData: DatabaseState = {
       body: "Your appeal for 'Distributed Task Queue' was approved. The flag has been removed.",
       timestamp: "2026-04-10T11:00:00Z",
       read: false,
+      recipientId: "alice.smith@student.guc.edu.eg",
       link: "/portal/student/projects/proj-004/view"
     },
     {
@@ -790,6 +1101,7 @@ export const initialData: DatabaseState = {
       body: "Charlie Brown invited you to join 'Neural Network Optimizer'.",
       timestamp: "2026-05-06T10:01:00Z",
       read: false,
+      recipientId: "charlie@student.guc.edu.eg",
       link: "/portal/student/invitations"
     },
     {
@@ -799,6 +1111,7 @@ export const initialData: DatabaseState = {
       body: "David Miller invited you to join 'Microservices Gateway'.",
       timestamp: "2026-05-07T11:02:00Z",
       read: false,
+      recipientId: "david.m@student.guc.edu.eg",
       link: "/portal/student/invitations"
     },
     {
@@ -808,6 +1121,7 @@ export const initialData: DatabaseState = {
       body: "TechCorp updated your Frontend Developer application status to Nominated.",
       timestamp: "2026-03-16T09:00:00Z",
       read: false,
+      recipientId: "alice.smith@student.guc.edu.eg",
       link: "/internships/application_1"
     },
     {
@@ -817,6 +1131,7 @@ export const initialData: DatabaseState = {
       body: "Charlie accepted your invitation to join 'Polaris UI Engine'.",
       timestamp: "2026-02-16T11:00:00Z",
       read: true,
+      recipientId: "alice.smith@student.guc.edu.eg",
       link: "/projects/project_1/collaborators"
     },
     {
@@ -826,6 +1141,7 @@ export const initialData: DatabaseState = {
       body: "You have a new message from TechCorp HR.",
       timestamp: "2026-03-15T14:30:00Z",
       read: false,
+      recipientId: "alice.smith@student.guc.edu.eg",
       link: "/messages/conv_1"
     },
     {
@@ -835,6 +1151,7 @@ export const initialData: DatabaseState = {
       body: "Alice Smith invited you to evaluate 'Polaris UI Engine'.",
       timestamp: "2026-02-20T10:00:00Z",
       read: true,
+      recipientId: "bob@guc.edu.eg",
       link: "/projects/project_1"
     },
     {
@@ -844,6 +1161,7 @@ export const initialData: DatabaseState = {
       body: "Your request to link to 'Advanced Web Development' was approved.",
       timestamp: "2026-01-11T09:00:00Z",
       read: true,
+      recipientId: "bob@guc.edu.eg",
       link: "/instructor/courses"
     },
     {
@@ -853,6 +1171,7 @@ export const initialData: DatabaseState = {
       body: "You have a new message from Alice Smith.",
       timestamp: "2026-02-21T11:00:00Z",
       read: false,
+      recipientId: "bob@guc.edu.eg",
       link: "/messages/conv_2"
     },
     {
@@ -862,6 +1181,7 @@ export const initialData: DatabaseState = {
       body: "Your company profile for TechCorp has been verified and approved.",
       timestamp: "2026-03-01T10:00:00Z",
       read: true,
+      recipientId: "hr@techcorp.com",
       link: "/employer/profile"
     },
     {
@@ -871,16 +1191,18 @@ export const initialData: DatabaseState = {
       body: "Alice Smith sent a message regarding the Frontend Developer role.",
       timestamp: "2026-03-15T10:05:00Z",
       read: false,
+      recipientId: "hr@techcorp.com",
       link: "/messages/conv_1"
     },
     {
       id: "notif_a1",
-      type: "flag",
+      type: "admin",
       title: "New Project Flagged",
       body: "The project 'Distributed Task Queue' was flagged for unapproved API usage.",
       timestamp: "2026-03-05T09:00:00Z",
-      read: false,
-      link: "/admin/moderation/flag_1"
+      read: true,
+      recipientId: "admin@polaris.edu.eg",
+      link: "/portal/administrator/moderation"
     },
     {
       id: "notif_a2",
@@ -889,7 +1211,8 @@ export const initialData: DatabaseState = {
       body: "TechCorp has submitted their company profile for review.",
       timestamp: "2026-02-28T14:00:00Z",
       read: true,
-      link: "/admin/companies"
+      recipientId: "admin@polaris.edu.eg",
+      link: "/portal/administrator/verification"
     },
     {
       id: "notif_a3",
@@ -898,7 +1221,28 @@ export const initialData: DatabaseState = {
       body: "Dr.Bob Jones requested to link with 'System Architecture'.",
       timestamp: "2025-08-10T09:00:00Z",
       read: true,
-      link: "/admin/courses"
+      recipientId: "admin@polaris.edu.eg",
+      link: "/portal/administrator/courses"
+    },
+    {
+      id: "notif_a4",
+      type: "link_request",
+      title: "New Course Link Request",
+      body: "Dr. Sarah Connor requested to unlink from 'Advanced Web Development'.",
+      timestamp: "2026-04-29T14:30:00Z",
+      read: true,
+      recipientId: "admin@polaris.edu.eg",
+      link: "/portal/administrator/courses"
+    },
+    {
+      id: "notif_a5",
+      type: "link_request",
+      title: "Course Link Request",
+      body: "Dr. Bob Jones requested to link 'Machine Learning' course.",
+      timestamp: "2026-04-28T10:00:00Z",
+      read: true,
+      recipientId: "admin@polaris.edu.eg",
+      link: "/portal/administrator/courses"
     }
   ],
   users: [
@@ -910,6 +1254,10 @@ export const initialData: DatabaseState = {
     { username: "david.m@student.guc.edu.eg", role: "Student", password: "password" },
     { username: "sarah@guc.edu.eg", role: "Course Instructor", password: "password" },
     { username: "hr@globalsys.com", role: "Employer", password: "password" },
+    // Pending employers (awaiting verification)
+    { username: "hr@siemens-healthineers.com", role: "Employer", password: "pending123" },
+    { username: "recruiting@techflow.io", role: "Employer", password: "pending123" },
+    { username: "contact@globalcorp.com", role: "Employer", password: "pending123" },
     // Legacy mock accounts
     { username: "student@guc.edu.eg", role: "Student", password: "password" },
     { username: "instructor@guc.edu.eg", role: "Course Instructor", password: "password" },

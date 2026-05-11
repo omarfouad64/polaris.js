@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import useStudentProjects from '../../student/projects/scripts/useStudentProjects'
 import useCourses from '../../../../hooks/useCourses'
 import { useGlobalContext } from '../../../../globalContext'
@@ -13,6 +14,7 @@ import Button from '../../../../components/Button'
 import FeedbackDialog from '../../../../components/FeedbackDialog'
 import ConfirmDialog from '../../../../components/ConfirmDialog'
 import ProjectTaskSection from './components/ProjectTaskSection'
+import type { RootState } from '../../../../store'
 
 /**
  * FlagModal — handles the reasoning for flagging a project.
@@ -90,6 +92,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useGlobalContext()
+  const dispatch = useDispatch()
   const { getProjectById, updateProject } = useStudentProjects()
   const { getCourseById } = useCourses()
   const { addNotification } = useNotifications()
@@ -131,6 +134,12 @@ export default function ProjectDetailsPage(): React.JSX.Element {
   const [confirmDeleteRating, setConfirmDeleteRating] = useState(false)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+
+  useEffect(() => {
+    if (id) {
+      dispatch({ type: 'database/markProjectNotifications', payload: id })
+    }
+  }, [id])
 
   const handleToggleFavorite = () => {
     if (!project) return

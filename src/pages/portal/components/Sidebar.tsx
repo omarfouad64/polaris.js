@@ -4,53 +4,50 @@ import { useStudentPortfolio } from '../../../hooks/useStudentPortfolio'
 import { useInstructorProfile } from '../../../hooks/useInstructorProfile'
 import useCompanyProfile from '../employer/profile/scripts/useCompanyProfile'
 import Button from '../../../components/Button'
+import { useTabNotifications } from '../../../hooks/useTabNotifications'
+import { useDispatch } from 'react-redux'
 import { type UserRole } from '../../../types'
 
 interface Tab {
     name: string
     path: string
     icon: string
+    notificationKey?: 'invitations' | 'communications' | 'notifications' | 'internships' | 'projects'
 }
 
-const roleTabs: Record<UserRole, Tab[]> = {
-    Student: [
+const roleTabs: Record<UserRole, Tab[]> = {    Student: [
         { name: 'Dashboard', path: '/portal/student', icon: 'dashboard' },
-        { name: 'My Projects', path: '/portal/student/projects', icon: 'list_alt' },
-        { name: 'Invitations', path: '/portal/student/invitations', icon: 'mail' },
+        { name: 'My Projects', path: '/portal/student/projects', icon: 'list_alt', notificationKey: 'projects' },
+        { name: 'Invitations', path: '/portal/student/invitations', icon: 'mail', notificationKey: 'invitations' },
         { name: 'Search', path: '/portal/student/search', icon: 'search' },
-        { name: 'Internships', path: '/portal/student/internships', icon: 'work' },
+        { name: 'Internships', path: '/portal/student/internships', icon: 'work', notificationKey: 'internships' },
         { name: 'Portfolio', path: '/portal/student/portfolio', icon: 'person' },
         { name: 'Favorites', path: '/portal/student/favorites', icon: 'favorite' },
-        { name: 'Communications', path: '/portal/student/communications', icon: 'chat' },
-        { name: 'Notifications', path: '/portal/student/notifications', icon: 'notifications' }
+        { name: 'Communications', path: '/portal/student/communications', icon: 'chat', notificationKey: 'communications' }
     ],
     Employer: [
         { name: 'Dashboard', path: '/portal/employer', icon: 'dashboard' },
         { name: 'Company Profile', path: '/portal/employer/profile', icon: 'business' },
-        { name: 'Internships', path: '/portal/employer/internships', icon: 'work' },
+        { name: 'Internships', path: '/portal/employer/internships', icon: 'work', notificationKey: 'internships' },
         { name: 'Search', path: '/portal/employer/search', icon: 'search' },
         { name: 'Favorites', path: '/portal/employer/favorites', icon: 'favorite' },
-        { name: 'Communications', path: '/portal/employer/communications', icon: 'chat' },
-        { name: 'Notifications', path: '/portal/employer/notifications', icon: 'notifications' }
+        { name: 'Communications', path: '/portal/employer/communications', icon: 'chat', notificationKey: 'communications' }
     ],
     'Course Instructor': [
         { name: 'Profile', path: '/portal/instructor', icon: 'person' },
         { name: 'Courses', path: '/portal/instructor/courses', icon: 'menu_book' },
-        { name: 'Invitations', path: '/portal/instructor/invitations', icon: 'mail' },
+        { name: 'Invitations', path: '/portal/instructor/invitations', icon: 'mail', notificationKey: 'invitations' },
         { name: 'Search', path: '/portal/instructor/search', icon: 'search' },
-        { name: 'Project Oversight', path: '/portal/instructor/oversight', icon: 'visibility' },
-        { name: 'Communications', path: '/portal/instructor/communications', icon: 'chat' },
-        { name: 'Notifications', path: '/portal/instructor/notifications', icon: 'notifications' }
+        { name: 'Project Oversight', path: '/portal/instructor/oversight', icon: 'visibility', notificationKey: 'projects' },
+        { name: 'Communications', path: '/portal/instructor/communications', icon: 'chat', notificationKey: 'communications' }
     ],
     Administrator: [
         { name: 'Admin Dashboard', path: '/portal/administrator', icon: 'admin_panel_settings' },
-        { name: 'Search', path: '/portal/administrator/search', icon: 'search' },
-        { name: 'Notifications', path: '/portal/administrator/notifications', icon: 'notifications' }
+        { name: 'Search', path: '/portal/administrator/search', icon: 'search' }
     ]
 }
 
 // ── Role-specific user card sub-components ────────────────────────────────────
-// Each only mounts when the correct role is active, avoiding cross-role hook side effects.
 
 function StudentUserCard({ username }: { username: string }) {
     const { portfolio } = useStudentPortfolio(username)
@@ -73,11 +70,12 @@ function StudentUserCard({ username }: { username: string }) {
 }
 
 function InstructorUserCard({ username }: { username: string }) {
-    const { profile } = useInstructorProfile()
+    const { profile } = useInstructorProfile(username)
     const displayName = profile.name || username
+    const email = profile.email || username
     const initial = displayName.charAt(0).toUpperCase()
     return (
-        <Link to="/portal/instructor/profile" className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-surface-container transition-colors group" title="Go to my profile">
+        <Link to="/portal/instructor/profile" className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-surface-container transition-colors group" title="Go to my portfolio">
             <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold shadow-sm overflow-hidden flex-shrink-0">
                 {profile.profilePicture
                     ? <img src={profile.profilePicture} alt={displayName} className="w-full h-full object-cover" />
@@ -86,7 +84,7 @@ function InstructorUserCard({ username }: { username: string }) {
             </div>
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-jakarta font-bold text-on-surface truncate group-hover:text-primary transition-colors">{displayName}</p>
-                <p className="text-xs text-on-surface-variant truncate">Course Instructor</p>
+                <p className="text-xs text-on-surface-variant truncate">{email}</p>
             </div>
         </Link>
     )
@@ -97,7 +95,7 @@ function EmployerUserCard({ username }: { username: string }) {
     const displayName = profile.companyName || username
     const initial = displayName.charAt(0).toUpperCase()
     return (
-        <Link to="/portal/employer/profile" className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-surface-container transition-colors group" title="Go to my profile">
+        <Link to="/portal/employer/profile" className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-surface-container transition-colors group" title="Go to my portfolio">
             <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold shadow-sm overflow-hidden flex-shrink-0">
                 {profile.logoUrl
                     ? <img src={profile.logoUrl} alt={displayName} className="w-full h-full object-cover" />
@@ -143,13 +141,24 @@ export default function Sidebar(): React.JSX.Element {
     const { user, logout } = useGlobalContext()
     const navigate = useNavigate()
     const location = useLocation()
+    const tabNotifs = useTabNotifications()
+    const dispatch = useDispatch()
 
     const handleLogout = (): void => {
         logout()
         navigate('/auth/login')
     }
 
-    const handleNavigate = (path: string): void => {
+    const handleTabClick = (path: string, notificationKey?: string): void => {
+        if (notificationKey === 'invitations') {
+            dispatch({ type: 'database/markInvitationsAllRead' })
+        } else if (notificationKey === 'communications') {
+            dispatch({ type: 'database/markConversationsAllRead' })
+        } else if (notificationKey === 'internships') {
+            dispatch({ type: 'database/markInternshipsAllRead' })
+        } else if (notificationKey === 'projects') {
+            dispatch({ type: 'database/markProjectsAllRead' })
+        }
         navigate(path)
     }
 
@@ -180,8 +189,8 @@ export default function Sidebar(): React.JSX.Element {
                 {tabs.map((tab) => (
                     <button
                         key={tab.name}
-                        onClick={() => handleNavigate(tab.path)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-jakarta font-semibold rounded-xl transition-all ${isActive(tab.path)
+                        onClick={() => handleTabClick(tab.path, tab.notificationKey)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-jakarta font-semibold rounded-xl transition-all relative ${isActive(tab.path)
                             ? 'bg-primary text-on-primary shadow-md'
                             : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
                             }`}
@@ -190,6 +199,11 @@ export default function Sidebar(): React.JSX.Element {
                             {tab.icon}
                         </span>
                         {tab.name}
+                        {tab.notificationKey && tabNotifs[tab.notificationKey] > 0 && (
+                            <span className="ml-auto bg-error text-on-error text-[10px] font-jakarta font-bold rounded-full min-w-4.5 h-4.5 flex items-center justify-center px-1">
+                                {tabNotifs[tab.notificationKey]}
+                            </span>
+                        )}
                     </button>
                 ))}
             </nav>

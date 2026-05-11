@@ -1,8 +1,7 @@
 import { useLocation, Link } from 'react-router-dom'
 import { useGlobalContext } from '../../../globalContext'
-import useNotifications from '../../../hooks/useNotifications'
-import { useProjectNotifications } from '../../../hooks/useProjectNotifications'
 import NotificationBadge from '../../../components/NotificationBadge'
+import { useTabNotifications } from '../../../hooks/useTabNotifications'
 import { useStudentPortfolio } from '../../../hooks/useStudentPortfolio'
 import { useInstructorProfile } from '../../../hooks/useInstructorProfile'
 import useCompanyProfile from '../employer/profile/scripts/useCompanyProfile'
@@ -59,21 +58,46 @@ function RoleAvatar({ role, username }: { role: UserRole | undefined; username: 
 export default function Header() {
   const location = useLocation()
   const { user } = useGlobalContext()
-  const { unreadCount: generalUnread, notificationsMuted } = useNotifications()
-  const { unreadCount: invitationUnread } = useProjectNotifications()
+  const { total, notificationsMuted } = useTabNotifications()
 
-  const unreadCount = generalUnread + invitationUnread
+  const unreadCount = total
 
   let rolePath = 'student'
   if (user?.role === 'Course Instructor') rolePath = 'instructor'
   else if (user?.role === 'Administrator') rolePath = 'administrator'
   else if (user?.role === 'Employer') rolePath = 'employer'
 
-  const pathParts = location.pathname.split('/').filter(Boolean)
-  const lastPart = pathParts[pathParts.length - 1]
-  const pageName = lastPart
-    ? lastPart.charAt(0).toUpperCase() + lastPart.slice(1).replace(/-/g, ' ')
-    : 'Dashboard'
+  const isAdmin = user?.role === 'Administrator'
+
+  const pageNameMap: Record<string, string> = {
+    '/portal/student': 'Dashboard',
+    '/portal/student/projects': 'My Projects',
+    '/portal/student/invitations': 'Invitations',
+    '/portal/student/search': 'Search',
+    '/portal/student/internships': 'Internships',
+    '/portal/student/portfolio': 'Portfolio',
+    '/portal/student/favorites': 'Favorites',
+    '/portal/student/communications': 'Communications',
+    '/portal/student/notifications': 'Notifications',
+    '/portal/employer': 'Dashboard',
+    '/portal/employer/profile': 'Company Profile',
+    '/portal/employer/internships': 'Internships',
+    '/portal/employer/search': 'Search',
+    '/portal/employer/favorites': 'Favorites',
+    '/portal/employer/communications': 'Communications',
+    '/portal/employer/notifications': 'Notifications',
+    '/portal/instructor': 'Profile',
+    '/portal/instructor/courses': 'Courses',
+    '/portal/instructor/invitations': 'Invitations',
+    '/portal/instructor/search': 'Search',
+    '/portal/instructor/communications': 'Communications',
+    '/portal/instructor/notifications': 'Notifications',
+    '/portal/instructor/oversight': 'Project Oversight'
+  }
+
+  const pageName = user?.role === 'Administrator'
+    ? 'Admin Control Panel'
+    : pageNameMap[location.pathname] || pageNameMap[Object.keys(pageNameMap).find(key => location.pathname.startsWith(key)) || '/'] || 'Dashboard'
 
   return (
     <header className="h-20 bg-surface-container-lowest border-b border-surface-container flex items-center justify-between px-10 shadow-sm">

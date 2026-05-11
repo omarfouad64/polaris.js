@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import useNotifications from '../../../../hooks/useNotifications'
 import { useProjectNotifications } from '../../../../hooks/useProjectNotifications'
+import { useGlobalContext } from '../../../../globalContext'
 
 const nIcons: Record<string, string> = {
   message: 'chat_bubble',
@@ -18,6 +20,8 @@ const nIcons: Record<string, string> = {
  * Used in both CommunicationsPage and the standalone NotificationCenter.
  */
 export default function UnifiedNotificationList(): React.JSX.Element {
+  const navigate = useNavigate()
+  const { user } = useGlobalContext()
   const {
     notifications: generalNotifs,
     toggleRead,
@@ -33,6 +37,11 @@ export default function UnifiedNotificationList(): React.JSX.Element {
     )
   }, [generalNotifs, projectNotifs])
 
+  const rolePath = user?.role === 'Course Instructor' ? 'instructor'
+    : user?.role === 'Administrator' ? 'administrator'
+    : user?.role === 'Employer' ? 'employer'
+    : 'student'
+
   const handleToggle = (n: { id: string; type: string; read: boolean }): void => {
     if (n.type === 'project_invitation') {
       markAsRead(n.id)
@@ -44,6 +53,64 @@ export default function UnifiedNotificationList(): React.JSX.Element {
   const handleMarkAll = (): void => {
     markAllRead()
     markAllAsRead()
+  }
+
+  const handleNavigate = (n: { id: string; read: boolean; link?: string; type: string }) => {
+    if (!n.read) {
+      handleToggle(n)
+    }
+    const link = n.link
+
+    // Admin-type notifications route to specific admin pages
+    if (n.type === 'admin') {
+      if (link) {
+        navigate(link)
+        return
+      }
+      navigate(`/portal/${rolePath}`)
+      return
+    }
+
+    // Flag notifications for admin go to moderation
+    if (n.type === 'flag' && rolePath === 'administrator') {
+      if (link) {
+        navigate(link)
+        return
+      }
+      navigate(`/portal/${rolePath}/moderation`)
+      return
+    }
+
+    // Message notifications link to the Communications page
+    if (n.type === 'message') {
+      navigate(`/portal/${rolePath}/communications`)
+      return
+    }
+
+    // Internship status notifications link to the internships page
+    if (n.type === 'internship_status') {
+      navigate(`/portal/${rolePath}/internships`)
+      return
+    }
+
+    // Project-related notifications link to the project details page
+    if (n.type === 'feedback' || n.type === 'flag' || n.type === 'appeal_response') {
+      const projectId = (n as any).projectId
+      if (projectId) {
+        navigate(`/portal/${rolePath}/projects/${projectId}/view`)
+        return
+      }
+    }
+
+    if (link) {
+      if (link.startsWith('http')) {
+        window.open(link, '_blank')
+      } else {
+        navigate(link)
+      }
+    } else {
+      navigate(`/portal/${rolePath}/notifications`)
+    }
   }
 
   const fmt = (iso: string): string => {
@@ -120,7 +187,16 @@ export default function UnifiedNotificationList(): React.JSX.Element {
           {allNotifications.map(n => (
             <div
               key={n.id}
-              className={`flex items-start gap-3 p-4 rounded-xl border border-outline-variant/40 transition-colors hover:bg-surface-container ${
+              role="button"
+              tabIndex={0}
+              onClick={() => handleNavigate(n)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleNavigate(n)
+                }
+              }}
+              className={`flex items-start gap-3 p-4 rounded-xl border border-outline-variant/40 transition-colors cursor-pointer hover:bg-surface-container ${
                 n.read ? 'bg-surface-container-lowest' : 'bg-surface-container-low'
               } ${notificationsMuted ? 'opacity-60' : ''}`}
             >
@@ -142,7 +218,7 @@ export default function UnifiedNotificationList(): React.JSX.Element {
                 <p className="text-xs font-lexend text-outline mt-1">{fmt(n.timestamp)}</p>
               </div>
               <button
-                onClick={() => handleToggle(n)}
+                onClick={e => { e.stopPropagation(); handleToggle(n) }}
                 className="p-1 rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors focus-visible:ring-2 focus-visible:ring-secondary"
                 aria-label={n.read ? 'Mark unread' : 'Mark read'}
               >

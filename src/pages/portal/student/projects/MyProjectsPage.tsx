@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import useStudentProjects from './scripts/useStudentProjects';
 import ProjectList from './components/ProjectList';
 import ProjectFilters from './components/ProjectFilters';
@@ -14,6 +15,7 @@ import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio';
  */
 export default function MyProjectsPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { user } = useGlobalContext();
   const { portfolio } = useStudentPortfolio(user?.username);
   const { projects, updateProject, deleteProject, isLoading } = useStudentProjects(portfolio?.studentId);
@@ -22,6 +24,7 @@ export default function MyProjectsPage() {
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
 
   const handleEdit = (id: string) => {
+    dispatch({ type: 'database/markProjectNotifications', payload: id });
     navigate(`/portal/student/projects/${id}`);
   };
 
@@ -41,6 +44,7 @@ export default function MyProjectsPage() {
   };
 
   const handleView = (id: string) => {
+    dispatch({ type: 'database/markProjectNotifications', payload: id });
     navigate(`/portal/student/projects/${id}/view`);
   };
 
@@ -54,6 +58,7 @@ export default function MyProjectsPage() {
   };
 
   const handleTasks = (id: string) => {
+    dispatch({ type: 'database/markProjectNotifications', payload: id });
     navigate(`/portal/student/projects/${id}/tasks`);
   };
 

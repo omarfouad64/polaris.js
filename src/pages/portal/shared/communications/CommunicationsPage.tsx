@@ -72,14 +72,10 @@ export default function CommunicationsPage(): React.JSX.Element {
                     : 'bg-surface-container-lowest border-outline-variant/30 hover:border-primary/40 hover:shadow-sm'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-jakarta font-bold text-lg flex-shrink-0 shadow-sm overflow-hidden ${
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-jakarta font-bold text-lg flex-shrink-0 shadow-sm ${
                   activeConversation?.id === c.id ? 'bg-on-primary text-primary' : 'bg-primary-container text-on-primary-container'
                 }`}>
-                  {c.participantProfilePicture ? (
-                    <img src={c.participantProfilePicture} alt={c.participantName} className="w-full h-full object-cover" />
-                  ) : (
-                    c.participantAvatar
-                  )}
+                  <span className="text-lg font-jakarta font-bold">{c.participantAvatar}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-col gap-0.5 mb-1">
@@ -122,12 +118,8 @@ export default function CommunicationsPage(): React.JSX.Element {
               {/* Chat Header */}
               <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-low/20">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold overflow-hidden">
-                    {activeConversation.participantProfilePicture ? (
-                      <img src={activeConversation.participantProfilePicture} alt={activeConversation.participantName} className="w-full h-full object-cover" />
-                    ) : (
-                      activeConversation.participantAvatar
-                    )}
+                  <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold">
+                    <span className="text-sm font-jakarta font-bold">{activeConversation.participantAvatar}</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">

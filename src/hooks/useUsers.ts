@@ -6,7 +6,7 @@ import { registerUser as registerUserAction } from '../store/databaseSlice'
  * useUsers — manages user data for login simulation via Redux.
  */
 export default function useUsers() {
-  const { users, dispatch } = useDatabase()
+  const { users, companies, dispatch } = useDatabase()
 
   const registerUser = (username: string, role: UserRole, _password = 'password') => {
     dispatch(registerUserAction({ username, role, password: _password }))
@@ -15,5 +15,10 @@ export default function useUsers() {
 
   const findUser = (username: string) => users.find(u => u.username === username)
 
-  return { users, registerUser, findUser }
+  const findCompany = (email: string) => {
+    const company = companies.find((c: any) => c.contactEmail === email)
+    return company || null
+  }
+
+  return { users, registerUser, findUser, findCompany }
 }

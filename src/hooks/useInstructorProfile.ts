@@ -1,31 +1,54 @@
 import { useState, useCallback, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useGlobalContext } from '../globalContext'
+import type { RootState } from '../store'
 import type { InstructorProfile } from '../types'
-
-const DUMMY_INSTRUCTOR_PROFILE: InstructorProfile = {
-  instructorId: 'instructor-001',
-  name: 'Dr. Fatima Al-Mansouri',
-  email: 'fatima.mansouri@guc.edu.eg',
-  biography: 'PhD in Computer Science from Cairo University. Specializing in software engineering and web technologies. Over 10 years of academic experience.',
-  researchInterests: ['Web Development', 'Software Engineering', 'Cloud Computing', 'Cybersecurity'],
-  educationBackground: 'PhD in Computer Science (Cairo University), M.Sc. in Information Systems (AUC), B.Sc. in Computer Science (GUC)',
-  linkedCourses: ['course-001', 'course-002', 'bachelor-project'],
-  profilePicture: null,
-  createdAt: new Date('2023-06-15').toISOString(),
-  updatedAt: new Date('2024-01-20').toISOString(),
-}
 
 const STORAGE_KEY = 'polaris_instructor_profile'
 type Listener = () => void
 const listeners: Set<Listener> = new Set()
 
 const loadProfile = (): InstructorProfile => {
-  if (typeof window === 'undefined') return DUMMY_INSTRUCTOR_PROFILE
+  if (typeof window === 'undefined') return {
+    instructorId: 'instructor-001',
+    name: 'Dr. Fatima Al-Mansouri',
+    email: 'fatima.mansouri@guc.edu.eg',
+    biography: 'PhD in Computer Science from Cairo University. Specializing in software engineering and web technologies. Over 10 years of academic experience.',
+    researchInterests: ['Web Development', 'Software Engineering', 'Cloud Computing', 'Cybersecurity'],
+    educationBackground: 'PhD in Computer Science (Cairo University), M.Sc. in Information Systems (AUC), B.Sc. in Computer Science (GUC)',
+    linkedCourses: ['course-001', 'course-002', 'bachelor-project'],
+    profilePicture: null,
+    createdAt: new Date('2023-06-15').toISOString(),
+    updatedAt: new Date('2024-01-20').toISOString(),
+  }
   const saved = window.localStorage.getItem(STORAGE_KEY)
-  if (!saved) return DUMMY_INSTRUCTOR_PROFILE
+  if (!saved) return {
+    instructorId: 'instructor-001',
+    name: 'Dr. Fatima Al-Mansouri',
+    email: 'fatima.mansouri@guc.edu.eg',
+    biography: 'PhD in Computer Science from Cairo University. Specializing in software engineering and web technologies. Over 10 years of academic experience.',
+    researchInterests: ['Web Development', 'Software Engineering', 'Cloud Computing', 'Cybersecurity'],
+    educationBackground: 'PhD in Computer Science (Cairo University), M.Sc. in Information Systems (AUC), B.Sc. in Computer Science (GUC)',
+    linkedCourses: ['course-001', 'course-002', 'bachelor-project'],
+    profilePicture: null,
+    createdAt: new Date('2023-06-15').toISOString(),
+    updatedAt: new Date('2024-01-20').toISOString(),
+  }
   try {
     return JSON.parse(saved)
   } catch {
-    return DUMMY_INSTRUCTOR_PROFILE
+    return {
+      instructorId: 'instructor-001',
+      name: 'Dr. Fatima Al-Mansouri',
+      email: 'fatima.mansouri@guc.edu.eg',
+      biography: 'PhD in Computer Science from Cairo University. Specializing in software engineering and web technologies. Over 10 years of academic experience.',
+      researchInterests: ['Web Development', 'Software Engineering', 'Cloud Computing', 'Cybersecurity'],
+      educationBackground: 'PhD in Computer Science (Cairo University), M.Sc. in Information Systems (AUC), B.Sc. in Computer Science (GUC)',
+      linkedCourses: ['course-001', 'course-002', 'bachelor-project'],
+      profilePicture: null,
+      createdAt: new Date('2023-06-15').toISOString(),
+      updatedAt: new Date('2024-01-20').toISOString(),
+    }
   }
 }
 
@@ -41,7 +64,10 @@ function emit() {
 /**
  * useInstructorProfile — manages instructor profile data with CRUD operations.
  */
-export function useInstructorProfile() {
+export function useInstructorProfile(username?: string) {
+  const dispatch = useDispatch()
+  const { user } = useGlobalContext()
+  const instructors = useSelector((state: RootState) => state.database.instructors)
   const [, setTick] = useState(0)
 
   useEffect(() => {
@@ -50,7 +76,13 @@ export function useInstructorProfile() {
     return () => { listeners.delete(listener) }
   }, [])
 
-  const profile = sharedProfile
+  const myEmail = username || user?.username || ''
+  const profile = (instructors || []).find((i: InstructorProfile) => i.instructorId === myEmail) || sharedProfile
+  
+  // Sync sharedProfile with Redux profile if found
+  if (profile !== sharedProfile) {
+    sharedProfile = profile
+  }
 
   const updateProfile = useCallback((updates: Partial<InstructorProfile>) => {
     sharedProfile = {
@@ -59,7 +91,11 @@ export function useInstructorProfile() {
       updatedAt: new Date().toISOString(),
     }
     emit()
-  }, [])
+    dispatch({
+      type: 'database/updateInstructorProfile',
+      payload: { instructorId: myEmail, ...updates },
+    })
+  }, [dispatch, myEmail])
 
   const updateBiography = useCallback((biography: string) => updateProfile({ biography }), [updateProfile])
   const updateEducationBackground = useCallback(

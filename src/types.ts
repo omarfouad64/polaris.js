@@ -1,5 +1,7 @@
 export type UserRole = 'Student' | 'Employer' | 'Course Instructor' | 'Administrator'
 
+export type CompanyStatus = 'Pending' | 'Approved' | 'Rejected'
+
 export interface StudentPortfolio {
   studentId: string
   name: string
@@ -22,7 +24,7 @@ export interface CompanyProfile {
   contactEmail: string
   phone: string
   logoUrl: string
-  approvalStatus: 'Pending' | 'Approved' | 'Rejected'
+  approvalStatus: CompanyStatus
   location: { lat: number; lng: number } | null
   locationAddress?: string | null
   documents: DocumentFile[]
@@ -76,6 +78,17 @@ export interface FavoriteItem {
   savedAt: string
 }
 
+export interface LinkRequest {
+  id: string
+  instructorId: string
+  instructorName: string
+  courseId: string
+  courseName: string
+  type: 'link' | 'unlink'
+  status: 'pending' | 'accepted' | 'rejected'
+  createdAt: string
+}
+
 export interface Message {
   id: string
   senderId: string
@@ -103,11 +116,12 @@ export interface Conversation {
 
 export interface Notification {
   id: string
-  type: 'message' | 'internship_status' | 'project_invitation' | 'feedback' | 'flag' | 'admin' | 'appeal_response'
+  type: 'message' | 'internship_status' | 'project_invitation' | 'feedback' | 'flag' | 'admin' | 'appeal_response' | 'link_request'
   title: string
   body: string
   timestamp: string
   read: boolean
+  recipientId?: string
   link?: string
   projectId?: string
   projectTitle?: string

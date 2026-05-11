@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { useGlobalContext } from '../globalContext'
 import type { RootState } from '../store'
 import type { Notification } from '../types'
 
@@ -52,6 +53,7 @@ function emit() {
  */
 export default function useNotifications() {
   const dispatch = useDispatch()
+  const { user } = useGlobalContext()
   const reduxNotifications = useSelector((state: RootState) => state.database.notifications)
   const [, setTick] = useState(0)
 
@@ -61,7 +63,28 @@ export default function useNotifications() {
     return () => { listeners.delete(listener) }
   }, [])
 
-  const notifications = reduxNotifications.length > 0 ? reduxNotifications : sharedNotifications
+  const userId = user?.username || 'me'
+  const isAdministrator = user?.role === 'Administrator'
+
+  const filteredReduxNotifications = useMemo(
+    () => reduxNotifications.filter((n: Notification) => {
+      if (isAdministrator && (n.type === 'admin' || n.type === 'link_request')) return true
+      if (n.recipientId === userId) return true
+      if (!n.recipientId) return true
+      return false
+    }),
+    [reduxNotifications, userId, isAdministrator]
+  )
+  const filteredSharedNotifications = useMemo(
+    () => sharedNotifications.filter((n: Notification) => {
+      if (isAdministrator && (n.type === 'admin' || n.type === 'link_request')) return true
+      if (n.recipientId === userId) return true
+      if (!n.recipientId) return true
+      return false
+    }),
+    [sharedNotifications, userId, isAdministrator]
+  )
+  const notifications = reduxNotifications.length > 0 ? filteredReduxNotifications : filteredSharedNotifications
   const notificationsMuted = sharedMuted
 
   const unreadCount = useMemo(

@@ -4,6 +4,7 @@ import PortalLayout from './pages/portal/PortalLayout.tsx'
 import AuthLayout from './pages/auth/AuthLayout.tsx'
 import LoginPage from './pages/auth/LoginPage.tsx'
 import SignupPage from './pages/auth/SignupPage.tsx'
+import PendingVerificationPage from './pages/auth/PendingVerificationPage.tsx'
 import ForgotPassword from './pages/auth/ForgotPassword/ForgotPassword.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 
@@ -50,7 +51,12 @@ import ProjectDetailsPage from './pages/portal/shared/projects/ProjectDetailsPag
 
 // Role Switcher Component
 function RoleSwitcher() {
-  const { user } = useGlobalContext()
+  const { user, isLoggedIn } = useGlobalContext()
+
+  if (!isLoggedIn) {
+    return <Navigate to="/auth" replace />
+  }
+
   let rolePath = 'student'
 
   if (user?.role === 'Course Instructor') rolePath = 'instructor'
@@ -68,7 +74,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/auth/login" replace /> },
       { path: 'login', element: <LoginPage /> },
-      { path: 'signup', element: <SignupPage /> }
+      { path: 'signup', element: <SignupPage /> },
+      { path: 'employer-pending-verification', element: <PendingVerificationPage /> }
     ]
   },
   {
