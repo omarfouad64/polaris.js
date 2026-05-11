@@ -51,8 +51,8 @@ export default function ProjectTaskSection({
     },
     'post-poned': {
       label: 'Post-poned',
-      bg: 'bg-tertiary-container',
-      text: 'text-on-tertiary-container',
+      bg: 'bg-warning-container',
+      text: 'text-on-warning-container',
       icon: 'timer_off',
     },
     completed: {

@@ -108,7 +108,7 @@ export default function ProjectTaskManager({
 
     const statusColors = {
         pending: 'bg-surface-container text-on-surface-variant',
-        'post-poned': 'bg-tertiary-container text-on-tertiary-container',
+        'post-poned': 'bg-warning-container text-on-warning-container',
         completed: 'bg-secondary-container text-on-secondary-container',
     };
 
@@ -174,11 +174,11 @@ export default function ProjectTaskManager({
                                             <select
                                                 value={task.status}
                                                 onChange={e => handleStatusChange(task.id, e.target.value as ProjectTask['status'])}
-                                                className={`text-xs font-jakarta font-semibold px-3 py-1.5 rounded-full border-none focus:ring-2 focus:ring-primary/20 ${statusColors[task.status]}`}
+                                                className={`text-xs font-jakarta font-semibold px-3 py-1.5 rounded-full border-none focus:ring-2 focus:ring-primary/20 cursor-pointer ${statusColors[task.status]}`}
                                             >
-                                                <option value="pending">Pending</option>
-                                                <option value="post-poned">Post-poned</option>
-                                                <option value="completed">Completed</option>
+                                                <option value="pending" className="bg-surface-container-lowest text-on-surface">Pending</option>
+                                                <option value="post-poned" className="bg-surface-container-lowest text-on-surface">Post-poned</option>
+                                                <option value="completed" className="bg-surface-container-lowest text-on-surface">Completed</option>
                                             </select>
                                         ) : (
                                             <span className={`text-xs font-jakarta font-semibold px-3 py-1.5 rounded-full ${statusColors[task.status]}`}>
