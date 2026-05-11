@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useGlobalContext } from '../../../globalContext'
 import { useInstructorSearch } from '../../../hooks/useInstructorSearch'
 
@@ -35,23 +35,6 @@ export default function InstructorProfileViewPage(): React.JSX.Element {
 
   const handleBack = () => {
     navigate(-1)
-  }
-
-  if (!instructor) {
-    return (
-      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-8">
-        <h2 className="text-2xl font-jakarta font-bold text-on-surface mb-2">Instructor not found</h2>
-        <p className="text-sm font-lexend text-on-surface-variant mb-6">
-          We could not find the requested instructor profile.
-        </p>
-        <button
-          onClick={handleBack}
-          className="px-4 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
-        >
-          Back
-        </button>
-      </div>
-    )
   }
 
   const instructor = useMemo(() => {
