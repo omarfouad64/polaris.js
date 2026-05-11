@@ -1,4 +1,9 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
+import useDatabase from './useDatabase'
+import {
+  acceptInvitation as acceptInvitationAction,
+  rejectInvitation as rejectInvitationAction,
+} from '../store/databaseSlice'
 
 export interface ProjectInvitationItem {
   id: string
@@ -13,151 +18,66 @@ export interface ProjectInvitationItem {
   projectImage?: string | null
 }
 
-// Dummy pending invitations
-const DUMMY_PENDING_INVITATIONS: ProjectInvitationItem[] = [
-  {
-    id: 'inv-001',
-    projectId: 'proj-001',
-    projectTitle: 'E-Commerce Platform',
-    projectDescription: 'A full-stack e-commerce platform with payment integration and admin dashboard',
-    senderName: 'Ahmed Hassan',
-    senderId: 'student-001',
-    senderEmail: 'ahmed.hassan@student.guc.edu.eg',
-    invitedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    status: 'pending',
-    projectImage: null
-  },
-  {
-    id: 'inv-002',
-    projectId: 'proj-002',
-    projectTitle: 'AI Chatbot',
-    projectDescription: 'An intelligent chatbot using NLP and machine learning for customer support',
-    senderName: 'Fatima Mousa',
-    senderId: 'student-002',
-    senderEmail: 'fatima.mousa@student.guc.edu.eg',
-    invitedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    status: 'pending',
-    projectImage: null
-  },
-  {
-    id: 'inv-003',
-    projectId: 'proj-003',
-    projectTitle: 'Mobile App Development',
-    projectDescription: 'A React Native mobile application for task management and collaboration',
-    senderName: 'Dr. Fatima Al-Mansouri',
-    senderId: 'instructor-001',
-    senderEmail: 'fatima.mansouri@guc.edu.eg',
-    invitedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'pending',
-    projectImage: null
-  }
-]
-
-// Dummy accepted invitations
-const DUMMY_ACCEPTED_INVITATIONS: ProjectInvitationItem[] = [
-  {
-    id: 'inv-004',
-    projectId: 'proj-004',
-    projectTitle: 'Learning Management System',
-    projectDescription: 'A comprehensive LMS platform for online course delivery and student tracking',
-    senderName: 'Omar Ibrahim',
-    senderId: 'student-003',
-    senderEmail: 'omar.ibrahim@student.guc.edu.eg',
-    invitedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'accepted',
-    projectImage: null
-  }
-]
-
 /**
- * useProjectInvitationsList – manages list of pending and accepted project invitations.
- * Provides methods to view, accept, and reject invitations.
- *
- * @param currentUserId - The ID of the current user
- * @returns Object containing invitations, filtering, and action functions.
+ * useProjectInvitationsList — manages list of pending and accepted project invitations via Redux.
+ * Maps projectInvitations from the store where the current user is the recipient.
  */
-export function useProjectInvitationsList() {
-  const [pendingInvitations, setPendingInvitations] = useState<ProjectInvitationItem[]>(
-    DUMMY_PENDING_INVITATIONS
-  )
-  const [acceptedInvitations, setAcceptedInvitations] = useState<ProjectInvitationItem[]>(
-    DUMMY_ACCEPTED_INVITATIONS
-  )
-  const [rejectedInvitations, setRejectedInvitations] = useState<ProjectInvitationItem[]>([])
+export function useProjectInvitationsList(currentUserEmail = 'alice.smith@student.guc.edu.eg') {
+  const { projectInvitations, projects, dispatch } = useDatabase()
 
-  // All invitations
-  const allInvitations = useMemo(() => {
-    return [
-      ...pendingInvitations,
-      ...acceptedInvitations,
-      ...rejectedInvitations
-    ]
-  }, [pendingInvitations, acceptedInvitations, rejectedInvitations])
+  // Map store invitations to the ProjectInvitationItem shape
+  const allInvitations = useMemo((): ProjectInvitationItem[] => {
+    return projectInvitations
+      .filter(inv => inv.recipientEmail === currentUserEmail)
+      .map(inv => {
+        const project = projects.find(p => p.id === inv.projectId)
+        return {
+          id: inv.id,
+          projectId: inv.projectId,
+          projectTitle: inv.projectTitle,
+          projectDescription: (project as any)?.projectReport || (project as any)?.description || '',
+          senderName: inv.senderName,
+          senderId: inv.senderId,
+          senderEmail: '',
+          invitedAt: inv.createdAt,
+          status: inv.invitationStatus as 'pending' | 'accepted' | 'rejected',
+          projectImage: null,
+        }
+      })
+  }, [projectInvitations, projects, currentUserEmail])
 
-  // Accept invitation
+  const pendingInvitations = useMemo(() => allInvitations.filter(inv => inv.status === 'pending'), [allInvitations])
+  const acceptedInvitations = useMemo(() => allInvitations.filter(inv => inv.status === 'accepted'), [allInvitations])
+  const rejectedInvitations = useMemo(() => allInvitations.filter(inv => inv.status === 'rejected'), [allInvitations])
+
   const acceptInvitation = useCallback((invitationId: string) => {
-    setPendingInvitations(prev => {
-      const invitation = prev.find(inv => inv.id === invitationId)
-      if (!invitation) return prev
+    dispatch(acceptInvitationAction({ invitationId, recipientEmail: currentUserEmail }))
+  }, [dispatch, currentUserEmail])
 
-      setAcceptedInvitations(prevAccepted => {
-        const exists = prevAccepted.some(inv => inv.id === invitationId)
-        if (exists) return prevAccepted
-        return [...prevAccepted, { ...invitation, status: 'accepted' }]
-      })
-
-      setRejectedInvitations(prevRejected =>
-        prevRejected.filter(inv => inv.id !== invitationId)
-      )
-
-      return prev.filter(inv => inv.id !== invitationId)
-    })
-  }, [])
-
-  // Reject invitation
   const rejectInvitation = useCallback((invitationId: string) => {
-    setPendingInvitations(prev => {
-      const invitation = prev.find(inv => inv.id === invitationId)
-      if (!invitation) return prev
+    dispatch(rejectInvitationAction({ invitationId, recipientEmail: currentUserEmail }))
+  }, [dispatch, currentUserEmail])
 
-      setRejectedInvitations(prevRejected => {
-        const exists = prevRejected.some(inv => inv.id === invitationId)
-        if (exists) return prevRejected
-        return [...prevRejected, { ...invitation, status: 'rejected' }]
-      })
+  const getInvitationById = useCallback(
+    (invitationId: string) => allInvitations.find(inv => inv.id === invitationId),
+    [allInvitations]
+  )
 
-      setAcceptedInvitations(prevAccepted =>
-        prevAccepted.filter(inv => inv.id !== invitationId)
-      )
-
-      return prev.filter(inv => inv.id !== invitationId)
-    })
-  }, [])
-
-  // Get invitation by ID
-  const getInvitationById = useCallback((invitationId: string) => {
-    return allInvitations.find(inv => inv.id === invitationId)
-  }, [allInvitations])
-
-  // Statistics
   const stats = useMemo(() => ({
     pending: pendingInvitations.length,
     accepted: acceptedInvitations.length,
     rejected: rejectedInvitations.length,
-    total: allInvitations.length
+    total: allInvitations.length,
   }), [pendingInvitations, acceptedInvitations, rejectedInvitations, allInvitations])
 
   return {
-    // State
     pendingInvitations,
     acceptedInvitations,
     rejectedInvitations,
     allInvitations,
     stats,
-
-    // Actions
     acceptInvitation,
     rejectInvitation,
-    getInvitationById
+    getInvitationById,
   }
 }

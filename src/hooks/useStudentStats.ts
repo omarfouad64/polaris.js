@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import useStudentProjects from '../pages/portal/student/projects/scripts/useStudentProjects'
+import useDatabase from './useDatabase'
+import { useGlobalContext } from '../globalContext'
 
 export interface LanguageStat {
   language: string
@@ -14,75 +15,87 @@ export interface ProjectCollaboratorStat {
   taskCount: number
 }
 
+export const LANG_PALETTE = [
+  '#1f108e', '#006a61', '#722f00', '#3730a3', '#006f66',
+  '#4f1e00', '#464553', '#0b1c30', '#777584', '#9e6b00',
+]
+
 export interface ProjectWithCollaborators {
   projectId: string
   projectTitle: string
   topCollaborators: ProjectCollaboratorStat[]
 }
 
-// Dummy collaborator data per project (encapsulated in hook as per data architecture rules)
-const DUMMY_COLLABORATORS: Record<string, ProjectCollaboratorStat[]> = {
-  'proj-001': [
-    { id: 'c-001', name: 'Ahmed Hassan', role: 'Lead Developer', taskCount: 4 },
-    { id: 'c-002', name: 'Mariam Khalil', role: 'Frontend Dev', taskCount: 2 },
-    { id: 'c-003', name: 'Sara Ali', role: 'Backend Dev', taskCount: 3 },
-  ],
-  'proj-002': [
-    { id: 'c-004', name: 'Omar Ibrahim', role: 'ML Engineer', taskCount: 5 },
-    { id: 'c-005', name: 'Fatima Mousa', role: 'Data Analyst', taskCount: 3 },
-  ],
-  'proj-003': [
-    { id: 'c-006', name: 'Khaled Nasser', role: 'Mobile Dev', taskCount: 6 },
-  ],
-}
-
-export const LANG_PALETTE = [
-  '#1f108e', '#006a61', '#722f00', '#3730a3', '#006f66',
-  '#4f1e00', '#464553', '#0b1c30', '#777584', '#9e6b00',
-]
-
 /**
- * useStudentStats — computes portfolio-level statistics for the logged-in student.
- * Covers Requirement 72: total projects, programming language percentages,
- * and top collaborators per project.
- *
- * @returns Aggregated stats: totalProjects, publicProjects, activeProjects,
- *          languageStats, projectsWithCollaborators.
+ * useStudentStats — reads projects and collaborators from Redux store and computes statistics.
  */
 export default function useStudentStats() {
-  const { projects } = useStudentProjects()
+  const { projects, projectCollaborators } = useDatabase()
+  const { user } = useGlobalContext()
 
-  const totalProjects = projects.length
-  const publicProjects = projects.filter(p => p.isPublic).length
-  const activeProjects = projects.filter(p => p.status === 'active').length
-  const totalTasks = projects.reduce((acc, p) => acc + (p.tasks?.length || 0), 0)
+  const projectsWithStats = useMemo(() => {
+    // Filter projects where user is owner or accepted collaborator
+    const userProjects = projects.filter(p => {
+      if (p.ownerId === user?.username) return true
+      const isCollab = projectCollaborators.some(
+        c => c.projectId === p.id && 
+             c.collaboratorId === user?.username && 
+             c.invitationStatus === 'accepted'
+      )
+      return isCollab
+    })
+
+    return userProjects.map(p => ({
+      id: p.id,
+      title: p.title,
+      courseId: p.courseId,
+      isPublic: p.isPublic,
+      status: p.status,
+      tasks: p.tasks,
+      languages: p.languages,
+    }))
+  }, [projects, projectCollaborators, user])
+
+  const totalProjects = projectsWithStats.length
+  const publicProjects = projectsWithStats.filter(p => p.isPublic).length
+  const activeProjects = projectsWithStats.filter(p => p.status === 'active').length
+  const totalTasks = projectsWithStats.reduce((acc, p) => acc + (p.tasks?.length || 0), 0)
 
   const languageStats = useMemo((): LanguageStat[] => {
     const langMap: Record<string, number> = {}
-    projects.forEach(p => {
-      (p.languages || []).forEach(lang => {
-        langMap[lang] = (langMap[lang] || 0) + 1
-      })
+    projectsWithStats.forEach(p => {
+      const langs = p.languages || []
+      langs.forEach((lang: string) => { langMap[lang] = (langMap[lang] || 0) + 1 })
     })
     const total = Object.values(langMap).reduce((sum, n) => sum + n, 0)
     return Object.entries(langMap)
       .sort(([, a], [, b]) => b - a)
-      .map(([language, count]) => ({
-        language,
-        count,
-        percentage: total > 0 ? Math.round((count / total) * 100) : 0,
-      }))
-  }, [projects])
+      .map(([language, count]) => ({ language, count, percentage: total > 0 ? Math.round((count / total) * 100) : 0 }))
+  }, [projectsWithStats])
 
-  const projectsWithCollaborators = useMemo((): ProjectWithCollaborators[] =>
-    projects.map(p => ({
+  const projectsWithCollaborators = useMemo((): ProjectWithCollaborators[] => {
+    const collaboratorMap: Record<string, ProjectCollaboratorStat[]> = {}
+    projectCollaborators.filter(c => c.invitationStatus === 'accepted').forEach(c => {
+      if (!collaboratorMap[c.projectId]) {
+        collaboratorMap[c.projectId] = []
+      }
+      const existing = collaboratorMap[c.projectId].find(x => x.id === c.id)
+      if (!existing) {
+        collaboratorMap[c.projectId].push({
+          id: c.id,
+          name: c.name,
+          role: c.role,
+          taskCount: 1
+        })
+      }
+    })
+
+    return projectsWithStats.map(p => ({
       projectId: p.id,
       projectTitle: p.title,
-      topCollaborators: (DUMMY_COLLABORATORS[p.id] ?? [])
-        .sort((a, b) => b.taskCount - a.taskCount)
-        .slice(0, 3),
+      topCollaborators: (collaboratorMap[p.id] ?? []).sort((a, b) => b.taskCount - a.taskCount).slice(0, 3),
     }))
-  , [projects])
+  }, [projectsWithStats, projectCollaborators])
 
   return {
     totalProjects,

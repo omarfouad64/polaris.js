@@ -56,3 +56,25 @@ This document records key architectural and design decisions made during the imp
 - **Decision:** Consolidated search-related experiences into a single Search tab per role, with tabbed sub-views for search types.
 - **Rationale:** Reduces sidebar clutter and groups discovery workflows in one consistent location.
 - **Impact:** Role-specific routes under `/portal/<role>/search` render a shared SearchHubPage with tabbed sections.
+
+---
+
+## 15. Notification Badge Scoping (Bug Fix)
+- **Decision:** `useTabNotifications.ts` filters notifications by `n.recipientId === userId` and conversations by `c.participantId === userId` to ensure each user only sees their own unread counts.
+- **Rationale:** The previous implementation used hardcoded admin emails and inverted exclusion logic, causing all users to see inflated unread counts (~3 messages above actual).
+- **Impact:** Notification badges now accurately reflect only the authenticated user's unread items.
+
+## 16. Instructor Link/Unlink Request Flow
+- **Decision:** Instructor course link/unlink actions now submit a request with `status: 'pending'` and `direction: 'link' | 'unlink'` instead of applying changes immediately. Admin must approve via the Course Directory "Link Requests" tab.
+- **Rationale:** Per Req 57, instructors should not directly link/unlink courses — admin approval is required.
+- **Impact:** Added `direction` field to `CourseLink` type. Added `requestLink()` and `requestUnlink()` functions to `useCourseLinks` hook. Updated admin `useLinkRequests` to display the correct direction.
+
+## 17. Task Ownership Permissions
+- **Decision:** `isOwner` now derives from `project.ownerId === currentUserId` instead of being hardcoded to `true`. Collaborators can only update status of tasks assigned to them.
+- **Rationale:** Per Req 32, only the project creator can create/edit/reorder tasks. Collaborators can only change the status of their corresponding task.
+- **Impact:** Fixed `ProjectTasksPage.tsx` and `ProjectCollaboration.tsx` ownership checks.
+
+## 18. Bachelor Project Collaborator Restriction
+- **Decision:** Projects with course `course-001` (Bachelor's) block all collaborator invitations and hide the collaborator management UI.
+- **Rationale:** Per Req 32, bachelor projects must have a single owner with no collaborators.
+- **Impact:** Added course check in `sendInvitation`, hid invite buttons and remove actions for bachelor projects, added info banner.

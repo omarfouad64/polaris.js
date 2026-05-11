@@ -28,7 +28,7 @@ export default function ProjectTaskSection({
   const isInstructor = user?.role === 'Course Instructor';
 
   const { collaborators } = useProjectInvitations(projectId, currentUserId);
-  const { taskFeedback, addTaskFeedback, editTaskFeedback, removeTaskFeedback, getTaskFeedback } = useInstructorFeedback(projectId);
+  const { addTaskFeedback, editTaskFeedback, removeTaskFeedback, getTaskFeedback } = useInstructorFeedback(projectId);
 
   const [selectedTask, setSelectedTask] = useState<{ id: string; title: string } | null>(null);
   const [editingFeedback, setEditingFeedback] = useState<{ id: string; comment: string } | null>(null);
@@ -51,8 +51,8 @@ export default function ProjectTaskSection({
     },
     'post-poned': {
       label: 'Post-poned',
-      bg: 'bg-tertiary-container',
-      text: 'text-on-tertiary-container',
+      bg: 'bg-warning-container',
+      text: 'text-on-warning-container',
       icon: 'timer_off',
     },
     completed: {
@@ -86,14 +86,7 @@ export default function ProjectTaskSection({
     setIsFeedbackModalOpen(true);
   };
 
-  /** Get the latest feedback for a task (most recently created). */
-  const getLatestTaskFeedback = (taskId: string) => {
-    const all = getTaskFeedback(taskId);
-    if (all.length === 0) return null;
-    return all.reduce((latest, fb) =>
-      new Date(fb.createdAt) > new Date(latest.createdAt) ? fb : latest
-    );
-  };
+
 
   if (tasks.length === 0) {
     return (
@@ -112,7 +105,7 @@ export default function ProjectTaskSection({
   }
 
   return (
-    <div className="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/30 shadow-sm space-y-8">
+    <div id="project-tasks" className="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/30 shadow-sm space-y-8">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center flex-shrink-0 text-secondary">
           <span className="material-symbols-outlined text-[24px]">assignment</span>
@@ -249,7 +242,7 @@ export default function ProjectTaskSection({
 
       {selectedTask && (
         <TaskFeedbackForm
-          projectId={projectId}
+
           taskId={selectedTask.id}
           taskTitle={selectedTask.title}
           instructorId={user?.username || 'instructor'}

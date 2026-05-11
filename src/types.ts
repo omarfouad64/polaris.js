@@ -1,5 +1,7 @@
 export type UserRole = 'Student' | 'Employer' | 'Course Instructor' | 'Administrator'
 
+export type CompanyStatus = 'Pending' | 'Approved' | 'Rejected'
+
 export interface StudentPortfolio {
   studentId: string
   name: string
@@ -22,7 +24,7 @@ export interface CompanyProfile {
   contactEmail: string
   phone: string
   logoUrl: string
-  approvalStatus: 'Pending' | 'Approved' | 'Rejected'
+  approvalStatus: CompanyStatus
   location: { lat: number; lng: number } | null
   locationAddress?: string | null
   documents: DocumentFile[]
@@ -68,12 +70,24 @@ export interface InternshipApplication {
 
 export interface FavoriteItem {
   id: string
+  userId: string
   type: 'project' | 'portfolio'
   title: string
   subtitle: string
   tags: string[]
   rating?: number
   savedAt: string
+}
+
+export interface LinkRequest {
+  id: string
+  instructorId: string
+  instructorName: string
+  courseId: string
+  courseName: string
+  type: 'link' | 'unlink'
+  status: 'pending' | 'accepted' | 'rejected'
+  createdAt: string
 }
 
 export interface Message {
@@ -94,20 +108,29 @@ export interface Conversation {
   participantId: string
   participantName: string
   participantAvatar: string
+  participantProfilePicture?: string
   participantRole?: UserRole
   lastMessage: string
   lastTimestamp: string
   unreadCount: number
+  participants?: string[]
 }
 
 export interface Notification {
   id: string
-  type: 'message' | 'internship_status' | 'project_invitation' | 'feedback' | 'flag' | 'admin' | 'appeal_response'
+  type: 'message' | 'internship_status' | 'project_invitation' | 'feedback' | 'flag' | 'admin' | 'appeal_response' | 'link_request'
   title: string
   body: string
   timestamp: string
   read: boolean
+  recipientId?: string
   link?: string
+  projectId?: string
+  projectTitle?: string
+  senderName?: string
+  feedbackType?: string
+  instructorName?: string
+  flagReason?: string
 }
 
 export interface EmployerStats {
@@ -118,6 +141,7 @@ export interface EmployerStats {
 
 export interface CompletedInternship {
   id: string
+  studentId: string
   title: string
   companyName: string
   duration: string
@@ -149,10 +173,13 @@ export interface CourseLink {
   instructorId: string
   courseId: string
   status: 'linked' | 'pending' | 'rejected'
+  direction: 'link' | 'unlink'
   linkedAt: string
 }
 
 export interface ProjectCollaborator {
+  id: string
+  projectId: string
   collaboratorId: string
   name: string
   email: string

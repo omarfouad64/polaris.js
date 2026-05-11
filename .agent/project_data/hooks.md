@@ -132,3 +132,39 @@ This document lists and describes the custom React hooks implemented to manage s
 - **Purpose:** Computes portfolio-level statistics for the logged-in student (Req 72).
 - **Key Features:**
     - Derived State: `totalProjects`, `publicProjects`, `activeProjects`, `totalTasks`, `languageStats`, `projectsWithCollaborators`
+
+### 15. Local - useCourseLinks (Instructor)
+- **Source:** `src/hooks/useCourseLinks.ts`
+- **Purpose:** Manages instructor course linking with request-based approval flow.
+- **Key Features:**
+    - State: `courseLinks`, `linkedCourses`, `availableCourses`
+    - Functions: `linkCourse`, `unlinkCourse`, `requestLink`, `requestUnlink`
+    - `requestLink(courseId)` sets status to `'pending'` with direction `'link'` for admin approval.
+    - `requestUnlink(courseId)` sets status to `'pending'` with direction `'unlink'` for admin approval.
+
+### 16. Local - useProjectInvitations (Student Projects)
+- **Source:** `src/hooks/useProjectInvitations.ts`
+- **Purpose:** Manages project collaboration invitations and collaborator management.
+- **Key Features:**
+    - State: `collaborators`, `searchableUsers`, `pendingInvitations`
+    - Functions: `sendInvitation`, `removeCollaborator`, `cancelInvitation`, `acceptInvitation`, `rejectInvitation`
+    - Bachelor's projects (course-001) block all collaborator invitations.
+
+### 17. Local - useStudentProjects (Student)
+- **Source:** `src/pages/portal/student/projects/scripts/useStudentProjects.ts`
+- **Purpose:** Manages student project CRUD via Redux store.
+- **Key Features:**
+    - State: `projects` (filtered by current user)
+    - Functions: `createProject`, `updateProject`, `deleteProject`, `getProjectById`
+    - Accepts `currentUserId` parameter to scope projects to the authenticated user.
+    - Filters projects where the user is either the owner or an accepted collaborator.
+    - `createProject` uses the passed `currentUserId` as the `ownerId` (no longer hardcoded).
+    - `projectCollaborators` from Redux store is used to determine contributor projects.
+
+### 18. Local - useTabNotifications (Global)
+- **Source:** `src/hooks/useTabNotifications.ts`
+- **Purpose:** Computes unread notification counts for header/sidebar tab badges.
+- **Key Features:**
+    - State: `userNotifications`, `messageUnread`, per-category unread counts
+    - Properly scopes notifications to the current user by `recipientId`.
+    - Filters conversations by `participantId` matching the current user.

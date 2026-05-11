@@ -13,7 +13,7 @@ import type { Internship } from '../../../../types'
  */
 export default function InternshipManagementPage(): React.JSX.Element {
   const navigate = useNavigate()
-  const { activeInternships, archivedInternships, addInternship, updateInternship, deleteInternship, toggleStatus, toggleArchive } = useInternships()
+  const { activeInternships, archivedInternships, internshipsWithPassedDeadline, addInternship, updateInternship, deleteInternship, toggleStatus, toggleArchive } = useInternships()
   const { studentsPlaced } = useEmployerStats()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewTab, setViewTab] = useState<'active' | 'archived'>('active')
@@ -58,8 +58,8 @@ export default function InternshipManagementPage(): React.JSX.Element {
       return
     }
     const selectedDeadline = parseDateInput(form.applicationDeadline)
-    if (selectedDeadline < today) {
-      setDeadlineError('Deadline must be today or later.')
+    if (!form.applicationDeadline) {
+      setDeadlineError('Deadline is required.')
       return
     }
     setDeadlineError(null)
@@ -108,7 +108,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
     setDeadlineError(null)
   }
 
-  const currentList = viewTab === 'active' ? activeInternships : archivedInternships
+  const currentList = viewTab === 'active' ? internshipsWithPassedDeadline : archivedInternships
 
   return (
     <div className="space-y-6">
@@ -127,8 +127,8 @@ export default function InternshipManagementPage(): React.JSX.Element {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Active Listings', value: activeInternships.length, icon: 'work', color: 'primary' },
-          { label: 'Total Applicants', value: activeInternships.reduce((s, i) => s + i.applicantCount, 0), icon: 'group', color: 'secondary' },
+          { label: 'Active Listings', value: internshipsWithPassedDeadline.length, icon: 'work', color: 'primary' },
+           { label: 'Total Applicants', value: internshipsWithPassedDeadline.reduce((s, i) => s + (i.applicantCount ?? 0), 0), icon: 'group', color: 'secondary' },
           { label: 'Total Participants', value: studentsPlaced, icon: 'people', color: 'secondary' },
           { label: 'Archived', value: archivedInternships.length, icon: 'archive', color: 'outline' }
         ].map(stat => (
@@ -166,7 +166,6 @@ export default function InternshipManagementPage(): React.JSX.Element {
               <Input
                 label="Deadline"
                 type="date"
-                min={formatDateInput(today)}
                 value={form.applicationDeadline}
                 error={deadlineError ?? undefined}
                 onChange={e => {
@@ -189,7 +188,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
         <div className="border-b border-outline-variant/30 p-4 bg-surface-container-low/50 flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="flex bg-surface-container rounded-lg p-1">
             <button onClick={() => setViewTab('active')} className={`px-5 py-2 rounded-lg text-sm font-jakarta font-semibold transition-all ${viewTab === 'active' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}>
-              Active ({activeInternships.length})
+              Active ({internshipsWithPassedDeadline.length})
             </button>
             <button onClick={() => setViewTab('archived')} className={`px-5 py-2 rounded-lg text-sm font-jakarta font-semibold transition-all ${viewTab === 'archived' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}>
               Archived ({archivedInternships.length})
@@ -214,7 +213,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="text-lg font-jakarta font-semibold text-on-surface group-hover:text-primary transition-colors">{internship.title}</h3>
-                  <p className="text-sm font-lexend text-on-surface-variant mt-0.5">{internship.duration} • Deadline: {internship.applicationDeadline}</p>
+                  <p className="text-sm font-lexend text-on-surface-variant mt-0.5">{internship.duration} • Deadline: {new Date(internship.applicationDeadline).toLocaleDateString()}</p>
                 </div>
                 <span className={`px-2.5 py-1 rounded-lg text-xs font-jakarta font-semibold tracking-wider uppercase ${
                   internship.status === 'Hiring' ? 'bg-secondary/10 text-secondary' : 'bg-outline-variant/30 text-on-surface-variant'
@@ -223,11 +222,11 @@ export default function InternshipManagementPage(): React.JSX.Element {
                 </span>
               </div>
               <div className="flex flex-wrap gap-1.5 mb-4">
-                {internship.skills.slice(0, 4).map(s => (
+                {(internship.skills ?? []).slice(0, 4).map(s => (
                   <span key={s} className="px-2.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-lexend">{s}</span>
                 ))}
-                {internship.skills.length > 4 && (
-                  <span className="px-2.5 py-0.5 bg-surface-container text-on-surface-variant rounded-full text-xs font-lexend">+{internship.skills.length - 4} more</span>
+                {(internship.skills ?? []).length > 4 && (
+                  <span className="px-2.5 py-0.5 bg-surface-container text-on-surface-variant rounded-full text-xs font-lexend">+{(internship.skills ?? []).length - 4} more</span>
                 )}
               </div>
               <div className="flex items-center justify-between border-t border-outline-variant/30 pt-3">
@@ -301,11 +300,11 @@ export default function InternshipManagementPage(): React.JSX.Element {
               )}
 
               {/* Skills */}
-              {sel.skills.length > 0 && (
+              {(sel.skills ?? []).length > 0 && (
                 <div>
                   <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Required Skills</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {sel.skills.map(s => (
+                    {(sel.skills ?? []).map(s => (
                       <span key={s} className="px-2.5 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-jakarta font-semibold">{s}</span>
                     ))}
                   </div>
@@ -313,11 +312,11 @@ export default function InternshipManagementPage(): React.JSX.Element {
               )}
 
               {/* Languages */}
-              {sel.programmingLanguages.length > 0 && (
+              {(sel.programmingLanguages ?? []).length > 0 && (
                 <div>
                   <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Programming Languages</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {sel.programmingLanguages.map(l => (
+                    {(sel.programmingLanguages ?? []).map(l => (
                       <span key={l} className="px-2.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-lexend">{l}</span>
                     ))}
                   </div>
@@ -332,7 +331,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
                 </div>
                 <div>
                   <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">Deadline</p>
-                  <p className="text-sm font-jakarta font-bold text-on-surface mt-1">{sel.applicationDeadline}</p>
+                  <p className="text-sm font-jakarta font-bold text-on-surface mt-1">{new Date(sel.applicationDeadline).toLocaleDateString()}</p>
                 </div>
                 <div>
                   <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">Applicants</p>

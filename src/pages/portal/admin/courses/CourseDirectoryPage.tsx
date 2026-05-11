@@ -107,8 +107,8 @@ export default function CourseDirectoryPage() {
       ) : (
         <LinkRequestHandler 
           requests={pendingRequests} 
-          onAccept={acceptRequest} 
-          onReject={rejectRequest} 
+          onAccept={(id, kind) => acceptRequest(id, kind)} 
+          onReject={(id, kind) => rejectRequest(id, kind)} 
         />
       )}
 

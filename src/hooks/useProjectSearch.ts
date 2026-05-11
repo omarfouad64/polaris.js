@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from 'react'
-import useStudentProjects, { type ProjectData } from '../pages/portal/student/projects/scripts/useStudentProjects'
+import { useMemo, useState, useCallback } from 'react'
+import useStudentProjects from '../pages/portal/student/projects/scripts/useStudentProjects'
 import useCourses from './useCourses'
 
 export interface ProjectFilters {
@@ -12,58 +12,43 @@ export interface ProjectFilters {
 }
 
 /**
- * useProjectSearch — hook for searching, filtering, and sorting projects.
+ * useProjectSearch — reads projects from useStudentProjects (which will use Redux).
  */
 export default function useProjectSearch() {
   const { projects: allStudentProjects } = useStudentProjects()
   const { getCourseById } = useCourses()
-  
+
   const [filters, setFilters] = useState<ProjectFilters>({
     query: '',
     courseId: 'all',
     instructorId: 'all',
     dateFrom: '',
     dateTo: '',
-    sortBy: 'date_desc'
+    sortBy: 'date_desc',
   })
 
-  // In a real app, this would fetch from an API. 
-  // For now, we use the student projects as a global pool of projects.
   const filteredProjects = useMemo(() => {
-    let result = [...allStudentProjects].filter(p => p.isPublic) // Only public projects in search
-
+    let result = [...allStudentProjects].filter((p: any) => (p as any).isPublic)
     if (filters.query) {
       const q = filters.query.toLowerCase()
-      result = result.filter(p => 
-        p.title.toLowerCase().includes(q) || 
-        p.projectReport.toLowerCase().includes(q)
+      result = result.filter((p: any) =>
+        p.title.toLowerCase().includes(q) || (p.projectReport || '').toLowerCase().includes(q)
       )
     }
-
     if (filters.courseId !== 'all') {
-      result = result.filter(p => p.course === filters.courseId)
+      result = result.filter((p: any) => p.course === filters.courseId)
     }
-
-    // Filter by date
     if (filters.dateFrom) {
-      result = result.filter(p => p.createdDate >= filters.dateFrom)
+      result = result.filter((p: any) => p.createdDate >= filters.dateFrom)
     }
     if (filters.dateTo) {
-      result = result.filter(p => p.createdDate <= filters.dateTo)
+      result = result.filter((p: any) => p.createdDate <= filters.dateTo)
     }
-
-    // Sorting
-    result.sort((a, b) => {
-      if (filters.sortBy === 'date_desc') {
-        return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
-      }
-      if (filters.sortBy === 'date_asc') {
-        return new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime()
-      }
-      // Placeholder for rating sort (Req 45)
+    result.sort((a: any, b: any) => {
+      if (filters.sortBy === 'date_desc') return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+      if (filters.sortBy === 'date_asc') return new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime()
       return 0
     })
-
     return result
   }, [allStudentProjects, filters])
 
@@ -75,6 +60,6 @@ export default function useProjectSearch() {
     projects: filteredProjects,
     filters,
     updateFilters,
-    getCourseById
+    getCourseById,
   }
 }

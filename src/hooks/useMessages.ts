@@ -1,188 +1,165 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useGlobalContext } from '../globalContext'
+import type { RootState } from '../store'
 import type { Conversation, Message } from '../types'
 
-const dummyConversations: Conversation[] = [
-  { id: 'conv-1', participantId: 'u-1', participantName: 'Ahmed Hassan', participantAvatar: 'AH', participantRole: 'Student', lastMessage: 'Thanks for reviewing my portfolio!', lastTimestamp: '2026-04-30T10:30:00Z', unreadCount: 2 },
-  { id: 'conv-2', participantId: 'u-2', participantName: 'Dr. Mona Farid', participantAvatar: 'MF', participantRole: 'Course Instructor', lastMessage: 'The project feedback has been updated.', lastTimestamp: '2026-04-29T15:45:00Z', unreadCount: 0 },
-  { id: 'conv-3', participantId: 'u-3', participantName: 'Sara Mohamed', participantAvatar: 'SM', participantRole: 'Student', lastMessage: 'When is the application deadline?', lastTimestamp: '2026-04-28T09:20:00Z', unreadCount: 1 },
-  { id: 'conv-4', participantId: 'u-4', participantName: 'Omar Khaled', participantAvatar: 'OK', participantRole: 'Employer', lastMessage: 'I submitted my cover letter.', lastTimestamp: '2026-04-27T14:10:00Z', unreadCount: 0 }
-]
-
-const roleByParticipantId = new Map(dummyConversations.map(conv => [conv.participantId, conv.participantRole]))
-
-const hydrateConversations = (items: Conversation[]): Conversation[] => {
-  return items.map(conv => (
-    conv.participantRole
-      ? conv
-      : { ...conv, participantRole: roleByParticipantId.get(conv.participantId) }
-  ))
+interface OtherParticipant {
+  name: string
+  avatar: string
+  role?: string
 }
 
-const hydrateMessages = (items: Record<string, Message[]>): Record<string, Message[]> => {
-  return Object.fromEntries(Object.entries(items).map(([id, messages]) => [
-    id,
-    messages.map(message => {
-      const senderRole = message.senderRole ?? roleByParticipantId.get(message.senderId)
-      const receiverRole = message.receiverRole ?? roleByParticipantId.get(message.receiverId)
-      if (senderRole === message.senderRole && receiverRole === message.receiverRole) {
-        return message
-      }
-      return {
-        ...message,
-        senderRole,
-        receiverRole
-      }
-    })
-  ]))
-}
-
-const dummyMessages: Record<string, Message[]> = {
-  'conv-1': [
-    { id: 'm-1', senderId: 'u-1', senderName: 'Ahmed Hassan', senderRole: 'Student', receiverId: 'me', receiverName: 'Me', content: 'Hi! I noticed your company has open internship positions.', timestamp: '2026-04-30T10:00:00Z', read: true },
-    { id: 'm-2', senderId: 'me', senderName: 'Me', receiverId: 'u-1', receiverName: 'Ahmed Hassan', receiverRole: 'Student', content: 'Yes, we have several positions open. Feel free to apply through the portal!', timestamp: '2026-04-30T10:15:00Z', read: true },
-    { id: 'm-3', senderId: 'u-1', senderName: 'Ahmed Hassan', senderRole: 'Student', receiverId: 'me', receiverName: 'Me', content: 'Thanks for reviewing my portfolio!', timestamp: '2026-04-30T10:30:00Z', read: false }
-  ],
-  'conv-2': [
-    { id: 'm-4', senderId: 'u-2', senderName: 'Dr. Mona Farid', senderRole: 'Course Instructor', receiverId: 'me', receiverName: 'Me', content: 'Hello, I wanted to discuss the project requirements.', timestamp: '2026-04-29T15:00:00Z', read: true },
-    { id: 'm-5', senderId: 'me', senderName: 'Me', receiverId: 'u-2', receiverName: 'Dr. Mona Farid', receiverRole: 'Course Instructor', content: 'Of course! What would you like to discuss?', timestamp: '2026-04-29T15:30:00Z', read: true },
-    { id: 'm-6', senderId: 'u-2', senderName: 'Dr. Mona Farid', senderRole: 'Course Instructor', receiverId: 'me', receiverName: 'Me', content: 'The project feedback has been updated.', timestamp: '2026-04-29T15:45:00Z', read: true }
-  ],
-  'conv-3': [
-    { id: 'm-7', senderId: 'u-3', senderName: 'Sara Mohamed', senderRole: 'Student', receiverId: 'me', receiverName: 'Me', content: 'When is the application deadline?', timestamp: '2026-04-28T09:20:00Z', read: false }
-  ]
-}
-
-/**
- * useMessages — provides messaging data and operations for private conversations.
- * Persists data to localStorage to ensure conversations stay active across navigations.
- */
 export default function useMessages() {
-  const [conversations, setConversations] = useState<Conversation[]>(() => {
-    const saved = localStorage.getItem('polaris_conversations')
-    const parsed = saved ? (JSON.parse(saved) as Conversation[]) : dummyConversations
-    return hydrateConversations(parsed)
-  })
+  const dispatch = useDispatch()
+  const { user } = useGlobalContext()
+  const reduxMessages = useSelector((state: RootState) => state.database.messages)
+  const reduxConversations = useSelector((state: RootState) => state.database.conversations)
 
-  const [messages, setMessages] = useState<Record<string, Message[]>>(() => {
-    const saved = localStorage.getItem('polaris_messages')
-    const parsed = saved ? (JSON.parse(saved) as Record<string, Message[]>) : dummyMessages
-    return hydrateMessages(parsed)
-  })
+  const myId = user?.username || 'me'
+  const myEmail = user?.username || 'me'
 
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(() => {
-    return localStorage.getItem('polaris_active_conv')
-  })
+  const getOtherParticipant = useCallback((conv: Conversation): OtherParticipant => {
+    const convMessages = (reduxMessages as Message[]).filter(m => m.conversationId === conv.id)
+    if (convMessages.length > 0) {
+      const otherMsg = convMessages.find(m => m.senderId !== myId) || convMessages[0]
+      return {
+        name: otherMsg.senderName || conv.participantName,
+        avatar: conv.participantAvatar,
+        role: otherMsg.senderRole,
+      }
+    }
+    if (conv.participantId === myId || conv.participantId === myEmail) {
+      return {
+        name: conv.participantName,
+        avatar: conv.participantAvatar,
+        role: conv.participantRole,
+      }
+    }
+    return {
+      name: conv.participantName,
+      avatar: conv.participantAvatar,
+      role: conv.participantRole,
+    }
+  }, [myId, myEmail, reduxMessages])
 
-  // Persist to localStorage whenever state changes
-  useEffect(() => {
-    localStorage.setItem('polaris_conversations', JSON.stringify(conversations))
-  }, [conversations])
+  // Filter conversations: only show conversations where the current user is a participant
+  const conversations = useMemo(() => {
+    const filtered = (reduxConversations as Conversation[]).filter((c) => {
+      const isInParticipants = c.participants?.includes(myId)
+      if (isInParticipants) return true
+      if (c.participantId !== myId && c.participantId !== myEmail) return false
+      const hasMessages = (reduxMessages as Message[]).some((m: Message) =>
+        m.conversationId === c.id
+      )
+      return hasMessages
+    })
+    return filtered.map(c => ({ ...c, _otherParticipant: getOtherParticipant(c) }))
+  }, [reduxConversations, reduxMessages, myId, myEmail, getOtherParticipant])
 
-  useEffect(() => {
-    localStorage.setItem('polaris_messages', JSON.stringify(messages))
-  }, [messages])
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(
+    () => typeof window !== 'undefined' ? window.localStorage.getItem('polaris_active_conv') : null
+  )
 
   useEffect(() => {
     if (activeConversationId) {
       localStorage.setItem('polaris_active_conv', activeConversationId)
-    } else {
-      localStorage.removeItem('polaris_active_conv')
     }
   }, [activeConversationId])
 
-  const activeMessages = useMemo(() =>
-    activeConversationId ? (messages[activeConversationId] ?? []) : [],
-    [messages, activeConversationId]
+  const activeConversation = useMemo(
+    () => {
+      const conv = conversations.find(c => c.id === activeConversationId)
+      if (!conv) return null
+      return { ...conv, _otherParticipant: getOtherParticipant(conv as unknown as Conversation) }
+    },
+    [conversations, activeConversationId, getOtherParticipant]
   )
 
-  const activeConversation = useMemo(() =>
-    conversations.find(c => c.id === activeConversationId) ?? null,
-    [conversations, activeConversationId]
-  )
+  // Filter messages: show messages in the active conversation
+  const activeMessages = useMemo(() => {
+    if (!activeConversationId) return []
+    return (reduxMessages as Message[]).filter((m: Message) =>
+      m.conversationId === activeConversationId
+    ).sort((a: Message, b: Message) =>
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
+  }, [reduxMessages, activeConversationId])
 
-  const sendMessage = (content: string): void => {
+  const sendMessage = useCallback((content: string): void => {
     if (!activeConversationId || !content.trim()) return
     const conv = conversations.find(c => c.id === activeConversationId)
     if (!conv) return
 
-    const newMsg: Message = {
-      id: `m-${Date.now()}`,
-      senderId: 'me',
-      senderName: 'Me',
-      receiverId: conv.participantId,
-      receiverName: conv.participantName,
-      content: content.trim(),
-      timestamp: new Date().toISOString(),
-      read: true
-    }
+    dispatch({
+      type: 'database/sendMessage',
+      payload: {
+        content: content.trim(),
+        conversationId: activeConversationId,
+        senderId: myId,
+        senderName: user?.username || 'Me',
+        receiverId: conv.participantId,
+        receiverName: conv.participantName,
+      },
+    })
+  }, [dispatch, activeConversationId, conversations, myId, user])
 
-    setMessages(prev => ({
-      ...prev,
-      [activeConversationId]: [...(prev[activeConversationId] ?? []), newMsg]
-    }))
-
-    setConversations(prev => prev.map(c =>
-      c.id === activeConversationId
-        ? { ...c, lastMessage: content.trim(), lastTimestamp: newMsg.timestamp }
-        : c
-    ))
-  }
-
-  const selectConversation = (id: string): void => {
+  const selectConversation = useCallback((id: string): void => {
+    dispatch({ type: 'database/selectConversation', payload: id })
     setActiveConversationId(id)
-    setConversations(prev => prev.map(c =>
-      c.id === id ? { ...c, unreadCount: 0 } : c
-    ))
-  }
+  }, [dispatch])
 
-  const totalUnread = useMemo(() =>
-    conversations.reduce((sum, c) => sum + c.unreadCount, 0),
-    [conversations]
+  const markAllRead = useCallback((): void => {
+    dispatch({ type: 'database/markConversationsAllRead' })
+  }, [dispatch])
+
+  const totalUnread = useMemo(
+    () => (reduxConversations as Conversation[]).filter((c) =>
+      c.participants?.includes(myId)
+    ).reduce((sum, c) => sum + c.unreadCount, 0),
+    [reduxConversations, myId]
   )
 
-  const startConversation = (participantId: string, name: string, avatar: string): string => {
-    const existing = conversations.find(c => c.participantId === participantId)
+  const startConversation = useCallback((otherUserId: string, name: string, avatar: string): string => {
+    const existing = conversations.find(c =>
+      c.participants &&
+      c.participants.includes(myId) &&
+      c.participants.includes(otherUserId)
+    )
     if (existing) {
       setActiveConversationId(existing.id)
-      localStorage.setItem('polaris_active_conv', existing.id)
+      dispatch({ type: 'database/selectConversation', payload: existing.id })
       return existing.id
     }
 
     const newId = `conv-${Date.now()}`
-    const newConv: Conversation = {
-      id: newId,
-      participantId,
-      participantName: name,
-      participantAvatar: avatar,
-      participantRole: roleByParticipantId.get(participantId),
-      lastMessage: 'Start of your conversation',
-      lastTimestamp: new Date().toISOString(),
-      unreadCount: 0
-    }
-
-    const updatedConversations = [newConv, ...conversations]
-    const updatedMessages = { ...messages, [newId]: [] }
-
-    setConversations(updatedConversations)
-    setMessages(updatedMessages)
+    dispatch({
+      type: 'database/startConversation',
+      payload: {
+        id: newId,
+        participantId: otherUserId,
+        participantName: name,
+        participantAvatar: avatar,
+        participantRole: 'Student' as const,
+        lastMessage: '',
+        lastTimestamp: new Date().toISOString(),
+        unreadCount: 0,
+        senderId: myId
+      }
+    })
     setActiveConversationId(newId)
-
-    // Manual sync for immediate navigation safety
-    localStorage.setItem('polaris_conversations', JSON.stringify(updatedConversations))
-    localStorage.setItem('polaris_messages', JSON.stringify(updatedMessages))
-    localStorage.setItem('polaris_active_conv', newId)
-
     return newId
-  }
+  }, [dispatch, conversations])
 
   return {
-    conversations,
-    activeConversation,
+    conversations: conversations as any,
+    activeConversation: activeConversation ? ({ ...activeConversation, _otherParticipant: activeConversation._otherParticipant }) as any : null,
     activeMessages,
     activeConversationId,
     sendMessage,
     startConversation,
     selectConversation,
-    totalUnread
+    markAllRead,
+    totalUnread,
   }
 }

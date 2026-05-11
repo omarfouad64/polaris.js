@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useGlobalContext } from '../../../../globalContext'
 import useInternshipSearch from '../../../../hooks/useInternshipSearch'
 import Button from '../../../../components/Button'
 
@@ -7,6 +8,7 @@ import Button from '../../../../components/Button'
  * Covers Req 79 (search), 80 (filter), 81 (view list), 82 (sort), 83 (select), 84 (apply), 89 (notifications via status), 90 (completed).
  */
 export default function InternshipExplorerPage(): React.JSX.Element {
+  const { user } = useGlobalContext()
   const {
     internships, applications, completedInternships,
     searchQuery, setSearchQuery, companyFilter, setCompanyFilter,
@@ -14,7 +16,7 @@ export default function InternshipExplorerPage(): React.JSX.Element {
     postedDateFrom, setPostedDateFrom, postedDateTo, setPostedDateTo,
     sortOrder, setSortOrder,
     applyForInternship, hasApplied
-  } = useInternshipSearch()
+  } = useInternshipSearch(user?.username || '')
 
   const [viewTab, setViewTab] = useState<'all' | 'applications' | 'completed'>('all')
   const [applyingTo, setApplyingTo] = useState<string | null>(null)
@@ -148,10 +150,10 @@ export default function InternshipExplorerPage(): React.JSX.Element {
                       <span className={`px-2.5 py-1 rounded-lg text-xs font-jakarta font-semibold ${i.status === 'Hiring' ? 'bg-secondary/10 text-secondary' : 'bg-outline-variant/30 text-on-surface-variant'}`}>{i.status}</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5 mb-3">
-                      {i.skills.slice(0, 4).map(s => (<span key={s} className="px-2.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-lexend">{s}</span>))}
+                      {(i.skills || []).slice(0, 4).map(s => (<span key={s} className="px-2.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-lexend">{s}</span>))}
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="font-lexend text-on-surface-variant">{i.duration} • Posted: {i.postedAt}</span>
+                      <span className="font-lexend text-on-surface-variant">{i.duration} • Posted: {new Date(i.postedAt).toLocaleDateString()}</span>
                       {!hasApplied(i.id) && i.status === 'Hiring' ? (
                         <button onClick={e => { e.stopPropagation(); setApplyingTo(i.id) }} className="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-jakarta font-semibold hover:bg-primary-container transition-colors active:translate-y-[1px] focus-visible:ring-2 focus-visible:ring-secondary">Apply</button>
                       ) : hasApplied(i.id) ? (
@@ -178,7 +180,7 @@ export default function InternshipExplorerPage(): React.JSX.Element {
             <div className="flex flex-wrap gap-1.5">{selectedInternship.skills.map(s => (<span key={s} className="px-2.5 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-jakarta font-semibold">{s}</span>))}</div>
             <div className="grid grid-cols-2 gap-3 text-sm font-lexend text-on-surface-variant">
               <div><span className="font-jakarta font-semibold text-on-surface">Duration:</span> {selectedInternship.duration}</div>
-              <div><span className="font-jakarta font-semibold text-on-surface">Deadline:</span> {selectedInternship.applicationDeadline}</div>
+              <div><span className="font-jakarta font-semibold text-on-surface">Deadline:</span> {new Date(selectedInternship.applicationDeadline).toLocaleDateString()}</div>
             </div>
             {!hasApplied(selectedInternship.id) && selectedInternship.status === 'Hiring' && (
               <Button onClick={() => { setApplyingTo(selectedInternship.id); setSelectedId(null) }}>Apply Now</Button>
@@ -217,7 +219,7 @@ export default function InternshipExplorerPage(): React.JSX.Element {
             <div key={a.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 flex items-center justify-between" style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}>
               <div>
                 <h4 className="font-jakarta font-semibold text-on-surface">{a.internshipTitle}</h4>
-                <p className="text-sm font-lexend text-on-surface-variant">{a.companyName} • Applied {a.appliedAt}</p>
+                <p className="text-sm font-lexend text-on-surface-variant">{a.companyName} • Applied {new Date(a.appliedAt).toLocaleDateString()}</p>
               </div>
               <span className={`px-3 py-1 rounded-full text-xs font-jakarta font-semibold ${statusColors[a.status]}`}>{a.status}</span>
             </div>
@@ -238,7 +240,7 @@ export default function InternshipExplorerPage(): React.JSX.Element {
               <span className="material-symbols-outlined text-secondary text-[28px]">verified</span>
               <div>
                 <h4 className="font-jakarta font-semibold text-on-surface">{ci.title}</h4>
-                <p className="text-sm font-lexend text-on-surface-variant">{ci.companyName} • {ci.duration} • Completed {ci.completedAt}</p>
+                <p className="text-sm font-lexend text-on-surface-variant">{ci.companyName} • {ci.duration} • Completed {new Date(ci.completedAt).toLocaleDateString()}</p>
               </div>
             </div>
           ))}

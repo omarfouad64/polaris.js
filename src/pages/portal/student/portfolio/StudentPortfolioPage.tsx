@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio'
 import useStudentProjects from '../projects/scripts/useStudentProjects'
 import ProjectList from '../projects/components/ProjectList'
@@ -29,7 +29,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
   const navigate = useNavigate()
   const { id } = useParams()
   const { user } = useGlobalContext()
-  const { isFavorite, addFavorite, removeFavorite } = useFavorites()
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites(user?.username || '')
 
   // State management
   const [activeSection, setActiveSection] = useState<'profile' | 'skills' | 'projects' | 'internships' | 'contact'>('profile')
@@ -39,7 +39,8 @@ export default function StudentPortfolioPage(): React.JSX.Element {
   const [editBio, setEditBio] = useState('')
   const [editLinkedin, setEditLinkedin] = useState('')
 
-  const location = useLocation()
+  const _location = useLocation()
+  void _location
 
   // Determine target portfolio and permissions
   const isStudent = user?.role === 'Student'
@@ -66,8 +67,8 @@ export default function StudentPortfolioPage(): React.JSX.Element {
     updateProfilePicture
   } = useStudentPortfolio(targetId)
 
-  const { projects, deleteProject, isLoading: projectsLoading } = useStudentProjects()
-  const { completedInternships } = useInternshipSearch()
+  const { projects, deleteProject, isLoading: projectsLoading } = useStudentProjects(user?.username)
+  const { completedInternships } = useInternshipSearch(user?.username || '')
 
   // Project Handlers
   const handleEditProject = (id: string) => {
@@ -81,6 +82,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
   }
 
   const handleViewProject = (id: string) => {
+    localStorage.setItem('polaris_back_label', 'Back to Profile')
     const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Employer' ? 'employer' : 'student'
     navigate(`/portal/${rolePath}/projects/${id}/view`)
   }
@@ -90,6 +92,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
     setEditMajor(portfolio.major)
     setEditBio(portfolio.bio)
     setEditLinkedin(portfolio.linkedinUrl)
+    setNewSkill('')
     setIsEditing(true)
   }
 
@@ -101,6 +104,8 @@ export default function StudentPortfolioPage(): React.JSX.Element {
     // Synchronize name if we had a name edit field (currently name is static in dummy)
     setIsEditing(false)
   }
+
+  
 
   // Handler: Add skill
   const handleAddSkill = () => {
@@ -128,20 +133,20 @@ export default function StudentPortfolioPage(): React.JSX.Element {
     }
   }
 
-  const handleToggleFavorite = (): void => {
+const handleToggleFavorite = (): void => {
     if (isFavorite(targetId)) {
-      removeFavorite(targetId)
+      removeFavorite(targetId, user.username)
       return
     }
-
     addFavorite({
       id: targetId,
+      userId: user.username,
       type: 'portfolio',
       title: portfolio.name,
       subtitle: `${portfolio.major} - ${portfolio.projectCount} Projects`,
       tags: portfolio.skills
     })
-  }
+   }
 
   return (
     <div className="min-h-screen bg-background p-6 lg:p-8">
@@ -318,7 +323,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
                         className="flex items-center gap-2 px-3 py-1 bg-secondary-container rounded-full"
                       >
                         <span className="text-sm font-lexend text-on-secondary-container">{skill}</span>
-                        {!isReadOnly && (
+                        {isEditing && !isReadOnly && (
                           <button
                             onClick={() => handleRemoveSkill(skill)}
                             className="text-on-secondary-container hover:opacity-70 transition-opacity"
@@ -336,7 +341,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
               </div>
 
               {/* Add Skill Input */}
-              {!isReadOnly && (
+              {isEditing && !isReadOnly && (
                 <div>
                   <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
                     Add a Skill
@@ -381,7 +386,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
 
               {projects.length > 0 ? (
                 <ProjectList
-                  projects={projects.filter(p => p.isPublic)}
+                  projects={projects.filter(p => p.ownerId === portfolio.studentId && p.isPublic)}
                   onEdit={isReadOnly ? undefined : handleEditProject}
                   onDelete={isReadOnly ? undefined : handleDeleteProject}
                   onView={handleViewProject}
@@ -447,7 +452,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
                       </div>
                       <div className="text-right flex-shrink-0">
                         <span className="px-2.5 py-1 bg-secondary/10 text-secondary rounded-full text-xs font-jakarta font-semibold">Completed</span>
-                        <p className="text-xs font-lexend text-on-surface-variant mt-1">{ci.completedAt}</p>
+                        <p className="text-xs font-lexend text-on-surface-variant mt-1">{new Date(ci.completedAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                   ))}

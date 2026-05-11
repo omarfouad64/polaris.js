@@ -4,6 +4,22 @@
 
 ---
 
+## 🚨 HIGH PRIORITY: Redux Hook Refactoring
+
+The data architecture has been migrated from hardcoded arrays to a persisted Redux Toolkit store (see `REDUX_IMPLEMENTATION_PLAN.md`). 
+The **immediate next task** for any agent working on this repository is to refactor all custom hooks in `src/hooks/` to interface with the new Redux store.
+
+**Instructions for the Implementing Agent:**
+1. Read `REDUX_IMPLEMENTATION_PLAN.md` to understand the Redux setup.
+2. Open each hook in `src/hooks/`.
+3. Remove imports for the old, hardcoded data arrays.
+4. Import `useSelector` and `useDispatch` from `react-redux`, and `RootState` from `../store`.
+5. Replace raw data access with `useSelector((state: RootState) => state.database.[entity])`.
+6. For any mutating logic inside the hook (adds, updates, deletes), add the corresponding reducers to `src/store/databaseSlice.ts` and dispatch those actions using `useDispatch()`.
+7. Ensure that the changes compile with `npx tsc --noEmit` and do not break the existing UI.
+
+---
+
 ## Bug Fixes
 
 ### 1. Duplicate Invitations

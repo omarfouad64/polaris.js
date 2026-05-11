@@ -1,4 +1,3 @@
-import React from 'react'
 import { useNavigate, useRouteError, isRouteErrorResponse } from 'react-router-dom'
 import Button from '../../components/Button'
 
@@ -44,7 +43,7 @@ export default function ErrorPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button 
             size="lg" 
-            variant="filled" 
+            variant="primary" 
             onClick={() => navigate('/')}
             className="w-full sm:w-auto px-8"
           >

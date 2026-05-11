@@ -1,4 +1,8 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { updateDatabase } from '../../../../../store/databaseSlice'
+import type { RootState } from '../../../../../store'
+import type { CompanyProfile } from '../../../../../types'
 
 export interface EmployerApplication {
   id: string
@@ -10,76 +14,59 @@ export interface EmployerApplication {
   address: string
   documentUrl: string
   logoUrl?: string
+  documents?: Array<{ id: string; name: string; type: string; size: number; uploadedAt: string }>
+  phone?: string
+  logoUrl?: string
 }
 
-const dummyApplications: EmployerApplication[] = [
-  {
-    id: 'emp1',
-    companyName: 'Siemens Healthineers',
-    email: 'hr@siemens-healthineers.com',
-    appliedDate: '2023-10-24',
-    status: 'Pending',
-    bio: 'Pioneering breakthroughs in healthcare. For everyone. Everywhere.',
-    address: 'Henkestr. 127, 91052 Erlangen, Germany',
-    documentUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-    logoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBQTlMc_YBmlyB07w_tsEjldVkmKgf1xpRE79PGKYoNSI0-S_H2y3CD9qcUSlzO5avoG-rnWc0jKh4mzRYPZGBChQZDHL4h8FoYpeji2NhXjIHxfSKvWYs1p5-Ya_1qJmjN2nt1ONDIcHRsKtZkaHDb18AN93Ve6pueM2qWyUs7kcFQ5seeZULPPUZ3S43CB19qFYUzBHE3c4lxb-XJeicv_nnjpSA3jUiMkdpESBn8tmg9ZnliMgWtcMS1leOUacyBE7t9Fqf5dJ2Q'
-  },
-  {
-    id: 'emp2',
-    companyName: 'TechFlow Solutions',
-    email: 'recruiting@techflow.io',
-    appliedDate: '2023-10-25',
-    status: 'Pending',
-    bio: 'Agile software consulting and custom enterprise development.',
-    address: '100 Tech Park Way, Suite 400, San Jose, CA',
-    documentUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
-  },
-  {
-    id: 'emp3',
-    companyName: 'Global Corp',
-    email: 'contact@globalcorp.com',
-    appliedDate: '2023-10-20',
-    status: 'Approved',
-    bio: 'A multinational conglomerate.',
-    address: '123 Global Ave, New York, NY',
-    documentUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
-  },
-  {
-    id: 'emp4',
-    companyName: 'Shady Business LLC',
-    email: 'admin@shady.biz',
-    appliedDate: '2023-10-21',
-    status: 'Rejected',
-    bio: 'We definitely do real business.',
-    address: 'Unknown',
-    documentUrl: ''
-  }
-]
-
 export function useEmployerApplications() {
-  const [applications, setApplications] = useState<EmployerApplication[]>(dummyApplications)
+  const dispatch = useDispatch()
+  const companies = useSelector((state: RootState) => state.database.companies)
 
-  const acceptApplication = (id: string) => {
-    setApplications(apps => apps.map(app => 
-      app.id === id ? { ...app, status: 'Approved' } : app
-    ))
+  const applications: EmployerApplication[] = useMemo(() => {
+    return companies.map((c: CompanyProfile) => ({
+      id: c.contactEmail,
+      companyName: c.companyName,
+      email: c.contactEmail,
+      appliedDate: c.documents?.[0]?.uploadedAt?.split('T')[0] || 'Unknown',
+      status: c.approvalStatus as 'Pending' | 'Approved' | 'Rejected',
+      bio: c.biography,
+      address: c.address,
+      documentUrl: c.documents?.[0]?.name || '',
+      logoUrl: c.logoUrl || '',
+      documents: c.documents,
+      phone: c.phone,
+      logoUrl: c.logoUrl
+    }))
+  }, [companies])
+
+  const acceptApplication = (email: string) => {
+    const company = companies.find((c: CompanyProfile) => c.contactEmail === email)
+    if (company) {
+      dispatch(updateDatabase({
+        companies: companies.map((c: CompanyProfile) =>
+          c.contactEmail === email ? { ...c, approvalStatus: 'Approved' as const } : c
+        )
+      }))
+    }
   }
 
-  const rejectApplication = (id: string) => {
-    setApplications(apps => apps.map(app => 
-      app.id === id ? { ...app, status: 'Rejected' } : app
-    ))
+  const rejectApplication = (email: string) => {
+    const company = companies.find((c: CompanyProfile) => c.contactEmail === email)
+    if (company) {
+      dispatch(updateDatabase({
+        companies: companies.map((c: CompanyProfile) =>
+          c.contactEmail === email ? { ...c, approvalStatus: 'Rejected' as const } : c
+        )
+      }))
+    }
   }
 
   const downloadDocument = (url: string, filename: string) => {
-    // In a real application, this would trigger a download via API
-    // For dummy implementation, we open the URL in a new tab if it exists
     if (!url) {
       alert('No document available to download.')
       return
     }
-    
-    // Create a temporary anchor to trigger download (simulated)
     const a = document.createElement('a')
     a.href = url
     a.download = filename

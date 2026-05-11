@@ -68,10 +68,10 @@ export default function AppealReviewList({ appeals, onAcceptAppeal, onRejectAppe
               </button>
               <button
                 onClick={() => setPendingAction({ appeal, action: 'accept' })}
-                className="px-4 py-2 font-jakarta font-semibold text-sm text-on-primary bg-primary hover:bg-surface-tint rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                className="px-4 py-2 font-jakarta font-semibold text-sm text-on-primary bg-primary hover:bg-primary-container rounded-lg transition-colors flex items-center gap-2 shadow-sm"
               >
                 <span className="material-symbols-outlined text-[18px]">check</span>
-                Accept & Activate
+                Accept
               </button>
             </div>
           </div>
@@ -90,7 +90,7 @@ export default function AppealReviewList({ appeals, onAcceptAppeal, onRejectAppe
         onConfirm={() => {
           if (!pendingAction) return
           if (pendingAction.action === 'accept') {
-            onAcceptAppeal(pendingAction.appeal.id, pendingAction.appeal.projectId)
+            onAcceptAppeal(pendingAction.appeal.id)
           } else {
             onRejectAppeal(pendingAction.appeal.id)
           }

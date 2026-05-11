@@ -9,6 +9,7 @@ interface ProjectCollaborationPageProps {
   currentUserId: string
   isOwner: boolean
   projectCourseId?: string
+  isBachelorProject?: boolean
 }
 
 /**
@@ -21,7 +22,8 @@ export default function ProjectCollaborationPage({
   projectTitle,
   currentUserId,
   isOwner,
-  projectCourseId
+  projectCourseId,
+  isBachelorProject
 }: ProjectCollaborationPageProps) {
   const [modalRole, setModalRole] = useState<'Student' | 'Course Instructor'>('Student')
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
@@ -35,7 +37,10 @@ export default function ProjectCollaborationPage({
     setIsSearchModalOpen(false)
   }
 
-  const { suggestedInstructors, sendInvitation } = useProjectInvitations(projectId, currentUserId, projectCourseId)
+  const { suggestedInstructors, sendInvitation } = useProjectInvitations(projectId, currentUserId, projectCourseId, isBachelorProject)
+
+  // The prop tells us if this is a Bachelor's project.
+  // We fall back to false if undefined, but it should be set by the parent.
 
   return (
     <div className="space-y-6">
@@ -50,7 +55,7 @@ export default function ProjectCollaborationPage({
           </p>
         </div>
 
-        {isOwner && (
+        {!isBachelorProject && isOwner && (
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <button
               onClick={() => openSearchModal('Course Instructor')}
@@ -70,8 +75,17 @@ export default function ProjectCollaborationPage({
         )}
       </div>
 
+      {/* Bachelor Project Banner */}
+      {isBachelorProject && (
+        <div className="bg-primary-container/20 rounded-xl p-4 border border-primary/10">
+          <p className="text-sm text-on-surface-variant">
+            <span className="font-jakarta font-semibold text-on-surface">ℹ️ Note:</span> This is a Bachelor's project and does not support collaborators. Only the project owner can manage tasks.
+          </p>
+        </div>
+      )}
+
       {/* Suggested Instructors (Requirement 3) */}
-      {isOwner && suggestedInstructors.length > 0 && (
+      {!isBachelorProject && isOwner && suggestedInstructors.length > 0 && (
         <div className="bg-surface-container-low/40 rounded-2xl p-6 border border-outline-variant/20 space-y-4">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">auto_awesome</span>
@@ -103,13 +117,15 @@ export default function ProjectCollaborationPage({
       )}
 
       {/* Info Box */}
-      <div className="bg-primary-container/20 rounded-xl p-4 border border-primary/10">
-        <p className="text-sm text-on-surface-variant">
-          <span className="font-jakarta font-semibold text-on-surface">💡 Tip:</span> You can invite
-          both students and instructors to collaborate on your project. Instructors can provide
-          feedback and grade your work.
-        </p>
-      </div>
+      {!isBachelorProject && (
+        <div className="bg-primary-container/20 rounded-xl p-4 border border-primary/10">
+          <p className="text-sm text-on-surface-variant">
+            <span className="font-jakarta font-semibold text-on-surface">💡 Tip:</span> You can invite
+            both students and instructors to collaborate on your project. Instructors can provide
+            feedback and grade your work.
+          </p>
+        </div>
+      )}
 
       {/* Collaborator List */}
       <CollaboratorList
@@ -117,6 +133,7 @@ export default function ProjectCollaborationPage({
         currentUserId={currentUserId}
         isOwner={isOwner}
         projectCourseId={projectCourseId}
+        isBachelorProject={isBachelorProject}
       />
 
       {/* Search Collaborator Modal */}
@@ -124,6 +141,7 @@ export default function ProjectCollaborationPage({
         projectId={projectId}
         currentUserId={currentUserId}
         projectCourseId={projectCourseId}
+        isBachelorProject={isBachelorProject}
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
         onInvitationSent={handleInvitationSent}

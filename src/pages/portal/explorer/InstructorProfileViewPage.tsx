@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useMemo, useState, useEffect } from 'react'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useGlobalContext } from '../../../globalContext'
 import { useInstructorSearch } from '../../../hooks/useInstructorSearch'
+import useMessages from '../../../hooks/useMessages'
 
 type InstructorSection = 'about' | 'research' | 'education'
 
@@ -14,17 +15,36 @@ const INSTRUCTOR_SECTIONS: { id: InstructorSection; label: string }[] = [
 export default function InstructorProfileViewPage(): React.JSX.Element {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useGlobalContext()
   const [activeSection, setActiveSection] = useState<InstructorSection>('about')
+  const [backLabel, setBackLabel] = useState<string>('Go Back')
   const { allInstructors, getCourseById } = useInstructorSearch()
+  const { startConversation } = useMessages()
 
-  const rolePath = user?.role === 'Course Instructor'
-    ? 'instructor'
-    : user?.role === 'Administrator'
-      ? 'administrator'
-      : user?.role === 'Employer'
-        ? 'employer'
-        : 'student'
+  useEffect(() => {
+    if (!localStorage.getItem('polaris_back_label')) {
+      let newLabel = 'Go Back'
+      if (location.pathname.includes('/instructor/oversight') || location.pathname.includes('/instructor/projects')) newLabel = 'Back to Oversight'
+      else if (location.pathname.includes('/student/projects')) newLabel = 'Back to My Projects'
+      else if (location.pathname.includes('/employer/internships') || location.pathname.includes('/employer/profile')) newLabel = 'Back to Internships'
+      else if (location.pathname.includes('/administrator')) newLabel = 'Back to Dashboard'
+      else if (location.pathname.includes('/search')) newLabel = 'Back to Search'
+      localStorage.setItem('polaris_back_label', newLabel)
+    }
+    setBackLabel(localStorage.getItem('polaris_back_label') || 'Go Back')
+  }, [location.pathname])
+
+  const handleBack = () => {
+    navigate(-1)
+  }
+
+  const handleSendMessage = () => {
+    if (!instructor) return
+    startConversation(instructor.instructorId, instructor.name, instructor.name.charAt(0))
+    const role = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
+    navigate(`/portal/${role}/communications`)
+  }
 
   const instructor = useMemo(() => {
     return allInstructors.find(item => item.instructorId === id) ?? null
@@ -45,10 +65,10 @@ export default function InstructorProfileViewPage(): React.JSX.Element {
           We could not find the requested instructor profile.
         </p>
         <button
-          onClick={() => navigate(`/portal/${rolePath}/search`)}
+          onClick={handleBack}
           className="px-4 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
         >
-          Back to Search
+          Back
         </button>
       </div>
     )
@@ -58,11 +78,11 @@ export default function InstructorProfileViewPage(): React.JSX.Element {
     <div className="space-y-6">
       <div className="flex flex-col gap-3">
         <button
-          onClick={() => navigate(`/portal/${rolePath}/search`)}
+          onClick={handleBack}
           className="inline-flex items-center gap-2 text-sm font-lexend text-on-surface-variant hover:text-on-surface"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          Back to Search
+          {backLabel}
         </button>
         <div>
           <h1 className="text-3xl font-jakarta font-bold text-on-surface">Instructor Profile</h1>
@@ -173,7 +193,10 @@ export default function InstructorProfileViewPage(): React.JSX.Element {
         </div>
 
         <div className="pt-4 border-t border-surface-container-high">
-          <button className="w-full px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors">
+          <button
+            onClick={handleSendMessage}
+            className="w-full px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
+          >
             Send Message to Instructor
           </button>
         </div>

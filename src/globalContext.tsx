@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 
 import { type UserRole } from './types'
 
@@ -18,31 +18,28 @@ const GlobalContext = createContext<GlobalContextType | undefined>(undefined)
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('polaris_user')
-    return savedUser ? JSON.parse(savedUser) : null
+    const saved = localStorage.getItem('polaris_user')
+    return saved ? JSON.parse(saved) : null
   })
 
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('polaris_user', JSON.stringify(user))
-    } else {
-      localStorage.removeItem('polaris_user')
-    }
-  }, [user])
+  const login = useCallback((username: string, role: UserRole) => {
+    const u = { username, role }
+    localStorage.setItem('polaris_user', JSON.stringify(u))
+    setUser(u)
+  }, [])
 
-  const login = (username: string, role: UserRole) => {
-    setUser({ username, role })
-  }
-
-  const logout = () => {
+  const logout = useCallback(() => {
+    localStorage.removeItem('polaris_user')
     setUser(null)
-  }
+  }, [])
 
-  const value = {
+  const isLoggedIn = !!user
+
+  const value: GlobalContextType = {
     user,
     login,
     logout,
-    isLoggedIn: !!user
+    isLoggedIn
   }
 
   return (

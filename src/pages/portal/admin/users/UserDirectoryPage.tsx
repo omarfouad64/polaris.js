@@ -90,9 +90,9 @@ export default function UserDirectoryPage() {
             >
               <option value="All">Role: All</option>
               <option value="Admin">Admin</option>
-              <option value="Faculty">Faculty</option>
+              <option value="Instructor">Instructor</option>
               <option value="Student">Student</option>
-              <option value="Staff">Staff</option>
+              <option value="Employer">Employer</option>
             </select>
           </div>
         </div>

@@ -13,7 +13,7 @@ export default function ProjectTasksPage(): React.JSX.Element {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useGlobalContext()
-  const { getProjectById, updateProject } = useStudentProjects()
+  const { getProjectById, updateProject } = useStudentProjects(user?.username)
 
   if (!id) {
     return (
@@ -47,20 +47,23 @@ export default function ProjectTasksPage(): React.JSX.Element {
     updateProject(id, { tasks })
   }
 
-  // In this frontend-only app the logged-in student is always the owner of their projects.
+  // Determine ownership based on project data — a student may be viewing another student's project as collaborator
   const currentUserId = user?.username ?? 'current-user'
-  const isOwner = true
+  const isOwner = project?.ownerId === currentUserId
 
   return (
     <div className="min-h-screen bg-background p-[--spacing-polaris-md] md:p-[--spacing-polaris-lg]">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Back navigation */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
+            navigate(`/portal/${rolePath}/projects/${id}/view`)
+          }}
           className="flex items-center gap-2 text-sm font-jakarta font-semibold text-primary hover:text-primary/80 transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          Back to Project
+          Back to Project Overview
         </button>
 
         {/* Project context header */}

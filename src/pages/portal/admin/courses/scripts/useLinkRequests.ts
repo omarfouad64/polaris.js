@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { linkCourse, unlinkCourse, updateDatabase, updateCollaboratorStatus } from '../../../../../store/databaseSlice'
+import type { RootState } from '../../../../../store'
 
 export interface LinkRequest {
   id: string
@@ -9,44 +12,127 @@ export interface LinkRequest {
   type: 'link' | 'unlink'
   status: 'pending' | 'accepted' | 'rejected'
   date: string
+  projectId?: string
+  projectTitle?: string
+  requestKind?: 'course_link' | 'project_invitation'
 }
 
-const dummyRequests: LinkRequest[] = [
-  {
-    id: 'req1',
-    instructorName: 'Dr. John Doe',
-    instructorEmail: 'john.doe@guc.edu.eg',
-    courseName: 'Software Engineering',
-    courseCode: 'CS311',
-    type: 'link',
-    status: 'pending',
-    date: '2026-04-28'
-  },
-  {
-    id: 'req2',
-    instructorName: 'Dr. Jane Smith',
-    instructorEmail: 'jane.smith@guc.edu.eg',
-    courseName: 'Web Programming',
-    courseCode: 'CS341',
-    type: 'unlink',
-    status: 'pending',
-    date: '2026-04-29'
-  }
-]
-
 export function useLinkRequests() {
-  const [requests, setRequests] = useState<LinkRequest[]>(dummyRequests)
-  const pendingRequests = requests.filter(r => r.status === 'pending')
+  const dispatch = useDispatch()
+  const courseLinks = useSelector((state: RootState) => state.database.courseLinks)
+  const courses = useSelector((state: RootState) => state.database.courses)
+  const instructors = useSelector((state: RootState) => state.database.instructors)
+  const storedLinkRequests = useSelector((state: RootState) => state.database.linkRequests)
+  const projectInvitations = useSelector((state: RootState) => state.database.projectInvitations)
 
-  const acceptRequest = (id: string) => {
-    setRequests(requests.map(r => r.id === id ? { ...r, status: 'accepted' } : r))
-    // Simulate notification requirement 58 is handled here implicitly or by another hook reading this state
-    alert(`Link request ${id} accepted. Instructor notified.`)
+  const requests: LinkRequest[] = useMemo(() => {
+    const linkRequests = courseLinks.map((link: any) => {
+      const course = courses.find((c: any) => c.id === link.courseId)
+      const instructor = instructors.find((i: any) => i.instructorId === link.instructorId)
+      return {
+        id: `${link.instructorId}-${link.courseId}`,
+        instructorName: instructor?.name || 'Unknown',
+        instructorEmail: link.instructorId,
+        courseName: course?.name || 'Unknown',
+        courseCode: course?.code || 'Unknown',
+        type: link.direction || (link.status === 'pending' ? 'link' : 'unlink'),
+        status: link.status === 'pending' ? 'pending' : link.status === 'linked' ? 'accepted' : 'rejected',
+        date: link.linkedAt?.split('T')[0] || '',
+        projectId: undefined,
+        projectTitle: undefined,
+        requestKind: 'course_link' as const
+      }
+    })
+    const storedRequests: LinkRequest[] = (storedLinkRequests || []).map((req: any) => ({
+      id: req.id,
+      instructorName: req.instructorName,
+      instructorEmail: req.instructorId,
+      courseName: req.courseName,
+      courseCode: courses.find((c: any) => c.id === req.courseId)?.code || 'Unknown',
+      type: req.type,
+      status: req.status,
+      date: req.createdAt?.split('T')[0] || '',
+      projectId: undefined,
+      projectTitle: undefined,
+      requestKind: 'course_link' as const
+    }))
+    const projectInvites: LinkRequest[] = (projectInvitations || []).filter((inv: any) => inv.invitationStatus === 'pending').map((inv: any) => ({
+      id: inv.id,
+      instructorName: inv.recipientName,
+      instructorEmail: inv.recipientEmail,
+      courseName: inv.projectTitle,
+      courseCode: inv.projectId,
+      type: 'link',
+      status: 'pending',
+      date: inv.createdAt?.split('T')[0] || '',
+      projectId: inv.projectId,
+      projectTitle: inv.projectTitle,
+      requestKind: 'project_invitation' as const
+    }))
+    return [...linkRequests, ...storedRequests, ...projectInvites]
+  }, [courseLinks, courses, instructors, storedLinkRequests, projectInvitations])
+
+  const pendingRequests = useMemo(() => requests.filter(r => r.status === 'pending'), [requests])
+
+  const acceptRequest = (requestId: string, requestKind?: string) => {
+    if (requestKind === 'project_invitation') {
+      const inv = (projectInvitations || []).find((i: any) => i.id === requestId)
+      if (inv) {
+        dispatch(updateCollaboratorStatus({
+          projectId: inv.projectId,
+          email: inv.recipientEmail,
+          status: 'accepted'
+        }))
+      }
+      const updatedInvitations = (projectInvitations || []).map((i: any) =>
+        i.id === requestId ? { ...i, invitationStatus: 'accepted' as const } : i
+      )
+      dispatch(updateDatabase({ projectInvitations: updatedInvitations }))
+      return
+    }
+    if (requestId.startsWith('link_req_')) {
+      const stored = (storedLinkRequests || []).find((r: any) => r.id === requestId)
+      if (stored) {
+        dispatch(linkCourse({ instructorId: stored.instructorId, courseId: stored.courseId }))
+        const updatedLinkRequests = (storedLinkRequests || []).map((r: any) =>
+          r.id === requestId ? { ...r, status: 'accepted' as const } : r
+        )
+        dispatch(updateDatabase({ linkRequests: updatedLinkRequests }))
+      }
+    } else {
+      const [instructorId, ...courseIdParts] = requestId.split('-')
+      dispatch(linkCourse({ instructorId, courseId: courseIdParts.join('-') }))
+    }
   }
 
-  const rejectRequest = (id: string) => {
-    setRequests(requests.map(r => r.id === id ? { ...r, status: 'rejected' } : r))
-    alert(`Link request ${id} rejected. Instructor notified.`)
+  const rejectRequest = (requestId: string, requestKind?: string) => {
+    if (requestKind === 'project_invitation') {
+      const inv = (projectInvitations || []).find((i: any) => i.id === requestId)
+      if (inv) {
+        dispatch(updateCollaboratorStatus({
+          projectId: inv.projectId,
+          email: inv.recipientEmail,
+          status: 'rejected'
+        }))
+      }
+      const updatedInvitations = (projectInvitations || []).map((i: any) =>
+        i.id === requestId ? { ...i, invitationStatus: 'rejected' as const } : i
+      )
+      dispatch(updateDatabase({ projectInvitations: updatedInvitations }))
+      return
+    }
+    if (requestId.startsWith('link_req_')) {
+      const stored = (storedLinkRequests || []).find((r: any) => r.id === requestId)
+      if (stored) {
+        const updatedLinkRequests = (storedLinkRequests || []).map((r: any) =>
+          r.id === requestId ? { ...r, status: 'rejected' as const } : r
+        )
+        dispatch(updateDatabase({ linkRequests: updatedLinkRequests }))
+      }
+    } else {
+      const [instructorId, ...courseIdParts] = requestId.split('-')
+      dispatch(unlinkCourse({ instructorId, courseId: courseIdParts.join('-') }))
+    }
   }
 
   return {

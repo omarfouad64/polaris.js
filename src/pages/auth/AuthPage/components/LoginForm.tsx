@@ -10,7 +10,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const { login } = useGlobalContext()
-  const { findUser } = useUsers()
+  const { findUser, findCompany } = useUsers()
   const navigate = useNavigate()
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -19,7 +19,16 @@ export default function LoginForm() {
     const user = findUser(email)
     if (user && user.password === password) {
       login(user.username, user.role)
-      navigate('/')
+      if (user.role === 'Employer') {
+        const company = findCompany(email)
+        if (company && company.approvalStatus === 'Pending') {
+          navigate('/auth/employer-pending-verification')
+        } else {
+          navigate('/')
+        }
+      } else {
+        navigate('/')
+      }
     } else {
       setError('Invalid email or password')
     }
@@ -29,9 +38,9 @@ export default function LoginForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-8">
       <div className="space-y-5">
         <Input 
-          label="University Email" 
+          label="Email" 
           type="email" 
-          placeholder="jane.doe@guc.edu.eg" 
+          placeholder="example@email.com" 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           icon={<span className="material-symbols-outlined">mail</span>}

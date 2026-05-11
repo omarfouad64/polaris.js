@@ -4,8 +4,8 @@ import ConfirmationDialog from '../../../../../components/ConfirmationDialog'
 
 interface LinkRequestHandlerProps {
   requests: LinkRequest[]
-  onAccept: (id: string) => void
-  onReject: (id: string) => void
+  onAccept: (id: string, kind?: string) => void
+  onReject: (id: string, kind?: string) => void
 }
 
 export default function LinkRequestHandler({ requests, onAccept, onReject }: LinkRequestHandlerProps) {
@@ -19,7 +19,7 @@ export default function LinkRequestHandler({ requests, onAccept, onReject }: Lin
       <div className="flex flex-col items-center justify-center p-12 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 text-center">
         <span className="material-symbols-outlined text-4xl text-outline mb-4">check_circle</span>
         <h3 className="font-jakarta text-lg font-bold text-on-surface">No Pending Requests</h3>
-        <p className="font-lexend text-sm text-on-surface-variant">All course link/unlink requests have been handled.</p>
+        <p className="font-lexend text-sm text-on-surface-variant">All course link/unlink and collaboration requests have been handled.</p>
       </div>
     )
   }
@@ -35,22 +35,28 @@ export default function LinkRequestHandler({ requests, onAccept, onReject }: Lin
             <div className="flex items-start gap-4">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${request.type === 'link' ? 'bg-primary/10 text-primary' : 'bg-error/10 text-error'}`}>
                 <span className="material-symbols-outlined text-2xl">
-                  {request.type === 'link' ? 'link' : 'link_off'}
+                  {request.requestKind === 'project_invitation' ? 'person_add' : request.type === 'link' ? 'link' : 'link_off'}
                 </span>
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-xs font-bold uppercase tracking-wider ${request.type === 'link' ? 'text-primary' : 'text-error'}`}>
-                    {request.type} Request
+                  <span className={`text-xs font-bold uppercase tracking-wider ${request.requestKind === 'project_invitation' ? 'text-primary' : request.type === 'link' ? 'text-primary' : 'text-error'}`}>
+                    {request.requestKind === 'project_invitation' ? 'Project Invitation' : `${request.type} Request`}
                   </span>
                   <span className="text-xs font-lexend text-outline">{request.date}</span>
                 </div>
                 <p className="font-jakarta text-on-surface font-semibold text-lg">
                   {request.instructorName}
                 </p>
-                <p className="font-lexend text-sm text-on-surface-variant">
-                  {request.courseName} ({request.courseCode})
-                </p>
+                {request.requestKind === 'project_invitation' ? (
+                  <p className="font-lexend text-sm text-on-surface-variant">
+                    Invited to project: {request.projectTitle} ({request.courseCode})
+                  </p>
+                ) : (
+                  <p className="font-lexend text-sm text-on-surface-variant">
+                    {request.courseName} ({request.courseCode})
+                  </p>
+                )}
               </div>
             </div>
             
@@ -75,9 +81,11 @@ export default function LinkRequestHandler({ requests, onAccept, onReject }: Lin
       </div>
       <ConfirmationDialog
         isOpen={!!pendingAction}
-        title={pendingAction?.action === 'accept' ? 'Approve Link Request?' : 'Reject Link Request?'}
+        title={pendingAction?.action === 'accept' ? 'Approve Request?' : 'Reject Request?'}
         message={pendingAction
-          ? `${pendingAction.request.instructorName} requested to ${pendingAction.request.type} ${pendingAction.request.courseName} (${pendingAction.request.courseCode}).`
+          ? pendingAction.request.requestKind === 'project_invitation'
+            ? `${pendingAction.request.instructorName} has a pending invitation to project "${pendingAction.request.projectTitle}" (${pendingAction.request.courseCode}). Accepting will add them as a collaborator.`
+            : `${pendingAction.request.instructorName} requested to ${pendingAction.request.type} ${pendingAction.request.courseName} (${pendingAction.request.courseCode}).`
           : ''
         }
         confirmLabel={pendingAction?.action === 'accept' ? 'Approve Request' : 'Reject Request'}
@@ -86,9 +94,9 @@ export default function LinkRequestHandler({ requests, onAccept, onReject }: Lin
         onConfirm={() => {
           if (!pendingAction) return
           if (pendingAction.action === 'accept') {
-            onAccept(pendingAction.request.id)
+            onAccept(pendingAction.request.id, pendingAction.request.requestKind)
           } else {
-            onReject(pendingAction.request.id)
+            onReject(pendingAction.request.id, pendingAction.request.requestKind)
           }
           setPendingAction(null)
         }}

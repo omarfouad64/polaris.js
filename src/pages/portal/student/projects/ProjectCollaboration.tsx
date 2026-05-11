@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import { useProjectInvitations } from '../../../../hooks/useProjectInvitations'
 import { useGlobalContext } from '../../../../globalContext'
-import useStudentProjects, { type ProjectData, type ProjectTask } from './scripts/useStudentProjects'
+import useStudentProjects, { type ProjectTask } from './scripts/useStudentProjects'
 import ProjectCollaborationPage from './components/ProjectCollaborationPage'
 import ProjectTaskManager from './components/ProjectTaskManager'
 
@@ -13,18 +14,26 @@ import ProjectTaskManager from './components/ProjectTaskManager'
  */
 export default function ProjectCollaboration() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
   const { user } = useGlobalContext()
-  const { getProjectById, updateProject } = useStudentProjects()
+  const currentUserId = user?.username || 'student-001'
+  const { getProjectById, updateProject } = useStudentProjects(currentUserId)
   
   const projectId = id || 'proj-001'
   const project = getProjectById(projectId)
   const projectTitle = project?.title || 'E-Commerce Platform'
-  const currentUserId = user?.username || 'student-001'
-  // A student only ever sees their own projects, so they are always the owner
-  const isOwner = user?.role === 'Student'
+  // Determine ownership based on project data — a student may be viewing another student's project as collaborator
+  const isOwner = project?.ownerId === currentUserId
   const isInstructor = user?.role === 'Course Instructor'
 
   const [activeTab, setActiveTab] = useState<'team' | 'tasks'>('team')
+
+  useEffect(() => {
+    if (id) {
+      dispatch({ type: 'database/markProjectNotifications', payload: id })
+    }
+  }, [id, dispatch])
   const { collaborators = [] } = useProjectInvitations(projectId, currentUserId)
 
   const handleTasksChange = (tasks: ProjectTask[]) => {
@@ -33,6 +42,18 @@ export default function ProjectCollaboration() {
 
   return (
     <div className="min-h-screen bg-background p-6 lg:p-8">
+      {/* Back navigation */}
+      <button
+        onClick={() => {
+          const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
+          navigate(`/portal/${rolePath}/projects/${id}/view`)
+        }}
+        className="flex items-center gap-2 text-sm font-jakarta font-semibold text-primary hover:text-primary/80 transition-colors mb-6"
+      >
+        <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+        Back to Project Overview
+      </button>
+
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-jakarta font-bold text-on-surface mb-2">
@@ -76,6 +97,7 @@ export default function ProjectCollaboration() {
           currentUserId={currentUserId}
           isOwner={isOwner}
           projectCourseId={project?.course}
+          isBachelorProject={project?.isBachelorProject}
         />
       ) : (
         <ProjectTaskManager

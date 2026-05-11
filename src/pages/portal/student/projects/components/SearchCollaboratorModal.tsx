@@ -6,6 +6,7 @@ interface SearchCollaboratorModalProps {
   projectId: string
   currentUserId: string
   projectCourseId?: string
+  isBachelorProject?: boolean
   isOpen: boolean
   onClose: () => void
   onInvitationSent: () => void
@@ -20,6 +21,7 @@ export default function SearchCollaboratorModal({
   projectId,
   currentUserId,
   projectCourseId,
+  isBachelorProject,
   isOpen,
   onClose,
   onInvitationSent,
@@ -33,7 +35,8 @@ export default function SearchCollaboratorModal({
   const { setSearchQuery, searchCollaborators, sendInvitation } = useProjectInvitations(
     projectId,
     currentUserId,
-    projectCourseId
+    projectCourseId,
+    isBachelorProject
   )
 
   // Get search results — instructors are filtered to only those teaching the project's course

@@ -1,4 +1,4 @@
-import React from 'react'
+
 import type { UserRole } from '../../../../types'
 
 interface BrandingProps {

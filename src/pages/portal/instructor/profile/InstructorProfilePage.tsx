@@ -41,6 +41,7 @@ export default function InstructorProfilePage() {
     const handleEditStart = () => {
         setEditBiography(profile.biography)
         setEditEducation(profile.educationBackground)
+        setNewResearchInterest('')
         setIsEditing(true)
     }
 
@@ -212,13 +213,15 @@ export default function InstructorProfilePage() {
                                                 className="flex items-center gap-2 px-4 py-2 bg-primary-container rounded-full"
                                             >
                                                 <span className="text-sm font-lexend text-on-primary-container">{interest}</span>
-                                                <button
-                                                    onClick={() => handleRemoveResearchInterest(interest)}
-                                                    className="text-on-primary-container hover:opacity-70 transition-opacity"
-                                                    aria-label={`Remove ${interest}`}
-                                                >
-                                                    ✕
-                                                </button>
+                                                {isEditing && (
+                                                    <button
+                                                        onClick={() => handleRemoveResearchInterest(interest)}
+                                                        className="text-on-primary-container hover:opacity-70 transition-opacity"
+                                                        aria-label={`Remove ${interest}`}
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                )}
                                             </div>
                                         ))
                                     ) : (
@@ -230,27 +233,29 @@ export default function InstructorProfilePage() {
                             </div>
 
                             {/* Add Research Interest Input */}
-                            <div>
-                                <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
-                                    Add a Research Interest
-                                </label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={newResearchInterest}
-                                        onChange={(e) => setNewResearchInterest(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleAddResearchInterest()}
-                                        className="flex-1 px-4 py-2 border border-outline rounded-lg bg-surface text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
-                                        placeholder="e.g., Cloud Computing, AI, Cybersecurity"
-                                    />
-                                    <button
-                                        onClick={handleAddResearchInterest}
-                                        className="px-6 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
-                                    >
-                                        Add
-                                    </button>
+                            {isEditing && (
+                                <div>
+                                    <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
+                                        Add a Research Interest
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={newResearchInterest}
+                                            onChange={(e) => setNewResearchInterest(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && handleAddResearchInterest()}
+                                            className="flex-1 px-4 py-2 border border-outline rounded-lg bg-surface text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                                            placeholder="e.g., Cloud Computing, AI, Cybersecurity"
+                                        />
+                                        <button
+                                            onClick={handleAddResearchInterest}
+                                            className="px-6 py-2 bg-primary text-on-primary rounded-lg font-jakarta font-semibold hover:bg-primary-container transition-colors"
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     )}
 

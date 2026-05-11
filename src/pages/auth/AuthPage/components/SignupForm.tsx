@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { addCompanyProfile } from '../../../../store/databaseSlice'
 import { useGlobalContext } from '../../../../globalContext'
 import useUsers from '../../../../hooks/useUsers'
 import type { UserRole } from '../../../../types'
@@ -21,6 +23,7 @@ export default function SignupForm({ role, setRole }: SignupFormProps): React.JS
   const [error, setError] = useState('')
   const maxPdfSize = 5 * 1024 * 1024
   
+  const dispatch = useDispatch()
   const { login } = useGlobalContext()
   const { registerUser } = useUsers()
   const navigate = useNavigate()
@@ -57,9 +60,27 @@ export default function SignupForm({ role, setRole }: SignupFormProps): React.JS
       }
     }
 
-    registerUser(email, role, password)
-    login(email, role)
-    navigate('/')
+    const userRole = role === 'Course Instructor' ? 'Course Instructor' : role
+    registerUser(email, userRole, password, firstName, lastName)
+    login(email, userRole)
+    
+    if (role === 'Employer' && companyName) {
+      dispatch(addCompanyProfile({
+        companyId: `company_${Date.now()}`,
+        name: companyName,
+        contactEmail: email,
+        description: '',
+        location: '',
+        industry: '',
+        size: '',
+        website: '',
+        approvalStatus: 'Pending'
+      }))
+    }
+
+    setTimeout(() => {
+      navigate(role === 'Employer' ? '/auth/employer-pending-verification' : '/')
+    }, 0)
   }
 
   return (

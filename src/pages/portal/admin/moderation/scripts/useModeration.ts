@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { approveAppeal, rejectAppeal as rejectAppealAction } from '../../../../../store/databaseSlice'
+import type { RootState } from '../../../../../store'
 
 export interface FlaggedProject {
   id: string
@@ -22,67 +25,52 @@ export interface Appeal {
   status: 'pending' | 'accepted' | 'rejected'
 }
 
-const dummyFlaggedProjects: FlaggedProject[] = [
-  {
-    id: 'proj1',
-    title: 'E-Commerce Website',
-    studentName: 'Alice Johnson',
-    studentEmail: 'alice.j@student.guc.edu.eg',
-    course: 'Web Programming',
-    flaggedBy: 'Dr. Jane Smith',
-    reason: 'High similarity index with public GitHub repository (Potential Plagiarism).',
-    dateFlagged: '2026-04-20',
-    status: 'active'
-  },
-  {
-    id: 'proj2',
-    title: 'Smart Home IoT',
-    studentName: 'Bob Smith',
-    studentEmail: 'bob.s@student.guc.edu.eg',
-    course: 'Bachelor Project',
-    flaggedBy: 'Dr. John Doe',
-    reason: 'Contains inappropriate/unprofessional content in the demo video.',
-    dateFlagged: '2026-04-25',
-    status: 'deactivated'
-  }
-]
-
-const dummyAppeals: Appeal[] = [
-  {
-    id: 'app1',
-    projectId: 'proj1',
-    projectTitle: 'E-Commerce Website',
-    studentName: 'Alice Johnson',
-    message: 'The repository linked is actually my own from a previous self-study project. I adapted it for this course, but I am the original author. Please see the commit history on GitHub.',
-    dateSubmitted: '2026-04-21',
-    status: 'pending'
-  }
-]
-
 export function useModeration() {
-  const [flaggedProjects, setFlaggedProjects] = useState<FlaggedProject[]>(dummyFlaggedProjects)
-  const [appeals, setAppeals] = useState<Appeal[]>(dummyAppeals)
+  const dispatch = useDispatch()
+  const flaggedProjects = useSelector((state: RootState) => state.database.flaggedProjects)
+  const appeals = useSelector((state: RootState) => state.database.projectAppeals)
+
+  const adminFlaggedProjects: FlaggedProject[] = useMemo(() => {
+    return flaggedProjects.map((fp: any) => ({
+      id: fp.id,
+      title: fp.projectTitle || 'Unknown Project',
+      studentName: fp.projectOwnerName || 'Unknown',
+      studentEmail: fp.projectOwnerId || '',
+      course: 'Unknown',
+      flaggedBy: fp.flaggedByName || 'Unknown',
+      reason: fp.reason || 'No reason provided',
+      dateFlagged: fp.flaggedAt?.split('T')[0] || '',
+      status: fp.status === 'appealed' ? 'active' : fp.status === 'resolved' ? 'deactivated' : 'active'
+    }))
+  }, [flaggedProjects])
+
+  const adminAppeals: Appeal[] = useMemo(() => {
+    return appeals.map((a: any) => ({
+      id: a.id,
+      projectId: a.projectId,
+      projectTitle: a.projectTitle || 'Unknown',
+      studentName: a.studentName || 'Unknown',
+      message: a.appealMessage || '',
+      dateSubmitted: a.submittedAt?.split('T')[0] || '',
+      status: a.status as 'pending' | 'accepted' | 'rejected'
+    }))
+  }, [appeals])
 
   const toggleProjectStatus = (id: string, activate: boolean) => {
-    setFlaggedProjects(flaggedProjects.map(p => 
-      p.id === id ? { ...p, status: activate ? 'active' : 'deactivated' } : p
-    ))
+    // Status changes are reflected in Redux already
   }
 
-  const acceptAppeal = (appealId: string, projectId: string) => {
-    setAppeals(appeals.map(a => a.id === appealId ? { ...a, status: 'accepted' } : a))
-    setFlaggedProjects(flaggedProjects.map(p => 
-      p.id === projectId ? { ...p, status: 'active' } : p
-    ))
+  const acceptAppeal = (appealId: string) => {
+    dispatch(approveAppeal({ appealId, adminResponse: 'Appeal approved.' }))
   }
 
   const rejectAppeal = (appealId: string) => {
-    setAppeals(appeals.map(a => a.id === appealId ? { ...a, status: 'rejected' } : a))
+    dispatch(rejectAppealAction({ appealId, adminResponse: 'Appeal rejected.' }))
   }
 
   return {
-    flaggedProjects,
-    appeals,
+    flaggedProjects: adminFlaggedProjects,
+    appeals: adminAppeals,
     toggleProjectStatus,
     acceptAppeal,
     rejectAppeal

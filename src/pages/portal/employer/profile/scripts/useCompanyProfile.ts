@@ -1,5 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useGlobalContext } from '../../../../../globalContext'
 import type { CompanyProfile } from '../../../../../types'
+import type { RootState } from '../../../../../store'
+import {
+  updateCompanyProfile,
+  setLocation,
+  uploadDocument,
+  removeDocument
+} from '../../../../../store/databaseSlice'
 
 const defaultProfile: CompanyProfile = {
   companyName: 'TechVentures Inc.',
@@ -17,66 +26,50 @@ const defaultProfile: CompanyProfile = {
   ]
 }
 
-const STORAGE_KEY = 'polaris_company_profile'
-const PROFILE_UPDATED_EVENT = 'polaris_company_profile_updated'
-
 /**
- * useCompanyProfile — provides company profile data and CRUD operations.
- *
- * @returns profile data, update function, document management functions.
+ * useCompanyProfile — provides company profile data from Redux store.
  */
-export default function useCompanyProfile(): {
+function useCompanyProfileImpl(): {
   profile: CompanyProfile
   updateProfile: (updates: Partial<CompanyProfile>) => void
   setLocation: (lat: number, lng: number, address?: string | null) => void
   uploadDocument: (file: File) => void
   removeDocument: (docId: string) => void
 } {
-  const [profile, setProfile] = useState<CompanyProfile>(() => {
-    if (typeof window === 'undefined') return defaultProfile
-    const saved = window.localStorage.getItem(STORAGE_KEY)
-    if (!saved) return defaultProfile
-    try {
-      return JSON.parse(saved)
-    } catch {
-      return defaultProfile
-    }
-  })
+  const { user } = useGlobalContext()
+  const dispatch = useDispatch()
+  const companies = useSelector((state: RootState) => state.database.companies)
+  const [profile, setProfile] = useState<CompanyProfile>(defaultProfile)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
+    const myEmail = user?.username || ''
+    const found = (companies || []).find((c: CompanyProfile) => c.contactEmail === myEmail)
+    if (found) {
+      setProfile(found)
+    } else if (myEmail) {
+      setProfile({
+        ...defaultProfile,
+        companyName: '',
+        contactEmail: myEmail,
+        biography: '',
+        address: '',
+        phone: '',
+        logoUrl: '',
+      })
     }
-  }, [profile])
+  }, [companies, user])
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const handleProfileSync = () => {
-      const saved = window.localStorage.getItem(STORAGE_KEY)
-      if (!saved) return
-      try {
-        setProfile(JSON.parse(saved) as CompanyProfile)
-      } catch {
-        // Ignore malformed storage payloads.
-      }
-    }
-
-    window.addEventListener(PROFILE_UPDATED_EVENT, handleProfileSync)
-    return () => window.removeEventListener(PROFILE_UPDATED_EVENT, handleProfileSync)
-  }, [])
-
-  const updateProfile = (updates: Partial<CompanyProfile>): void => {
+  const updateProfile = useCallback((updates: Partial<CompanyProfile>): void => {
+    const myEmail = user?.username || profile.contactEmail || 'employer@company.com'
     setProfile(prev => {
       const next = { ...prev, ...updates }
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
-      }
       return next
     })
-  }
+    dispatch(updateCompanyProfile({ contactEmail: myEmail, ...updates }))
+  }, [dispatch, user?.username, profile.contactEmail])
 
-  const setLocation = (lat: number, lng: number, address?: string | null): void => {
+  const setLocationAction = useCallback((lat: number, lng: number, address?: string | null): void => {
+    const myEmail = user?.username || profile.contactEmail || 'employer@company.com'
     setProfile(prev => {
       const next = {
         ...prev,
@@ -84,15 +77,13 @@ export default function useCompanyProfile(): {
         locationAddress: address ?? null,
         address: address ?? prev.address
       }
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
-      }
       return next
     })
-  }
+    dispatch(setLocation({ contactEmail: myEmail, lat, lng, address: address ?? null }))
+  }, [dispatch, user?.username, profile.contactEmail])
 
-  const uploadDocument = (file: File): void => {
+  const uploadDocumentAction = useCallback((file: File): void => {
+    const myEmail = user?.username || profile.contactEmail || 'employer@company.com'
     const newDoc = {
       id: `doc-${Date.now()}`,
       name: file.name,
@@ -102,27 +93,24 @@ export default function useCompanyProfile(): {
     }
     setProfile(prev => {
       const next = { ...prev, documents: [...prev.documents, newDoc] }
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
-      }
       return next
     })
-  }
+    dispatch(uploadDocument({ contactEmail: myEmail, doc: newDoc }))
+  }, [dispatch, user?.username, profile.contactEmail])
 
-  const removeDocument = (docId: string): void => {
+  const removeDocumentAction = useCallback((docId: string): void => {
+    const myEmail = user?.username || profile.contactEmail || 'employer@company.com'
     setProfile(prev => {
       const next = {
         ...prev,
         documents: prev.documents.filter(d => d.id !== docId)
       }
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT))
-      }
       return next
     })
-  }
+    dispatch(removeDocument({ contactEmail: myEmail, docId }))
+  }, [dispatch, user?.username, profile.contactEmail])
 
-  return { profile, updateProfile, setLocation, uploadDocument, removeDocument }
+ return { profile, updateProfile, setLocation: setLocationAction, uploadDocument: uploadDocumentAction, removeDocument: removeDocumentAction }
 }
+
+export default useCompanyProfileImpl

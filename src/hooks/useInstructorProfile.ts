@@ -1,34 +1,54 @@
 import { useState, useCallback, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useGlobalContext } from '../globalContext'
+import type { RootState } from '../store'
 import type { InstructorProfile } from '../types'
 
-// Dummy initial instructor profile data
-const DUMMY_INSTRUCTOR_PROFILE: InstructorProfile = {
-  instructorId: 'instructor-001',
-  name: 'Dr. Fatima Al-Mansouri',
-  email: 'fatima.mansouri@guc.edu.eg',
-  biography: 'PhD in Computer Science from Cairo University. Specializing in software engineering and web technologies. Over 10 years of academic experience.',
-  researchInterests: ['Web Development', 'Software Engineering', 'Cloud Computing', 'Cybersecurity'],
-  educationBackground: 'PhD in Computer Science (Cairo University), M.Sc. in Information Systems (AUC), B.Sc. in Computer Science (GUC)',
-  linkedCourses: ['course-001', 'course-002', 'bachelor-project'],
-  profilePicture: null,
-  createdAt: new Date('2023-06-15').toISOString(),
-  updatedAt: new Date('2024-01-20').toISOString()
-}
-
 const STORAGE_KEY = 'polaris_instructor_profile'
-
-// ── Shared module-level state for synchronization ──────────────────────────
 type Listener = () => void
 const listeners: Set<Listener> = new Set()
 
 const loadProfile = (): InstructorProfile => {
-  if (typeof window === 'undefined') return DUMMY_INSTRUCTOR_PROFILE
+  if (typeof window === 'undefined') return {
+    instructorId: 'instructor-001',
+    name: 'Dr. Fatima Al-Mansouri',
+    email: 'fatima.mansouri@guc.edu.eg',
+    biography: 'PhD in Computer Science from Cairo University. Specializing in software engineering and web technologies. Over 10 years of academic experience.',
+    researchInterests: ['Web Development', 'Software Engineering', 'Cloud Computing', 'Cybersecurity'],
+    educationBackground: 'PhD in Computer Science (Cairo University), M.Sc. in Information Systems (AUC), B.Sc. in Computer Science (GUC)',
+    linkedCourses: ['course-001', 'course-002', 'bachelor-project'],
+    profilePicture: null,
+    createdAt: new Date('2023-06-15').toISOString(),
+    updatedAt: new Date('2024-01-20').toISOString(),
+  }
   const saved = window.localStorage.getItem(STORAGE_KEY)
-  if (!saved) return DUMMY_INSTRUCTOR_PROFILE
+  if (!saved) return {
+    instructorId: 'instructor-001',
+    name: 'Dr. Fatima Al-Mansouri',
+    email: 'fatima.mansouri@guc.edu.eg',
+    biography: 'PhD in Computer Science from Cairo University. Specializing in software engineering and web technologies. Over 10 years of academic experience.',
+    researchInterests: ['Web Development', 'Software Engineering', 'Cloud Computing', 'Cybersecurity'],
+    educationBackground: 'PhD in Computer Science (Cairo University), M.Sc. in Information Systems (AUC), B.Sc. in Computer Science (GUC)',
+    linkedCourses: ['course-001', 'course-002', 'bachelor-project'],
+    profilePicture: null,
+    createdAt: new Date('2023-06-15').toISOString(),
+    updatedAt: new Date('2024-01-20').toISOString(),
+  }
   try {
     return JSON.parse(saved)
   } catch {
-    return DUMMY_INSTRUCTOR_PROFILE
+    return {
+      instructorId: 'instructor-001',
+      name: 'Dr. Fatima Al-Mansouri',
+      email: 'fatima.mansouri@guc.edu.eg',
+      biography: 'PhD in Computer Science from Cairo University. Specializing in software engineering and web technologies. Over 10 years of academic experience.',
+      researchInterests: ['Web Development', 'Software Engineering', 'Cloud Computing', 'Cybersecurity'],
+      educationBackground: 'PhD in Computer Science (Cairo University), M.Sc. in Information Systems (AUC), B.Sc. in Computer Science (GUC)',
+      linkedCourses: ['course-001', 'course-002', 'bachelor-project'],
+      profilePicture: null,
+      createdAt: new Date('2023-06-15').toISOString(),
+      updatedAt: new Date('2024-01-20').toISOString(),
+    }
   }
 }
 
@@ -42,12 +62,12 @@ function emit() {
 }
 
 /**
- * useInstructorProfile – manages instructor profile data with CRUD operations.
- * Provides access to profile information, research interests, and education background.
- *
- * @returns Object containing profile state and update functions.
+ * useInstructorProfile — manages instructor profile data with CRUD operations.
  */
-export function useInstructorProfile() {
+export function useInstructorProfile(username?: string) {
+  const dispatch = useDispatch()
+  const { user } = useGlobalContext()
+  const instructors = useSelector((state: RootState) => state.database.instructors)
   const [, setTick] = useState(0)
 
   useEffect(() => {
@@ -56,35 +76,53 @@ export function useInstructorProfile() {
     return () => { listeners.delete(listener) }
   }, [])
 
-  const profile = sharedProfile
+  const myEmail = username || user?.username || ''
+  const profile = (instructors || []).find((i: InstructorProfile) => i.instructorId === myEmail)
+
+  if (!profile && myEmail) {
+    sharedProfile = {
+      ...sharedProfile,
+      instructorId: myEmail,
+      name: myEmail,
+      email: myEmail,
+      biography: '',
+      researchInterests: [],
+      educationBackground: '',
+      linkedCourses: [],
+      profilePicture: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+  } else if (profile) {
+    sharedProfile = profile
+  }
 
   const updateProfile = useCallback((updates: Partial<InstructorProfile>) => {
     sharedProfile = {
       ...sharedProfile,
       ...updates,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     }
     emit()
-  }, [])
+    dispatch({
+      type: 'database/updateInstructorProfile',
+      payload: { instructorId: myEmail, ...updates },
+    })
+  }, [dispatch, myEmail])
 
-  const updateBiography = useCallback((biography: string) => {
-    updateProfile({ biography })
-  }, [updateProfile])
-
-  const updateEducationBackground = useCallback((educationBackground: string) => {
-    updateProfile({ educationBackground })
-  }, [updateProfile])
+  const updateBiography = useCallback((biography: string) => updateProfile({ biography }), [updateProfile])
+  const updateEducationBackground = useCallback(
+    (educationBackground: string) => updateProfile({ educationBackground }),
+    [updateProfile]
+  )
 
   const addResearchInterest = useCallback((interest: string) => {
-    const interestExists = sharedProfile.researchInterests.some(
-      r => r.toLowerCase() === interest.toLowerCase()
-    )
-    if (interestExists) return
-
+    const exists = sharedProfile.researchInterests.some(r => r.toLowerCase() === interest.toLowerCase())
+    if (exists) return
     sharedProfile = {
       ...sharedProfile,
       researchInterests: [...sharedProfile.researchInterests, interest],
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     }
     emit()
   }, [])
@@ -93,14 +131,12 @@ export function useInstructorProfile() {
     sharedProfile = {
       ...sharedProfile,
       researchInterests: sharedProfile.researchInterests.filter(r => r !== interest),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     }
     emit()
   }, [])
 
-  const updateProfilePicture = useCallback((pictureUrl: string | null) => {
-    updateProfile({ profilePicture: pictureUrl })
-  }, [updateProfile])
+  const updateProfilePicture = useCallback((pictureUrl: string | null) => updateProfile({ profilePicture: pictureUrl }), [updateProfile])
 
   return {
     profile,
@@ -109,6 +145,6 @@ export function useInstructorProfile() {
     updateEducationBackground,
     addResearchInterest,
     removeResearchInterest,
-    updateProfilePicture
+    updateProfilePicture,
   }
 }

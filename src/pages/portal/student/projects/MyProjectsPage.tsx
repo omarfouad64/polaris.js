@@ -1,23 +1,27 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import useStudentProjects from './scripts/useStudentProjects';
 import ProjectList from './components/ProjectList';
 import ProjectFilters from './components/ProjectFilters';
 import Button from '../../../../components/Button';
 import ConfirmationDialog from '../../../../components/ConfirmationDialog';
-
+import { useGlobalContext } from '../../../../globalContext';
 /**
  * MyProjectsPage — Displays student's project list with CRUD controls.
  * Entry point for Requirement 19.
  */
 export default function MyProjectsPage() {
   const navigate = useNavigate();
-  const { projects, updateProject, deleteProject, isLoading } = useStudentProjects();
+  const dispatch = useDispatch();
+  const { user } = useGlobalContext();
+  const { projects, updateProject, deleteProject, isLoading } = useStudentProjects(user?.username);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
 
   const handleEdit = (id: string) => {
+    dispatch({ type: 'database/markProjectNotifications', payload: id });
     navigate(`/portal/student/projects/${id}`);
   };
 
@@ -36,13 +40,13 @@ export default function MyProjectsPage() {
     }
   };
 
-  const handleView = (id: string) => {
+const handleView = (id: string) => {
+    dispatch({ type: 'database/markProjectNotifications', payload: id });
+    localStorage.setItem('polaris_back_label', 'Back to My Projects')
     navigate(`/portal/student/projects/${id}/view`);
   };
 
-  const handleTeam = (id: string) => {
-    navigate(`/portal/student/projects/${id}/collaboration`);
-  };
+
 
   const handleToggleVisibility = (id: string) => {
     const project = projects.find(p => p.id === id);
@@ -52,6 +56,7 @@ export default function MyProjectsPage() {
   };
 
   const handleTasks = (id: string) => {
+    dispatch({ type: 'database/markProjectNotifications', payload: id });
     navigate(`/portal/student/projects/${id}/tasks`);
   };
 

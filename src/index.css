@@ -15,6 +15,10 @@
   --color-tertiary-container: #722f00;
   --color-on-tertiary: #ffffff;
   
+  --color-warning: #92400e;
+  --color-warning-container: #ffedaf;
+  --color-on-warning-container: #451a03;
+  
   --color-background: #f8f9ff;
   --color-on-background: #0b1c30;
   

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useGlobalContext } from '../../../../globalContext'
 import useFavorites from '../../../../hooks/useFavorites'
 import type { FavoriteItem } from '../../../../types'
 
@@ -9,14 +10,15 @@ import type { FavoriteItem } from '../../../../types'
  * Shared between Student and Employer via routing.
  */
 export default function FavoritesPage(): React.JSX.Element {
-  const { favoriteProjects, favoritePortfolios, recommendedProjects, removeFavorite } = useFavorites()
+  const { user } = useGlobalContext()
+  const { favoriteProjects, favoritePortfolios, recommendedProjects, removeFavorite } = useFavorites(user?.username || '')
   const [activeTab, setActiveTab] = useState<'projects' | 'portfolios' | 'recommended'>('projects')
 
   const renderProjectCard = (item: FavoriteItem, showRemove: boolean): React.JSX.Element => (
     <div key={item.id} className="group bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 transition-all duration-200 hover:shadow-[0_4px_16px_rgba(55,48,163,0.10)] hover:scale-[1.01] relative" style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}>
       {showRemove && (
         <button
-          onClick={() => removeFavorite(item.id)}
+          onClick={() => removeFavorite(item.id, item.userId)}
           className="absolute top-3 right-3 p-1.5 rounded-full text-error hover:bg-error/10 hover:scale-110 transition-all focus-visible:ring-2 focus-visible:ring-secondary active:scale-90"
           aria-label={`Remove ${item.title} from favorites`}
         >
@@ -42,7 +44,7 @@ export default function FavoritesPage(): React.JSX.Element {
   const renderPortfolioCard = (item: FavoriteItem): React.JSX.Element => (
     <div key={item.id} className="group bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 transition-all duration-200 hover:shadow-[0_4px_16px_rgba(55,48,163,0.10)] hover:scale-[1.01] relative cursor-pointer" style={{ boxShadow: '0 2px 8px rgba(55,48,163,0.06)' }}>
       <button
-        onClick={() => removeFavorite(item.id)}
+        onClick={() => removeFavorite(item.id, item.userId)}
         className="absolute top-3 right-3 p-1.5 rounded-full text-error hover:bg-error/10 hover:scale-110 transition-all focus-visible:ring-2 focus-visible:ring-secondary active:scale-90"
         aria-label={`Remove ${item.title} from favorites`}
       >

@@ -1,5 +1,6 @@
-import { useParams, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import useStudentProjects from '../../student/projects/scripts/useStudentProjects'
 import useCourses from '../../../../hooks/useCourses'
 import { useGlobalContext } from '../../../../globalContext'
@@ -7,10 +8,13 @@ import useNotifications from '../../../../hooks/useNotifications'
 import useFavorites from '../../../../hooks/useFavorites'
 import useMessages from '../../../../hooks/useMessages'
 import { useInstructorFeedback } from '../../../../hooks/useInstructorFeedback'
+import { useProjectInvitations } from '../../../../hooks/useProjectInvitations'
+import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio'
 import Button from '../../../../components/Button'
 import FeedbackDialog from '../../../../components/FeedbackDialog'
 import ConfirmDialog from '../../../../components/ConfirmDialog'
 import ProjectTaskSection from './components/ProjectTaskSection'
+import type { RootState } from '../../../../store'
 
 /**
  * FlagModal — handles the reasoning for flagging a project.
@@ -87,14 +91,18 @@ function AppealModal({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose:
 export default function ProjectDetailsPage(): React.JSX.Element {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useGlobalContext()
+  const dispatch = useDispatch()
   const { getProjectById, updateProject } = useStudentProjects()
   const { getCourseById } = useCourses()
   const { addNotification } = useNotifications()
-  const { isFavorite, addFavorite, removeFavorite } = useFavorites()
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites(user?.username || '')
   const { startConversation } = useMessages()
 
   const [project, setProject] = useState<any>(null)
+  const [backOrigin, setBackOrigin] = useState<string | null>(null)
+  const [backLabel, setBackLabel] = useState<string | null>(null)
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false)
   const [isAppealModalOpen, setIsAppealModalOpen] = useState(false)
   const [showAppealFeedback, setShowAppealFeedback] = useState(false)
@@ -108,10 +116,28 @@ export default function ProjectDetailsPage(): React.JSX.Element {
     addProjectFeedback, editProjectFeedback, removeProjectFeedback,
     rateProject, getInstructorRating, removeProjectRating
   } = useInstructorFeedback(projectId)
+
+  const { portfolio } = useStudentPortfolio(user?.username)
+  const { collaborators } = useProjectInvitations(projectId, portfolio?.studentId || user?.username || '')
+
   const isInstructor = user?.role === 'Course Instructor'
   // One feedback per instructor
   const myFeedback = projectFeedback.find(fb => fb.instructorId === instructorId)
   const myRating = getInstructorRating(instructorId)
+  const projectOwnerId = project?.ownerId || ''
+  const projectCollaboratorIds = useMemo(
+    () => collaborators
+      .filter(c => c.invitationStatus === 'accepted' && c.email !== user?.username)
+      .map(c => c.email),
+    [collaborators, user?.username]
+  )
+
+  function notifyProjectMembers(title: string, body: string) {
+    const recipients = new Set<string>([projectOwnerId, ...projectCollaboratorIds])
+    recipients.forEach(r => {
+      if (r) addNotification({ type: 'feedback', title, body, recipientId: r })
+    })
+  }
   const [showFeedbackForm, setShowFeedbackForm] = useState(false)
   const [feedbackText, setFeedbackText] = useState('')
   const [feedbackType, setFeedbackType] = useState<'general' | 'thesis_draft'>('general')
@@ -126,6 +152,32 @@ export default function ProjectDetailsPage(): React.JSX.Element {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
 
+  useEffect(() => {
+    if (id) {
+      dispatch({ type: 'database/markProjectNotifications', payload: id })
+    }
+  }, [id])
+
+  useEffect(() => {
+    if (!localStorage.getItem('polaris_back_label')) {
+      const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
+      let newLabel = 'Go Back'
+      if (location.pathname.includes('/student/projects/')) newLabel = 'Back to My Projects'
+      else if (location.pathname.includes('/student/profile')) newLabel = 'Back to Profile'
+      else if (location.pathname.includes('/instructor/projects') || location.pathname.includes('/instructor/oversight')) newLabel = 'Back to Projects'
+      else if (location.pathname.includes('/employer/internships') || location.pathname.includes('/employer/profile')) newLabel = 'Back to Internships'
+      else if (location.pathname.includes('/administrator')) newLabel = 'Back to Projects'
+      else if (location.pathname.includes('/search')) newLabel = 'Back to Search'
+      localStorage.setItem('polaris_back_label', newLabel)
+    }
+    setBackLabel(localStorage.getItem('polaris_back_label'))
+    setBackOrigin(location.pathname)
+  }, [id, location.pathname, user])
+
+  const handleBack = () => {
+    navigate(-1)
+  }
+
   const handleToggleFavorite = () => {
     if (!project) return
     if (isFavorite(project.id)) {
@@ -133,11 +185,12 @@ export default function ProjectDetailsPage(): React.JSX.Element {
     } else {
       addFavorite({
         id: project.id,
+        userId: user.username,
         type: 'project',
         title: project.title,
-        subtitle: `${getCourseById(project.course)?.name ?? 'Independent'} • John Doe`,
+        subtitle: `${getCourseById(project.course)?.name ?? 'Independent'} • ${collaborators.find(c => c.role === 'owner')?.name || 'Project Owner'}`,
         tags: project.languages,
-        rating: 4.8
+        rating: averageRating || 0
       })
     }
   }
@@ -197,11 +250,11 @@ export default function ProjectDetailsPage(): React.JSX.Element {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4">
           <button
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             className="flex items-center gap-2 text-sm font-jakarta font-bold text-primary hover:underline"
           >
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-            Back to Search
+            {backLabel || 'Go Back'}
           </button>
           <div className="space-y-2">
             <div className="flex items-center gap-3">
@@ -258,16 +311,6 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             actionLabel="OK"
             onClose={() => setShowAppealFeedback(false)}
           />
-          <button
-            onClick={() => {
-              const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
-              navigate(`/portal/${rolePath}/projects/${id}/collaboration`)
-            }}
-            className="flex items-center gap-2 px-6 py-3 bg-surface-container-high text-on-surface hover:bg-surface-container rounded-xl font-jakarta font-bold text-sm transition-all border border-outline-variant/30"
-          >
-            <span className="material-symbols-outlined text-[20px]">group</span>
-            View Team
-          </button>
           {user?.role !== 'Course Instructor' && (
             <button
               onClick={handleToggleFavorite}
@@ -378,27 +421,82 @@ export default function ProjectDetailsPage(): React.JSX.Element {
           <div className="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm">
             <h4 className="font-jakarta font-bold text-on-surface text-sm mb-4 uppercase tracking-wider">Collaborators</h4>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold">JD</div>
-                  <div>
-                    <p className="text-sm font-jakarta font-bold text-on-surface">John Doe</p>
-                    <p className="text-xs font-lexend text-on-surface-variant">Lead Developer</p>
-                  </div>
-                </div>
+              {collaborators.filter(c => c.invitationStatus === 'accepted').length === 0 ? (
+                <p className="text-xs font-lexend text-on-surface-variant">No collaborators confirmed yet.</p>
+              ) : (
+                collaborators
+                  .filter(c => c.invitationStatus === 'accepted')
+                  .slice(0, 3)
+                  .map(collab => (
+                    <div key={collab.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold overflow-hidden">
+                          {collab.profilePicture ? (
+                            <img src={collab.profilePicture} alt={collab.name} className="w-full h-full object-cover" />
+                          ) : (
+                            collab.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-jakarta font-bold text-on-surface truncate max-w-[120px]">{collab.name}</p>
+                          <p className="text-[10px] font-lexend text-on-surface-variant capitalize">{collab.role}</p>
+                        </div>
+                      </div>
+                      {collab.collaboratorId !== portfolio?.studentId && collab.collaboratorId !== user?.username && (
+                        <button
+                          onClick={() => handleStartChat(collab.collaboratorId, collab.name, collab.name.charAt(0))}
+                          className="p-2 rounded-xl hover:bg-primary/10 text-primary transition-colors"
+                          title={`Message ${collab.name}`}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">chat</span>
+                        </button>
+                      )}
+                    </div>
+                  ))
+              )}
+              <div className="pt-4 border-t border-outline-variant/20">
                 <button
-                  onClick={() => handleStartChat('u-student-001', 'John Doe', 'JD')}
-                  className="p-2 rounded-xl hover:bg-primary/10 text-primary transition-colors"
-                  title="Message John Doe"
+                  onClick={() => {
+                    const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
+                    navigate(`/portal/${rolePath}/projects/${id}/collaboration`)
+                  }}
+                  className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-primary/5 text-primary transition-all group"
                 >
-                  <span className="material-symbols-outlined text-[20px]">chat</span>
+                  <span className="text-xs font-jakarta font-bold">Manage Team</span>
+                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
               </div>
-              <div className="pt-4 border-t border-outline-variant/20">
-                <p className="text-xs font-lexend text-on-surface-variant italic leading-relaxed">
-                  "This project represents the core functionality developed during the course."
-                </p>
+            </div>
+          </div>
+
+          {/* Project Progress Card */}
+          <div className="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/30 shadow-sm">
+            <h4 className="font-jakarta font-bold text-on-surface text-sm mb-4 uppercase tracking-wider">Project Progress</h4>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-lexend text-on-surface-variant">
+                  <span>Tasks Completed</span>
+                  <span className="font-bold text-on-surface">
+                    {project.tasks.filter((t: any) => t.status === 'completed').length} / {project.tasks.length}
+                  </span>
+                </div>
+                <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-secondary transition-all duration-500" 
+                    style={{ width: `${project.tasks.length > 0 ? (project.tasks.filter((t: any) => t.status === 'completed').length / project.tasks.length) * 100 : 0}%` }}
+                  />
+                </div>
               </div>
+              <button
+                onClick={() => {
+                  const rolePath = user?.role === 'Course Instructor' ? 'instructor' : 'student'
+                  navigate(`/portal/${rolePath}/projects/${id}/tasks`)
+                }}
+                className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-secondary/5 text-secondary transition-all group"
+              >
+                <span className="text-xs font-jakarta font-bold">Task Board</span>
+                <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </button>
             </div>
           </div>
 
@@ -472,7 +570,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                   onClick={() => {
                     if (ratingValue === 0) return
                     rateProject(instructorId, instructorName, ratingValue, ratingComment)
-                    addNotification({ type: 'feedback', title: 'Project Rated', body: `${instructorName} rated "${project?.title}" ${ratingValue}/5` })
+                    notifyProjectMembers('Project Rated', `${instructorName} rated "${project?.title}" ${ratingValue}/5`)
                     setSuccessMessage(`Project rated ${ratingValue}/5 stars.`)
                     setShowSuccessDialog(true)
                     setIsEditingRating(false)
@@ -540,7 +638,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                 disabled={!feedbackText.trim()}
                 onClick={() => {
                   addProjectFeedback(instructorId, instructorName, feedbackText.trim(), feedbackType)
-                  addNotification({ type: 'feedback', title: 'New Project Feedback', body: `${instructorName} left feedback on "${project?.title}"` })
+                  notifyProjectMembers('New Project Feedback', `${instructorName} left feedback on "${project?.title}"`)
                   setSuccessMessage('Feedback posted successfully.')
                   setShowSuccessDialog(true)
                   setFeedbackText('')

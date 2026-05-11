@@ -12,6 +12,7 @@ export default function CommunicationsPage(): React.JSX.Element {
   const { conversations, activeConversation, activeMessages, sendMessage, selectConversation, totalUnread } = useMessages()
   const { user } = useGlobalContext()
   const [msgInput, setMsgInput] = useState('')
+  const myId = user?.username || 'me'
 
   const roleLabels: Record<UserRole, string> = useMemo(() => ({
     Student: 'Student',
@@ -36,7 +37,7 @@ export default function CommunicationsPage(): React.JSX.Element {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="flex flex-col h-[calc(100vh-160px)] gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header Section */}
       <div className="flex items-center justify-between px-2">
         <div>
@@ -63,37 +64,39 @@ export default function CommunicationsPage(): React.JSX.Element {
             </div>
           ) : (
             conversations.map(c => (
-              <button 
-                key={c.id} 
-                onClick={() => selectConversation(c.id)} 
-                className={`group flex items-center gap-4 p-4 rounded-2xl transition-all border ${
-                  activeConversation?.id === c.id 
-                    ? 'bg-primary text-on-primary border-primary shadow-raised scale-[1.02]' 
+              <button
+                key={c.id}
+                onClick={() => selectConversation(c.id)}
+                className={`group flex items-center gap-4 p-3 rounded-2xl transition-all border w-full text-left ${
+                  activeConversation?.id === c.id
+                    ? 'bg-primary text-on-primary border-primary shadow-raised'
                     : 'bg-surface-container-lowest border-outline-variant/30 hover:border-primary/40 hover:shadow-sm'
                 }`}
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-jakarta font-bold text-lg flex-shrink-0 shadow-sm ${
                   activeConversation?.id === c.id ? 'bg-on-primary text-primary' : 'bg-primary-container text-on-primary-container'
                 }`}>
-                  {c.participantAvatar}
+                  <span className="text-lg font-jakarta font-bold">{c.participantAvatar}</span>
                 </div>
-                <div className="flex-1 min-w-0 text-left">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-jakarta font-bold text-sm truncate">{c.participantName}</span>
-                      {getRoleLabel(c.participantRole) && (
-                        <span className={`text-[10px] font-jakarta font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${activeConversation?.id === c.id
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col gap-0.5 mb-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-jakarta font-bold text-sm truncate">{c._otherParticipant?.name ?? c.participantName}</span>
+                      <span className={`text-[9px] font-lexend whitespace-nowrap ${activeConversation?.id === c.id ? 'text-on-primary/70' : 'text-outline'}`}>
+                        {fmt(c.lastTimestamp)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {c._otherParticipant?.role && (
+                        <span className={`text-[9px] font-jakarta font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border ${activeConversation?.id === c.id
                           ? 'text-on-primary border-on-primary/30'
                           : 'text-on-surface-variant border-outline-variant/30'
                           }`}
                         >
-                          {getRoleLabel(c.participantRole)}
+                          {getRoleLabel(c._otherParticipant.role as any)}
                         </span>
                       )}
                     </div>
-                    <span className={`text-[10px] font-lexend ${activeConversation?.id === c.id ? 'text-on-primary/70' : 'text-outline'}`}>
-                      {fmt(c.lastTimestamp)}
-                    </span>
                   </div>
                   <p className={`text-xs font-lexend truncate ${activeConversation?.id === c.id ? 'text-on-primary/80' : 'text-on-surface-variant'}`}>
                     {c.lastMessage}
@@ -117,12 +120,17 @@ export default function CommunicationsPage(): React.JSX.Element {
               <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-low/20">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-jakarta font-bold">
-                    {activeConversation.participantAvatar}
+                    <span className="text-sm font-jakarta font-bold">{activeConversation?.participantAvatar}</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-jakarta font-bold text-on-surface">{activeConversation.participantName}</h3>
-                      {getRoleLabel(activeConversation.participantRole) && (
+                      <h3 className="font-jakarta font-bold text-on-surface">{activeConversation?._otherParticipant?.name ?? activeConversation?.participantName}</h3>
+                      {activeConversation?._otherParticipant?.role && (
+                        <span className="text-[10px] font-jakarta font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border border-outline-variant/30 text-on-surface-variant">
+                          {getRoleLabel(activeConversation._otherParticipant.role as any)}
+                        </span>
+                      )}
+                      {activeConversation?.participantRole && !activeConversation?._otherParticipant?.role && (
                         <span className="text-[10px] font-jakarta font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border border-outline-variant/30 text-on-surface-variant">
                           {getRoleLabel(activeConversation.participantRole)}
                         </span>
@@ -149,8 +157,8 @@ export default function CommunicationsPage(): React.JSX.Element {
 
               {/* Message Feed */}
               <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
-                {activeMessages.map((m, idx) => {
-                  const isMe = m.senderId === 'me'
+                {activeMessages.map((m) => {
+                  const isMe = m.senderId === myId
                   return (
                     <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[70%] group`}>

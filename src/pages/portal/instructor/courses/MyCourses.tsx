@@ -27,8 +27,8 @@ export default function MyCourses() {
   const {
     linkedCourses,
     availableCourses,
-    linkCourse,
-    unlinkCourse
+    requestLink,
+    requestUnlink
   } = useCourseLinks(instructorId)
 
   return (
@@ -187,7 +187,7 @@ export default function MyCourses() {
         <h3 className="font-jakarta font-semibold text-on-surface mb-2">📌 Important Note</h3>
         <p className="text-body-sm text-on-surface-variant">
           All instructors are automatically linked to the "Bachelor Project" course. 
-          You can link to other courses as needed. Course linking requests require administrator approval.
+          Linking and unlinking requests require administrator approval. Your request will be processed by an admin.
         </p>
       </div>
 
@@ -200,27 +200,27 @@ export default function MyCourses() {
       />
       <ConfirmationDialog
         isOpen={pendingAction !== null}
-        title={pendingAction?.action === 'link' ? 'Link Course?' : 'Unlink Course?'}
+        title={pendingAction?.action === 'link' ? 'Request Course Link?' : 'Request Course Unlink?'}
         message={pendingAction
-          ? `This will ${pendingAction.action === 'link' ? 'link' : 'unlink'} "${pendingAction.courseName}".`
+          ? `A request to ${pendingAction.action === 'link' ? 'link' : 'unlink'} "${pendingAction.courseName}" will be sent to the administrator for approval.`
           : ''
         }
-        confirmLabel={pendingAction?.action === 'link' ? 'Link Course' : 'Unlink Course'}
+        confirmLabel={pendingAction?.action === 'link' ? 'Submit Request' : 'Submit Request'}
         cancelLabel="Cancel"
         tone={pendingAction?.action === 'unlink' ? 'danger' : 'primary'}
         onConfirm={() => {
           if (!pendingAction) return
           if (pendingAction.action === 'link') {
-            linkCourse(pendingAction.courseId)
+            requestLink(pendingAction.courseId)
             setFeedback({
-              title: 'Course Linked',
-              message: `"${pendingAction.courseName}" has been added to your linked courses.`
+              title: 'Request Submitted',
+              message: `"${pendingAction.courseName}" link request has been sent for admin approval.`
             })
           } else {
-            unlinkCourse(pendingAction.courseId)
+            requestUnlink(pendingAction.courseId)
             setFeedback({
-              title: 'Course Unlinked',
-              message: `"${pendingAction.courseName}" has been removed from your linked courses.`
+              title: 'Unlink Request Submitted',
+              message: `"${pendingAction.courseName}" unlink request has been sent for admin approval.`
             })
           }
           setPendingAction(null)
