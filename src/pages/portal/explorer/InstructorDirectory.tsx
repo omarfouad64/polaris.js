@@ -1,11 +1,17 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useGlobalContext } from '../../../globalContext'
 import { useInstructorSearch } from '../../../hooks/useInstructorSearch'
+import useMessages from '../../../hooks/useMessages'
 
 /**
  * InstructorDirectory – interface for searching and discovering course instructors.
  * Allows users to search by name, filter by course, and view instructor profiles.
  */
 export default function InstructorDirectory() {
+  const { user } = useGlobalContext()
+  const navigate = useNavigate()
+  const { startConversation } = useMessages()
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [searchInputValue, setSearchInputValue] = useState('')
   
@@ -47,6 +53,12 @@ export default function InstructorDirectory() {
     return instructor.linkedCourses
       .map(courseId => getCourseById(courseId))
       .filter(Boolean) as typeof allCourses
+  }
+
+  const handleSendMessage = (instructor: typeof filteredResults[0]) => {
+    startConversation(instructor.instructorId, instructor.name, instructor.name.charAt(0))
+    const role = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
+    navigate(`/portal/${role}/communications`)
   }
 
   return (
@@ -213,6 +225,7 @@ export default function InstructorDirectory() {
           instructor={selectedInstructor}
           linkedCourses={getLinkedCourseNames(selectedInstructor.instructorId)}
           onClose={() => setShowDetailModal(false)}
+          onSendMessage={() => handleSendMessage(selectedInstructor)}
         />
       )}
     </div>
@@ -227,12 +240,14 @@ interface InstructorDetailModalProps {
   instructor: ReturnType<typeof useInstructorSearch>['selectedInstructor']
   linkedCourses: ReturnType<typeof useInstructorSearch>['allCourses']
   onClose: () => void
+  onSendMessage: () => void
 }
 
 function InstructorDetailModal({
   instructor,
   linkedCourses,
-  onClose
+  onClose,
+  onSendMessage
 }: InstructorDetailModalProps) {
   if (!instructor) return null
 
@@ -346,7 +361,10 @@ function InstructorDetailModal({
 
           {/* Contact Button */}
           <div className="pt-4 border-t border-surface-container-high">
-            <button className="w-full px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors">
+            <button 
+              onClick={onSendMessage}
+              className="w-full px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
+            >
               Send Message to Instructor
             </button>
           </div>

@@ -137,7 +137,7 @@ export default function useMessages() {
       type: 'database/startConversation',
       payload: {
         id: newId,
-        participantId,
+        participantId: otherUserId,
         participantName: name,
         participantAvatar: avatar,
         participantRole: 'Student' as const,

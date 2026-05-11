@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useGlobalContext } from '../../../globalContext'
 import { useInstructorSearch } from '../../../hooks/useInstructorSearch'
+import useMessages from '../../../hooks/useMessages'
 
 type InstructorSection = 'about' | 'research' | 'education'
 
@@ -19,6 +20,7 @@ export default function InstructorProfileViewPage(): React.JSX.Element {
   const [activeSection, setActiveSection] = useState<InstructorSection>('about')
   const [backLabel, setBackLabel] = useState<string>('Go Back')
   const { allInstructors, getCourseById } = useInstructorSearch()
+  const { startConversation } = useMessages()
 
   useEffect(() => {
     if (!localStorage.getItem('polaris_back_label')) {
@@ -35,6 +37,13 @@ export default function InstructorProfileViewPage(): React.JSX.Element {
 
   const handleBack = () => {
     navigate(-1)
+  }
+
+  const handleSendMessage = () => {
+    if (!instructor) return
+    startConversation(instructor.instructorId, instructor.name, instructor.name.charAt(0))
+    const role = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
+    navigate(`/portal/${role}/communications`)
   }
 
   const instructor = useMemo(() => {
@@ -184,7 +193,10 @@ export default function InstructorProfileViewPage(): React.JSX.Element {
         </div>
 
         <div className="pt-4 border-t border-surface-container-high">
-          <button className="w-full px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors">
+          <button
+            onClick={handleSendMessage}
+            className="w-full px-4 py-2 bg-secondary text-on-secondary rounded-lg font-jakarta font-semibold hover:bg-secondary-container transition-colors"
+          >
             Send Message to Instructor
           </button>
         </div>
