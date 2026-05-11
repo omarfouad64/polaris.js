@@ -16,9 +16,8 @@ export function useStudentPortfolio(studentId?: string) {
 
   const portfolio = students.find(p =>
     p.studentId === studentId ||
-    p.email === studentId ||
-    (studentId === 'student-001' && p.studentId === 'student-001')
-  ) ?? students[0]
+    p.email === studentId
+  )
 
   const updatePortfolio = useCallback((updates: Partial<any>) => {
     if (portfolio) {

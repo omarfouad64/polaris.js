@@ -5,10 +5,13 @@ import type { FavoriteItem } from '../types'
 
 /**
  * useFavorites — reads favorites from Redux store and provides add/remove actions.
+ * @param currentUserId - The authenticated user's username. Favorites are filtered by this ID.
  */
-export default function useFavorites() {
+export default function useFavorites(currentUserId = '') {
   const dispatch = useDispatch()
-  const favorites = useSelector((state: RootState) => state.database.favorites)
+  const favorites = useSelector((state: RootState) =>
+    state.database.favorites.filter(f => f.userId === currentUserId)
+  )
 
   const favoriteProjects = useMemo(
     () => favorites.filter(f => f.type === 'project'),
@@ -20,15 +23,15 @@ export default function useFavorites() {
     [favorites]
   )
 
-  const addFavorite = (item: { id: string; type: 'project' | 'portfolio'; title: string; subtitle: string; tags: string[]; rating?: number }) => {
+  const addFavorite = (item: { id: string; userId: string; type: 'project' | 'portfolio'; title: string; subtitle: string; tags: string[]; rating?: number }) => {
     dispatch({
       type: 'database/addFavorite',
-      payload: { ...item, savedAt: new Date().toISOString().split('T')[0] },
+      payload: { ...item },
     })
   }
 
-  const removeFavorite = (id: string) => {
-    dispatch({ type: 'database/removeFavorite', payload: id })
+  const removeFavorite = (id: string, userId: string) => {
+    dispatch({ type: 'database/removeFavorite', payload: { id, userId } })
   }
 
   const isFavorite = (id: string) => favorites.some(f => f.id === id)

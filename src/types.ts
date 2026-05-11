@@ -70,6 +70,7 @@ export interface InternshipApplication {
 
 export interface FavoriteItem {
   id: string
+  userId: string
   type: 'project' | 'portfolio'
   title: string
   subtitle: string
@@ -140,6 +141,7 @@ export interface EmployerStats {
 
 export interface CompletedInternship {
   id: string
+  studentId: string
   title: string
   companyName: string
   duration: string

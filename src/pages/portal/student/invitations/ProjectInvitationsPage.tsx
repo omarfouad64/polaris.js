@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useGlobalContext } from '../../../../globalContext'
 import { useProjectNotifications } from '../../../../hooks/useProjectNotifications'
 import { useProjectInvitationsList } from '../../../../hooks/useProjectInvitationsList'
 import Button from '../../../../components/Button'
@@ -15,8 +16,7 @@ export default function ProjectInvitationsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('pending')
   const [expandedInvitationId, setExpandedInvitationId] = useState<string | null>(null)
 
-  // For demo purposes, using hardcoded user ID
-  // const currentUserId = 'student-001'
+  const { user } = useGlobalContext()
 
   // Hooks
   const { markAsRead } = useProjectNotifications()
@@ -27,7 +27,7 @@ export default function ProjectInvitationsPage() {
     stats,
     acceptInvitation,
     rejectInvitation
-  } = useProjectInvitationsList()
+  } = useProjectInvitationsList(user?.username || '')
 
   // Handler: Accept invitation
   const handleAcceptInvitation = (invitationId: string) => {

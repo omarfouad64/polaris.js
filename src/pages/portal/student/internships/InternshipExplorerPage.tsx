@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useGlobalContext } from '../../../../globalContext'
 import useInternshipSearch from '../../../../hooks/useInternshipSearch'
 import Button from '../../../../components/Button'
 
@@ -7,6 +8,7 @@ import Button from '../../../../components/Button'
  * Covers Req 79 (search), 80 (filter), 81 (view list), 82 (sort), 83 (select), 84 (apply), 89 (notifications via status), 90 (completed).
  */
 export default function InternshipExplorerPage(): React.JSX.Element {
+  const { user } = useGlobalContext()
   const {
     internships, applications, completedInternships,
     searchQuery, setSearchQuery, companyFilter, setCompanyFilter,
@@ -14,7 +16,7 @@ export default function InternshipExplorerPage(): React.JSX.Element {
     postedDateFrom, setPostedDateFrom, postedDateTo, setPostedDateTo,
     sortOrder, setSortOrder,
     applyForInternship, hasApplied
-  } = useInternshipSearch()
+  } = useInternshipSearch(user?.username || '')
 
   const [viewTab, setViewTab] = useState<'all' | 'applications' | 'completed'>('all')
   const [applyingTo, setApplyingTo] = useState<string | null>(null)

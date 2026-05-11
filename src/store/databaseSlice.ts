@@ -88,11 +88,15 @@ const databaseSlice = createSlice({
     // ── Favorites ──────────────────────────────────────────────────────────
     addFavorite: (state, action: PayloadAction<Omit<DatabaseState['favorites'][number], 'savedAt'>>) => {
       const newItem = { ...action.payload, savedAt: new Date().toISOString().split('T')[0] };
+      const existing = state.favorites.find(f => f.id === newItem.id && f.userId === newItem.userId);
+      if (existing) {
+        return;
+      }
       state.favorites.push(newItem);
     },
 
-    removeFavorite: (state, action: PayloadAction<string>) => {
-      state.favorites = state.favorites.filter(f => f.id !== action.payload);
+    removeFavorite: (state, action: PayloadAction<{ id: string; userId: string }>) => {
+      state.favorites = state.favorites.filter(f => !(f.id === action.payload.id && f.userId === action.payload.userId));
     },
 
     // ── Messages ───────────────────────────────────────────────────────────
@@ -470,6 +474,35 @@ const databaseSlice = createSlice({
           role: action.payload.role,
           password: action.payload.password || 'password'
         });
+        if (action.payload.role === 'Student') {
+          state.students.push({
+            studentId: action.payload.username,
+            name: '',
+            email: action.payload.username,
+            major: '',
+            year: '',
+            projectCount: 0,
+            skills: [],
+            linkedinUrl: '',
+            bio: '',
+            profilePicture: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          })
+        } else if (action.payload.role === 'Course Instructor') {
+          state.instructors.push({
+            instructorId: action.payload.username,
+            name: '',
+            email: action.payload.username,
+            biography: '',
+            researchInterests: [],
+            educationBackground: '',
+            linkedCourses: [],
+            profilePicture: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          })
+        }
       }
     },
     addCompanyProfile: (state, action: PayloadAction<{

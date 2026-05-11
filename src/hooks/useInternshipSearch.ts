@@ -75,7 +75,7 @@ export default function useInternshipSearch(currentStudentId = 'student_1', curr
   return {
     internships: filteredInternships,
     applications: applications.filter(a => a.studentId === currentStudentId),
-    completedInternships,
+    completedInternships: completedInternships.filter(ci => ci.studentId === currentStudentId),
     searchQuery,
     setSearchQuery,
     companyFilter,

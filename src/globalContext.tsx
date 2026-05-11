@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useLayoutEffect, type ReactNode } from 'react'
+import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 
 import { type UserRole } from './types'
 
@@ -41,19 +41,6 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     logout,
     isLoggedIn
   }
-
-  // After login(), force a second render so the context value is fresh
-  useLayoutEffect(() => {
-    const saved = localStorage.getItem('polaris_user')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        setUser(parsed)
-      } catch {
-        // ignore
-      }
-    }
-  })
 
   return (
     <GlobalContext.Provider value={value}>

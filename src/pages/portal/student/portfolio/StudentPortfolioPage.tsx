@@ -29,7 +29,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
   const navigate = useNavigate()
   const { id } = useParams()
   const { user } = useGlobalContext()
-  const { isFavorite, addFavorite, removeFavorite } = useFavorites()
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites(user?.username || '')
 
   // State management
   const [activeSection, setActiveSection] = useState<'profile' | 'skills' | 'projects' | 'internships' | 'contact'>('profile')
@@ -68,7 +68,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
   } = useStudentPortfolio(targetId)
 
   const { projects, deleteProject, isLoading: projectsLoading } = useStudentProjects()
-  const { completedInternships } = useInternshipSearch()
+  const { completedInternships } = useInternshipSearch(user?.username || '')
 
   // Project Handlers
   const handleEditProject = (id: string) => {
@@ -129,20 +129,20 @@ export default function StudentPortfolioPage(): React.JSX.Element {
     }
   }
 
-  const handleToggleFavorite = (): void => {
+const handleToggleFavorite = (): void => {
     if (isFavorite(targetId)) {
-      removeFavorite(targetId)
+      removeFavorite(targetId, user.username)
       return
     }
-
     addFavorite({
       id: targetId,
+      userId: user.username,
       type: 'portfolio',
       title: portfolio.name,
       subtitle: `${portfolio.major} - ${portfolio.projectCount} Projects`,
       tags: portfolio.skills
     })
-  }
+   }
 
   return (
     <div className="min-h-screen bg-background p-6 lg:p-8">

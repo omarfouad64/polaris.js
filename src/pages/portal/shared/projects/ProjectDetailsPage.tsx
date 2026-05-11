@@ -96,7 +96,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
   const { getProjectById, updateProject } = useStudentProjects()
   const { getCourseById } = useCourses()
   const { addNotification } = useNotifications()
-  const { isFavorite, addFavorite, removeFavorite } = useFavorites()
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites(user?.username || '')
   const { startConversation } = useMessages()
 
   const [project, setProject] = useState<any>(null)
@@ -162,6 +162,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
     } else {
       addFavorite({
         id: project.id,
+        userId: user.username,
         type: 'project',
         title: project.title,
         subtitle: `${getCourseById(project.course)?.name ?? 'Independent'} • ${collaborators.find(c => c.role === 'owner')?.name || 'Project Owner'}`,

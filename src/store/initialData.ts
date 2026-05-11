@@ -221,10 +221,27 @@ export const initialData: DatabaseState = {
   completedInternships: [
     {
       id: "completed_int_1",
+      studentId: "alice.smith@student.guc.edu.eg",
       title: "QA Tester Intern",
       companyName: "TechCorp",
       duration: "3 months",
       completedAt: "2025-08-30T00:00:00Z"
+    },
+    {
+      id: "completed_int_2",
+      studentId: "charlie@student.guc.edu.eg",
+      title: "Backend Developer Intern",
+      companyName: "Siemens Healthineers",
+      duration: "4 months",
+      completedAt: "2025-06-15T00:00:00Z"
+    },
+    {
+      id: "completed_int_3",
+      studentId: "david.m@student.guc.edu.eg",
+      title: "DevOps Engineer Intern",
+      companyName: "TechFlow Solutions",
+      duration: "3 months",
+      completedAt: "2025-09-01T00:00:00Z"
     }
   ],
   projects: [
@@ -769,6 +786,7 @@ export const initialData: DatabaseState = {
   favorites: [
     {
       id: "fav_1",
+      userId: "alice.smith@student.guc.edu.eg",
       type: "project",
       title: "Frontend Developer Intern (TechCorp)",
       subtitle: "Hiring",
@@ -777,6 +795,7 @@ export const initialData: DatabaseState = {
     },
     {
       id: "fav_2",
+      userId: "bob@guc.edu.eg",
       type: "portfolio",
       title: "Dr. Bob Jones",
       subtitle: "Web Architecture Expert",

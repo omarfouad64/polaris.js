@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useGlobalContext } from '../../../../../globalContext'
 import useFavorites from '../../../../../hooks/useFavorites'
 import type { InternshipApplication } from '../../../../../types'
 
@@ -44,7 +45,8 @@ const dummyApplicants: InternshipApplication[] = [
 export default function useApplicants(internshipId: string) {
   const [applicants, setApplicants] = useState<InternshipApplication[]>(dummyApplicants)
   const [sortByContributors, setSortByContributors] = useState(false)
-  const { favoritePortfolios } = useFavorites()
+  const { user } = useGlobalContext()
+  const { favoritePortfolios } = useFavorites(user?.username || '')
 
   const favoriteIds = useMemo(() => new Set(favoritePortfolios.map(favorite => favorite.id)), [favoritePortfolios])
   const favoriteNames = useMemo(() => new Set(favoritePortfolios.map(favorite => favorite.title.toLowerCase())), [favoritePortfolios])

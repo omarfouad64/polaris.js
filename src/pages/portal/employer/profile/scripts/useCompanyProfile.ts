@@ -39,6 +39,16 @@ export default function useCompanyProfile(): {
     const found = (companies || []).find((c: CompanyProfile) => c.contactEmail === myEmail)
     if (found) {
       setProfile(found)
+    } else if (myEmail) {
+      setProfile({
+        ...defaultProfile,
+        companyName: '',
+        contactEmail: myEmail,
+        biography: '',
+        address: '',
+        phone: '',
+        logoUrl: '',
+      })
     }
   }, [companies, user])
 

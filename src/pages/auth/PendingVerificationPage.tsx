@@ -26,9 +26,9 @@ export default function PendingVerificationPage() {
     navigate('/auth/login')
   }
 
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-surface-container-lowest rounded-3xl shadow-xl border border-outline-variant/30 p-8">
+   return (
+    <div className="flex flex-col gap-6">
+      <div className="bg-surface-container-lowest rounded-3xl shadow-xl border border-outline-variant/30 p-8">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="material-symbols-outlined text-3xl text-amber-600" style={{ fontVariationSettings: "'FILL' 1" }}>

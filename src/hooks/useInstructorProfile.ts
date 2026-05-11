@@ -77,10 +77,23 @@ export function useInstructorProfile(username?: string) {
   }, [])
 
   const myEmail = username || user?.username || ''
-  const profile = (instructors || []).find((i: InstructorProfile) => i.instructorId === myEmail) || sharedProfile
-  
-  // Sync sharedProfile with Redux profile if found
-  if (profile !== sharedProfile) {
+  const profile = (instructors || []).find((i: InstructorProfile) => i.instructorId === myEmail)
+
+  if (!profile && myEmail) {
+    sharedProfile = {
+      ...sharedProfile,
+      instructorId: myEmail,
+      name: myEmail,
+      email: myEmail,
+      biography: '',
+      researchInterests: [],
+      educationBackground: '',
+      linkedCourses: [],
+      profilePicture: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+  } else if (profile) {
     sharedProfile = profile
   }
 
