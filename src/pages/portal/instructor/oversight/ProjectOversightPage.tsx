@@ -116,6 +116,7 @@ export default function ProjectOversightPage() {
                   projectId={selectedProject.id}
                   projectTitle={selectedProject.title}
                   tasks={selectedProject.tasks || []}
+                  thesisDrafts={selectedProject.thesisDrafts || []}
                   instructorId={user?.username ?? 'instructor@guc.edu.eg'}
                   instructorName={user?.username ?? 'Dr. Fatima Al-Mansouri'}
                   projectOwnerId={selectedProject.ownerId}
@@ -160,10 +161,11 @@ const ratingLabel = (v: number) =>
   * ProjectEvaluationSection — Handles rating and feedback for a specific project.
   * One rating + one feedback per instructor per project.
   */
- function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId, instructorName, projectOwnerId, projectCollaborators }: {
+ function ProjectEvaluationSection({ projectId, projectTitle, tasks, thesisDrafts, instructorId, instructorName, projectOwnerId, projectCollaborators }: {
   projectId: string
   projectTitle: string
   tasks: ProjectTask[]
+  thesisDrafts: any[]
   instructorId: string
   instructorName: string
   projectOwnerId: string
@@ -368,6 +370,83 @@ const ratingLabel = (v: number) =>
             </div>
           )}
         </div>
+      </section>
+
+      {/* ── Thesis Drafts Section (Req 24) ─────────────────────────────────── */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <span className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <span className="material-symbols-outlined">history_edu</span>
+          </span>
+          <h3 className="text-xl font-jakarta font-bold text-on-surface">Thesis Drafts</h3>
+        </div>
+
+        {(() => {
+          const finalDraft = thesisDrafts.find(d => d.isFinal)
+          // Instructors see only final if it exists, otherwise see all
+          const visibleDrafts = finalDraft ? [finalDraft] : thesisDrafts
+
+          if (visibleDrafts.length === 0) {
+            return (
+              <div className="bg-surface-container-low rounded-2xl p-8 text-center border border-dashed border-outline-variant/30">
+                <p className="text-sm font-lexend text-on-surface-variant">No drafts uploaded yet.</p>
+              </div>
+            )
+          }
+
+          return (
+            <div className="bg-surface-container-low rounded-2xl border border-outline-variant/30 divide-y divide-outline-variant/20 overflow-hidden">
+              {visibleDrafts.map(draft => (
+                <div key={draft.id} className="p-4 flex items-center justify-between hover:bg-surface-container transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                      draft.isFinal ? 'bg-success text-on-success' : 'bg-surface-container-highest text-on-surface-variant'
+                    }`}>
+                      <span className="material-symbols-outlined text-[20px]">
+                        {draft.isFinal ? 'verified' : 'draft'}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-jakarta font-bold text-on-surface">{draft.name}</p>
+                      <p className="text-[10px] font-lexend text-on-surface-variant">Added {new Date(draft.uploadDate).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {draft.isFinal && (
+                      <span className="px-2 py-0.5 bg-success/10 text-success text-[9px] font-bold rounded-full border border-success/20">
+                        FINAL
+                      </span>
+                    )}
+                    <button 
+                      className="p-2 hover:bg-primary/10 text-primary rounded-lg transition-colors"
+                      onClick={() => {
+                        addNotification({
+                          type: 'admin',
+                          title: 'Download Started',
+                          body: `Downloading ${draft.name}...`
+                        })
+                        const link = document.createElement('a')
+                        link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent('Mock content for ' + draft.name)
+                        link.download = draft.name + '.txt'
+                        link.click()
+                      }}
+                    >
+                      <span className="material-symbols-outlined text-[20px]">download</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {finalDraft && thesisDrafts.length > 1 && (
+                <div className="p-3 bg-surface-container-lowest/50 text-center">
+                  <p className="text-[10px] font-lexend text-on-surface-variant italic opacity-60 flex items-center justify-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">lock</span>
+                    Non-final drafts are now private and hidden from oversight.
+                  </p>
+                </div>
+              )}
+            </div>
+          )
+        })()}
       </section>
 
       {/* ── Task Feedback Section ────────────────────────────────────────────── */}

@@ -375,6 +375,106 @@ export default function ProjectDetailsPage(): React.JSX.Element {
             </div>
           </div>
 
+          {/* Thesis Drafts (Req 24) */}
+          {(() => {
+            const drafts = project.thesisDrafts || []
+            const finalDraft = drafts.find((d: any) => d.isFinal)
+            const isMember = project.ownerId === user?.username || projectCollaboratorIds.includes(user?.username || '')
+            const isInstructor = user?.role === 'Course Instructor'
+            
+            let visibleDrafts = []
+            if (isMember) {
+              visibleDrafts = drafts
+            } else if (finalDraft) {
+              visibleDrafts = [finalDraft]
+            } else if (isInstructor) {
+              visibleDrafts = drafts
+            }
+
+            if (visibleDrafts.length === 0) return null
+
+            return (
+              <div className="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/30 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-jakarta font-bold text-on-surface flex items-center gap-3">
+                    <span className="material-symbols-outlined text-primary">history_edu</span>
+                    Thesis Drafts
+                  </h3>
+                  {finalDraft && (
+                    <span className="px-3 py-1 bg-success/10 text-success rounded-full text-[10px] font-jakarta font-bold border border-success/20 flex items-center gap-1.5 uppercase tracking-wider">
+                      <span className="material-symbols-outlined text-[14px]">verified</span>
+                      Finalized
+                    </span>
+                  )}
+                </div>
+                
+                <div className="space-y-3">
+                  {visibleDrafts.map((draft: any) => (
+                    <div 
+                      key={draft.id}
+                      className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                        draft.isFinal 
+                          ? 'bg-success/5 border-success/20 shadow-sm' 
+                          : 'bg-surface-container-low/50 border-outline-variant/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          draft.isFinal ? 'bg-success text-on-success' : 'bg-surface-container-highest text-on-surface-variant'
+                        }`}>
+                          <span className="material-symbols-outlined text-[22px]">
+                            {draft.isFinal ? 'verified' : 'draft'}
+                          </span>
+                        </div>
+                        <div>
+                          <p className={`font-jakarta font-bold text-sm ${draft.isFinal ? 'text-on-surface' : 'text-on-surface-variant'}`}>
+                            {draft.name}
+                          </p>
+                          <p className="text-[10px] font-lexend text-on-surface-variant opacity-70">
+                            Uploaded on {new Date(draft.uploadDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        {draft.isFinal && (
+                          <span className="text-[10px] font-jakarta font-bold text-success uppercase tracking-tighter mr-2 hidden sm:inline">
+                            Public Draft
+                          </span>
+                        )}
+                        <button 
+                          className="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-outline-variant/30 rounded-xl text-xs font-jakarta font-bold text-on-surface hover:bg-surface-container transition-all"
+                          onClick={() => {
+                            // Simulate download
+                            addNotification({
+                              type: 'admin',
+                              title: 'Download Started',
+                              body: `Downloading ${draft.name}...`
+                            })
+                            const link = document.createElement('a')
+                            link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent('Mock content for ' + draft.name)
+                            link.download = draft.name + '.txt'
+                            link.click()
+                          }}
+                        >
+                          <span className="material-symbols-outlined text-[16px]">download</span>
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {!isMember && finalDraft && drafts.length > 1 && (
+                  <p className="mt-4 text-[11px] font-lexend text-on-surface-variant italic opacity-60 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">lock</span>
+                    Earlier drafts have been privatized following the selection of the final version.
+                  </p>
+                )}
+              </div>
+            )
+          })()}
+
           {/* Project Tasks (Req 33, 37) */}
           <ProjectTaskSection
             projectId={project.id}
