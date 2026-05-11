@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useGlobalContext } from '../../../../globalContext';
 import ProjectEditor from './components/ProjectEditor';
 
 /**
@@ -8,6 +9,7 @@ import ProjectEditor from './components/ProjectEditor';
 export default function ProjectEditorPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useGlobalContext();
 
   const handleSave = () => {
     navigate('/portal/student/projects');
@@ -30,6 +32,7 @@ export default function ProjectEditorPage() {
         </div>
         <ProjectEditor
           projectId={id === 'new' ? undefined : id}
+          currentUserId={user?.username}
           onSave={handleSave}
           onCancel={handleCancel}
         />

@@ -67,7 +67,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
     updateProfilePicture
   } = useStudentPortfolio(targetId)
 
-  const { projects, deleteProject, isLoading: projectsLoading } = useStudentProjects()
+  const { projects, deleteProject, isLoading: projectsLoading } = useStudentProjects(user?.username)
   const { completedInternships } = useInternshipSearch(user?.username || '')
 
   // Project Handlers

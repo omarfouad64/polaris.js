@@ -13,7 +13,7 @@ export default function ProjectTasksPage(): React.JSX.Element {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useGlobalContext()
-  const { getProjectById, updateProject } = useStudentProjects()
+  const { getProjectById, updateProject } = useStudentProjects(user?.username)
 
   if (!id) {
     return (

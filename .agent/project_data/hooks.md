@@ -150,7 +150,18 @@ This document lists and describes the custom React hooks implemented to manage s
     - Functions: `sendInvitation`, `removeCollaborator`, `cancelInvitation`, `acceptInvitation`, `rejectInvitation`
     - Bachelor's projects (course-001) block all collaborator invitations.
 
-### 17. Local - useTabNotifications (Global)
+### 17. Local - useStudentProjects (Student)
+- **Source:** `src/pages/portal/student/projects/scripts/useStudentProjects.ts`
+- **Purpose:** Manages student project CRUD via Redux store.
+- **Key Features:**
+    - State: `projects` (filtered by current user)
+    - Functions: `createProject`, `updateProject`, `deleteProject`, `getProjectById`
+    - Accepts `currentUserId` parameter to scope projects to the authenticated user.
+    - Filters projects where the user is either the owner or an accepted collaborator.
+    - `createProject` uses the passed `currentUserId` as the `ownerId` (no longer hardcoded).
+    - `projectCollaborators` from Redux store is used to determine contributor projects.
+
+### 18. Local - useTabNotifications (Global)
 - **Source:** `src/hooks/useTabNotifications.ts`
 - **Purpose:** Computes unread notification counts for header/sidebar tab badges.
 - **Key Features:**

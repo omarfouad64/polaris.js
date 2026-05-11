@@ -323,7 +323,7 @@ export const initialData: DatabaseState = {
       ],
       tasks: [
         { id: "task-p4-1", description: "Design rendering pipeline", assigneeId: "alice.smith@student.guc.edu.eg", status: "completed", importance: "High", deadline: "2026-03-01" },
-        { id: "task-p4-2", description: "Implement virtual DOM diff algorithm", assigneeId: "alice.smith@student.guc.edu.eg", status: "completed", importance: "High", deadline: "2026-03-20" },
+        { id: "task-p4-2", description: "Implement virtual DOM diff algorithm", assigneeId: "charlie@student.guc.edu.eg", status: "completed", importance: "High", deadline: "2026-03-20" },
         { id: "task-p4-3", description: "Write performance benchmarks", assigneeId: "alice.smith@student.guc.edu.eg", status: "pending", importance: "Medium", deadline: "2026-05-01" }
       ],
       createdDate: "2026-02-15",
@@ -363,7 +363,10 @@ export const initialData: DatabaseState = {
       projectReport: "Developed a tool that uses genetic algorithms to find optimal hyperparameters for CNNs and RNNs.",
       languages: ["Python", "PyTorch"],
       thesisDrafts: [],
-      tasks: [],
+      tasks: [
+        { id: "task-c7-1", description: "Implement genetic algorithm optimizer", assigneeId: "charlie@student.guc.edu.eg", status: "pending", importance: "High", deadline: "2026-06-01" },
+        { id: "task-c7-2", description: "Write unit tests for CNN optimizer", assigneeId: "charlie@student.guc.edu.eg", status: "post-poned", importance: "Medium", deadline: "2026-07-01" }
+      ],
       createdDate: "2026-03-01",
       updatedDate: "2026-03-05",
       isPublic: true,

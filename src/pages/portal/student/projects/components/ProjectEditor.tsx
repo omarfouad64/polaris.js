@@ -9,6 +9,7 @@ import ConfirmationDialog from '../../../../../components/ConfirmationDialog';
 
 interface ProjectEditorProps {
   projectId?: string;
+  currentUserId?: string;
   onSave?: (project: ProjectData) => void;
   onCancel?: () => void;
 }
@@ -22,10 +23,11 @@ interface ProjectEditorProps {
  */
 export default function ProjectEditor({
   projectId,
+  currentUserId,
   onSave,
   onCancel,
 }: ProjectEditorProps) {
-  const { getProjectById, createProject, updateProject } = useStudentProjects();
+  const { getProjectById, createProject, updateProject } = useStudentProjects(currentUserId);
 
   const isEditMode = !!projectId && projectId !== 'new';
   const existingProject = isEditMode ? getProjectById(projectId) : undefined;

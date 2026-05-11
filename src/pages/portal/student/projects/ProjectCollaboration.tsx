@@ -17,12 +17,12 @@ export default function ProjectCollaboration() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { user } = useGlobalContext()
-  const { getProjectById, updateProject } = useStudentProjects()
+  const currentUserId = user?.username || 'student-001'
+  const { getProjectById, updateProject } = useStudentProjects(currentUserId)
   
   const projectId = id || 'proj-001'
   const project = getProjectById(projectId)
   const projectTitle = project?.title || 'E-Commerce Platform'
- const currentUserId = user?.username || 'student-001'
   // Determine ownership based on project data — a student may be viewing another student's project as collaborator
   const isOwner = project?.ownerId === currentUserId
   const isInstructor = user?.role === 'Course Instructor'

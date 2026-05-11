@@ -7,8 +7,6 @@ import ProjectFilters from './components/ProjectFilters';
 import Button from '../../../../components/Button';
 import ConfirmationDialog from '../../../../components/ConfirmationDialog';
 import { useGlobalContext } from '../../../../globalContext';
-import { useStudentPortfolio } from '../../../../hooks/useStudentPortfolio';
-
 /**
  * MyProjectsPage — Displays student's project list with CRUD controls.
  * Entry point for Requirement 19.
@@ -17,8 +15,7 @@ export default function MyProjectsPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useGlobalContext();
-  const { portfolio } = useStudentPortfolio(user?.username);
-  const { projects, updateProject, deleteProject, isLoading } = useStudentProjects(portfolio?.studentId);
+  const { projects, updateProject, deleteProject, isLoading } = useStudentProjects(user?.username);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
