@@ -108,10 +108,10 @@ export const initialData: DatabaseState = {
       biography: "Web Architecture Expert.",
       researchInterests: ["React", "Distributed Systems"],
       educationBackground: "PhD CompSci",
-      linkedCourses: ["course_1", "course_2"],
+      linkedCourses: ["course_1", "course_2", "course_3"],
       profilePicture: null,
       createdAt: "2026-01-01T10:00:00Z",
-      updatedAt: "2026-01-01T10:00:00Z"
+      updatedAt: "2026-04-28T10:00:00Z"
     },
     {
       instructorId: "sarah@guc.edu.eg",
@@ -120,7 +120,7 @@ export const initialData: DatabaseState = {
       biography: "Machine Learning and AI specialist.",
       researchInterests: ["Deep Learning", "Neural Networks", "Computer Vision"],
       educationBackground: "PhD in AI from MIT",
-      linkedCourses: ["course_1"],
+      linkedCourses: ["course_1", "course_3"],
       profilePicture: null,
       createdAt: "2026-01-05T09:00:00Z",
       updatedAt: "2026-01-05T09:00:00Z"
@@ -131,25 +131,29 @@ export const initialData: DatabaseState = {
       instructorId: "bob@guc.edu.eg",
       courseId: "course_1",
       status: "linked",
+      direction: "link",
       linkedAt: "2026-01-10T12:00:00Z"
     },
     {
       instructorId: "bob@guc.edu.eg",
       courseId: "course_2",
       status: "linked",
-      linkedAt: "2025-08-15T09:00:00Z"
+      direction: "link",
+      linkedAt: "2026-01-10T12:30:00Z"
     },
     {
       instructorId: "sarah@guc.edu.eg",
       courseId: "course_3",
       status: "linked",
+      direction: "link",
       linkedAt: "2026-01-10T10:00:00Z"
     },
     {
       instructorId: "sarah@guc.edu.eg",
-      courseId: "course_2",
-      status: "pending",
-      linkedAt: null
+      courseId: "course_1",
+      status: "linked",
+      direction: "unlink",
+      linkedAt: "2026-04-25T15:00:00Z"
     }
   ],
   linkRequests: [
@@ -160,7 +164,7 @@ export const initialData: DatabaseState = {
       courseId: "course_2",
       courseName: "System Architecture",
       type: "link",
-      status: "pending",
+      status: "accepted",
       createdAt: "2026-04-22T11:00:00Z"
     },
     {
@@ -170,8 +174,18 @@ export const initialData: DatabaseState = {
       courseId: "course_1",
       courseName: "Advanced Web Development",
       type: "unlink",
-      status: "pending",
+      status: "accepted",
       createdAt: "2026-04-25T14:30:00Z"
+    },
+    {
+      id: "link_req_3",
+      instructorId: "bob@guc.edu.eg",
+      instructorName: "Dr. Bob Jones",
+      courseId: "course_3",
+      courseName: "Machine Learning",
+      type: "link",
+      status: "accepted",
+      createdAt: "2026-04-28T10:00:00Z"
     }
   ],
   students: [
@@ -181,7 +195,7 @@ export const initialData: DatabaseState = {
       email: "alice.smith@student.guc.edu.eg",
       major: "Computer Science",
       year: "Senior",
-      projectCount: 4,
+      projectCount: 5,
       skills: ["React", "TypeScript", "Tailwind", "System Design"],
       linkedinUrl: "https://linkedin.com/in/alicesmith",
       bio: "Frontend enthusiast looking for internships.",
@@ -195,7 +209,7 @@ export const initialData: DatabaseState = {
       email: "charlie@student.guc.edu.eg",
       major: "Artificial Intelligence",
       year: "Senior",
-      projectCount: 2,
+      projectCount: 1,
       skills: ["Python", "TensorFlow", "Keras", "Data Analysis"],
       linkedinUrl: "https://linkedin.com/in/charliebrown",
       bio: "Aspiring data scientist with a focus on deep learning.",
@@ -283,8 +297,7 @@ export const initialData: DatabaseState = {
       createdDate: "2025-09-01",
       updatedDate: "2026-03-20",
       isPublic: true,
-      status: "flagged",
-      flagReason: "Copyrighted material detected in documentation."
+      status: "active"
     },
     {
       id: "proj-003",
@@ -350,7 +363,8 @@ export const initialData: DatabaseState = {
       createdDate: "2026-01-20",
       updatedDate: "2026-03-05",
       isPublic: true,
-      status: "active"
+      status: "flagged",
+      flagReason: "Unapproved API usage"
     },
     {
       id: "proj-007",
@@ -479,6 +493,18 @@ export const initialData: DatabaseState = {
       invitationStatus: "accepted",
       invitedAt: "2026-03-01T09:00:00Z",
       profilePicture: null
+    },
+    {
+      id: "collab-9",
+      projectId: "proj-006",
+      collaboratorId: "sarah@guc.edu.eg",
+      name: "Dr. Sarah Connor",
+      email: "sarah@guc.edu.eg",
+      role: "instructor",
+      invitationStatus: "accepted",
+      invitedAt: "2026-05-02T14:00:00Z",
+      respondedAt: "2026-05-03T09:00:00Z",
+      profilePicture: null
     }
   ],
   projectInvitations: [
@@ -493,17 +519,6 @@ export const initialData: DatabaseState = {
       invitationStatus: "accepted",
       createdAt: "2026-02-16T10:00:00Z",
       respondedAt: "2026-02-16T14:00:00Z"
-    },
-    {
-      id: "invite_2",
-      projectId: "proj-001",
-      projectTitle: "E-Commerce Platform",
-      senderName: "Alice Smith",
-      senderId: "alice.smith@student.guc.edu.eg",
-      recipientEmail: "sara.hassan@student.guc.edu.eg",
-      recipientName: "Sara Hassan",
-      invitationStatus: "pending",
-      createdAt: "2026-04-20T09:00:00Z"
     },
     {
       id: "invite_3",
@@ -573,10 +588,10 @@ export const initialData: DatabaseState = {
       createdAt: "2026-05-07T11:00:00Z"
     }
   ],
-  taskFeedback: [
+ taskFeedback: [
     {
       id: "task_feedback_1",
-      taskId: "task_101",
+      taskId: "task-1",
       instructorId: "bob@guc.edu.eg",
       instructorName: "Dr. Bob Jones",
       comment: "Your schema design looks good, but consider indexing the foreign keys.",
@@ -587,30 +602,49 @@ export const initialData: DatabaseState = {
   projectFeedback: [
     {
       id: "feedback_1",
-      projectId: "project_1",
+      projectId: "proj-001",
       instructorId: "bob@guc.edu.eg",
       instructorName: "Dr. Bob Jones",
       feedbackType: "general",
       comment: "Excellent use of Tailwind and TypeScript. Needs better responsive design.",
       createdAt: "2026-03-01T14:00:00Z",
       updatedAt: "2026-03-01T14:00:00Z"
+    },
+    {
+      id: "feedback_2",
+      projectId: "proj-006",
+      instructorId: "bob@guc.edu.eg",
+      instructorName: "Dr. Bob Jones",
+      feedbackType: "general",
+      comment: "Well-structured API gateway. Consider adding rate limiting documentation to the project report.",
+      createdAt: "2026-04-26T10:30:00Z",
+      updatedAt: "2026-04-26T10:30:00Z"
     }
   ],
   projectRatings: [
     {
       id: "rating_1",
-      projectId: "project_1",
+      projectId: "proj-001",
       instructorId: "bob@guc.edu.eg",
       instructorName: "Dr. Bob Jones",
       rating: 4,
       comment: "Solid A- work.",
       createdAt: "2026-03-01T14:05:00Z"
+    },
+    {
+      id: "rating_2",
+      projectId: "proj-006",
+      instructorId: "bob@guc.edu.eg",
+      instructorName: "Dr. Bob Jones",
+      rating: 4,
+      comment: "Strong architecture. Good use of Spring Cloud Gateway.",
+      createdAt: "2026-04-26T11:00:00Z"
     }
   ],
   flaggedProjects: [
     {
       id: "flag_1",
-      projectId: "project_2",
+      projectId: "proj-005",
       projectTitle: "Distributed Task Queue",
       projectOwnerId: "alice.smith@student.guc.edu.eg",
       projectOwnerName: "Alice Smith",
@@ -619,19 +653,21 @@ export const initialData: DatabaseState = {
       reason: "Unapproved API usage",
       description: "Project uses external API without declaring it in documentation.",
       flaggedAt: "2026-03-05T09:00:00Z",
-      status: "appealed"
+      status: "resolved"
     }
   ],
   projectAppeals: [
     {
       id: "appeal_1",
       flaggedProjectId: "flag_1",
-      projectId: "project_2",
+      projectId: "proj-005",
       studentId: "alice.smith@student.guc.edu.eg",
       studentName: "Alice Smith",
       appealMessage: "The API used is an open-source mock backend permitted by the syllabus.",
       submittedAt: "2026-03-06T11:00:00Z",
-      status: "pending"
+      status: "approved",
+      adminResponse: "The mock backend is permitted under the course syllabus. Flag removed.",
+      respondedAt: "2026-04-10T11:00:00Z"
     }
   ],
   companies: [
@@ -669,7 +705,7 @@ export const initialData: DatabaseState = {
       contactEmail: "hr@siemens-healthineers.com",
       phone: "0049912345678",
       logoUrl: "/dummy-logo-2.png",
-      approvalStatus: "Pending",
+      approvalStatus: "Approved",
       location: null,
       documents: [
         { id: "doc_siemens_1", name: "Tax_Certificate.pdf", type: "PDF", size: 245000, uploadedAt: "2026-04-01T09:00:00Z" }
@@ -682,7 +718,7 @@ export const initialData: DatabaseState = {
       contactEmail: "recruiting@techflow.io",
       phone: "0014085551234",
       logoUrl: "/dummy-logo.png",
-      approvalStatus: "Pending",
+      approvalStatus: "Approved",
       location: null,
       documents: [
         { id: "doc_techflow_1", name: "Business_Registration.pdf", type: "PDF", size: 189000, uploadedAt: "2026-04-15T14:00:00Z" }
@@ -694,7 +730,7 @@ export const initialData: DatabaseState = {
       address: "123 Global Ave, New York, NY",
       contactEmail: "contact@globalcorp.com",
       phone: "0012125559876",
-      logoUrl: "/techcorp_logo.png",
+      logoUrl: "/globalcorp_logo.png",
       approvalStatus: "Pending",
       location: null,
       documents: [
@@ -753,24 +789,9 @@ export const initialData: DatabaseState = {
       status: "Hiring",
       archived: false,
       postedAt: "2026-03-25T10:00:00Z",
-      companyName: "Global Systems",
+     companyName: "Global Systems",
       companyLogo: "/dummy-logo-2.png",
-      applicantCount: 1
-    }
-  ],
-  applications: [
-    {
-      id: "application_1",
-      internshipId: "internship_1",
-      internshipTitle: "Frontend Developer Intern",
-      companyName: "TechCorp",
-      studentId: "alice.smith@student.guc.edu.eg",
-      studentName: "Alice Smith",
-      studentEmail: "alice.smith@student.guc.edu.eg",
-      coverLetter: "I would love to apply my React skills at TechCorp.",
-      appliedAt: "2026-03-15T10:00:00Z",
-      status: "Pending",
-      contributionScore: 85
+      applicantCount: 0
     },
     {
       id: "application_2",
@@ -831,6 +852,18 @@ export const initialData: DatabaseState = {
       content: "Hi Alice, we received your application. Your portfolio looks great! We will be in touch soon.",
       timestamp: "2026-03-15T14:30:00Z",
       read: false,
+      conversationId: "conv_1"
+    },
+    {
+      id: "msg_a9",
+      senderId: "alice.smith@student.guc.edu.eg",
+      senderName: "Alice Smith",
+      senderRole: "Student",
+      receiverId: "hr@techcorp.com",
+      receiverName: "TechCorp HR",
+      content: "Hi! I just submitted my application for the Frontend Developer Intern role.",
+      timestamp: "2026-04-19T16:00:00Z",
+      read: true,
       conversationId: "conv_1"
     },
     {
@@ -932,18 +965,6 @@ export const initialData: DatabaseState = {
       content: "That's exactly what I was hoping to hear! Looking forward to the possibility of joining the team.",
       timestamp: "2026-04-22T12:30:00Z",
       read: false,
-      conversationId: "conv_1"
-    },
-    {
-      id: "msg_a9",
-      senderId: "alice.smith@student.guc.edu.eg",
-      senderName: "Alice Smith",
-      senderRole: "Student",
-      receiverId: "hr@techcorp.com",
-      receiverName: "TechCorp HR",
-      content: "Hi! I just submitted my application for the Frontend Developer Intern role.",
-      timestamp: "2026-04-19T16:00:00Z",
-      read: true,
       conversationId: "conv_1"
     },
     {
@@ -1059,9 +1080,9 @@ export const initialData: DatabaseState = {
     },
     {
       id: "conv_charlie_david",
-      participantId: "david.m@student.guc.edu.eg",
-      participantName: "David Miller",
-      participantAvatar: "DM",
+      participantId: "charlie@student.guc.edu.eg",
+      participantName: "Charlie Brown",
+      participantAvatar: "CB",
       participantRole: "Student",
       lastMessage: "Yeah! We should collaborate. What stack are you planning to use?",
       lastTimestamp: "2026-04-23T10:00:00Z",
@@ -1089,9 +1110,9 @@ export const initialData: DatabaseState = {
       timestamp: "2026-03-01T14:00:00Z",
       read: false,
       recipientId: "alice.smith@student.guc.edu.eg",
-      link: "/projects/project_1",
+      link: "/projects/proj-004",
       // @ts-ignore (Specific interface extending Notification)
-      projectId: "project_1",
+      projectId: "proj-004",
       projectTitle: "Polaris UI Engine",
       feedbackType: "project",
       instructorName: "Dr. Bob Jones"
@@ -1104,9 +1125,9 @@ export const initialData: DatabaseState = {
       timestamp: "2026-03-05T09:00:00Z",
       read: true,
       recipientId: "alice.smith@student.guc.edu.eg",
-      link: "/projects/project_2/settings",
+      link: "/projects/proj-005/settings",
       // @ts-ignore
-      projectId: "project_2",
+      projectId: "proj-005",
       projectTitle: "Distributed Task Queue",
       flagReason: "Unapproved API usage"
     },
@@ -1118,7 +1139,7 @@ export const initialData: DatabaseState = {
       timestamp: "2026-04-10T11:00:00Z",
       read: false,
       recipientId: "alice.smith@student.guc.edu.eg",
-      link: "/portal/student/projects/proj-004/view"
+      link: "/portal/student/projects/proj-005/view"
     },
     {
       id: "notif_4",
@@ -1127,7 +1148,7 @@ export const initialData: DatabaseState = {
       body: "Charlie Brown invited you to join 'Neural Network Optimizer'.",
       timestamp: "2026-05-06T10:01:00Z",
       read: false,
-      recipientId: "charlie@student.guc.edu.eg",
+      recipientId: "alice.smith@student.guc.edu.eg",
       link: "/portal/student/invitations"
     },
     {
@@ -1136,6 +1157,16 @@ export const initialData: DatabaseState = {
       title: "New Collaboration Request",
       body: "David Miller invited you to join 'Microservices Gateway'.",
       timestamp: "2026-05-07T11:02:00Z",
+      read: false,
+      recipientId: "david.m@student.guc.edu.eg",
+      link: "/portal/student/invitations"
+    },
+    {
+      id: "notif_6",
+      type: "project_invitation",
+      title: "New Collaboration Request",
+      body: "Charlie Brown invited you to join 'Neural Network Optimizer'.",
+      timestamp: "2026-05-01T10:01:00Z",
       read: false,
       recipientId: "david.m@student.guc.edu.eg",
       link: "/portal/student/invitations"
@@ -1158,7 +1189,7 @@ export const initialData: DatabaseState = {
       timestamp: "2026-02-16T11:00:00Z",
       read: true,
       recipientId: "alice.smith@student.guc.edu.eg",
-      link: "/projects/project_1/collaborators"
+      link: "/projects/proj-004/collaborators"
     },
     {
       id: "notif_s6",
@@ -1178,7 +1209,7 @@ export const initialData: DatabaseState = {
       timestamp: "2026-02-20T10:00:00Z",
       read: true,
       recipientId: "bob@guc.edu.eg",
-      link: "/projects/project_1"
+      link: "/projects/proj-004"
     },
     {
       id: "notif_i2",
@@ -1243,9 +1274,9 @@ export const initialData: DatabaseState = {
     {
       id: "notif_a3",
       type: "admin",
-      title: "Course Link Pending",
-      body: "Dr.Bob Jones requested to link with 'System Architecture'.",
-      timestamp: "2025-08-10T09:00:00Z",
+      title: "Course Link Approved",
+      body: "Dr. Bob Jones' request to link 'System Architecture' was approved.",
+      timestamp: "2026-04-23T09:00:00Z",
       read: true,
       recipientId: "admin@polaris.edu.eg",
       link: "/portal/administrator/courses"
@@ -1266,6 +1297,16 @@ export const initialData: DatabaseState = {
       title: "Course Link Request",
       body: "Dr. Bob Jones requested to link 'Machine Learning' course.",
       timestamp: "2026-04-28T10:00:00Z",
+      read: true,
+      recipientId: "admin@polaris.edu.eg",
+      link: "/portal/administrator/courses"
+    },
+    {
+      id: "notif_a6",
+      type: "admin",
+      title: "Course Link Approved",
+      body: "Dr. Bob Jones' request to link 'Machine Learning' was approved.",
+      timestamp: "2026-04-29T09:00:00Z",
       read: true,
       recipientId: "admin@polaris.edu.eg",
       link: "/portal/administrator/courses"
