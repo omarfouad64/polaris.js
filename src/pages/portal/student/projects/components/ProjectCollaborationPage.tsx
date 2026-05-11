@@ -9,6 +9,7 @@ interface ProjectCollaborationPageProps {
   currentUserId: string
   isOwner: boolean
   projectCourseId?: string
+  isBachelorProject?: boolean
 }
 
 /**
@@ -21,7 +22,8 @@ export default function ProjectCollaborationPage({
   projectTitle,
   currentUserId,
   isOwner,
-  projectCourseId
+  projectCourseId,
+  isBachelorProject
 }: ProjectCollaborationPageProps) {
   const [modalRole, setModalRole] = useState<'Student' | 'Course Instructor'>('Student')
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
@@ -35,9 +37,10 @@ export default function ProjectCollaborationPage({
     setIsSearchModalOpen(false)
   }
 
-  const { suggestedInstructors, sendInvitation } = useProjectInvitations(projectId, currentUserId, projectCourseId)
+  const { suggestedInstructors, sendInvitation } = useProjectInvitations(projectId, currentUserId, projectCourseId, isBachelorProject)
 
-  const isBachelorProject = projectCourseId === 'course-001'
+  // The prop tells us if this is a Bachelor's project.
+  // We fall back to false if undefined, but it should be set by the parent.
 
   return (
     <div className="space-y-6">
@@ -130,6 +133,7 @@ export default function ProjectCollaborationPage({
         currentUserId={currentUserId}
         isOwner={isOwner}
         projectCourseId={projectCourseId}
+        isBachelorProject={isBachelorProject}
       />
 
       {/* Search Collaborator Modal */}
@@ -137,6 +141,7 @@ export default function ProjectCollaborationPage({
         projectId={projectId}
         currentUserId={currentUserId}
         projectCourseId={projectCourseId}
+        isBachelorProject={isBachelorProject}
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
         onInvitationSent={handleInvitationSent}

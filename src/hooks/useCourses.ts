@@ -13,7 +13,8 @@ export interface Course {
 export default function useCourses() {
   const courses = useSelector((state: RootState) => state.database.courses)
 
-  const getCourseById = (id: string): Course | undefined => {
+  const getCourseById = (id?: string): Course | undefined => {
+    if (!id) return undefined
     return courses.find((c: Course) => c.id === id)
   }
 

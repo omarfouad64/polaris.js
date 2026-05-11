@@ -62,7 +62,10 @@ export function useInstructorSearch() {
   }))
 
   const getCourseById = useCallback(
-    (courseId: string) => allCourses.find(c => c.id === courseId),
+    (courseId?: string) => {
+      if (!courseId) return undefined;
+      return allCourses.find(c => c.id === courseId);
+    },
     [allCourses]
   )
 

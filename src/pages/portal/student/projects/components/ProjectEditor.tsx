@@ -46,6 +46,7 @@ export default function ProjectEditor({
     isPublic: existingProject?.isPublic ?? true,
     status: existingProject?.status ?? 'active',
     flagReason: existingProject?.flagReason,
+    isBachelorProject: existingProject?.isBachelorProject ?? false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -61,7 +62,7 @@ export default function ProjectEditor({
       newErrors.title = 'Title must be less than 200 characters';
     }
 
-    if (!formData.course) {
+    if (!formData.isBachelorProject && !formData.course) {
       newErrors.course = 'Course is required';
     }
 
@@ -139,12 +140,17 @@ export default function ProjectEditor({
     setIsSubmitting(true);
 
     try {
+      let projectToSave = { ...formData };
+      if (projectToSave.isBachelorProject) {
+        delete projectToSave.course;
+      }
+
       let savedProject: ProjectData;
       if (isEditMode && projectId) {
-        updateProject(projectId, formData);
-        savedProject = { ...existingProject, ...formData, id: projectId, updatedDate: new Date().toISOString().split('T')[0] } as ProjectData;
+        updateProject(projectId, projectToSave);
+        savedProject = { ...existingProject, ...projectToSave, id: projectId, updatedDate: new Date().toISOString().split('T')[0] } as ProjectData;
       } else {
-        savedProject = createProject(formData);
+        savedProject = createProject(projectToSave);
       }
 
       onSave?.(savedProject);
@@ -207,19 +213,41 @@ export default function ProjectEditor({
         </p>
       </div>
 
-      {/* Course */}
-      <div className="mb-6">
-        <label className="block text-sm font-jakarta font-semibold uppercase tracking-widest text-on-surface mb-2">
-          Course *
+      {/* Bachelor's Project Toggle */}
+      <div className="mb-6 p-4 bg-surface-container rounded-lg border border-outline-variant/40">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.isBachelorProject}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, isBachelorProject: e.target.checked, course: e.target.checked ? undefined : prev.course }))
+            }
+            className="w-5 h-5 rounded cursor-pointer accent-primary"
+          />
+          <span className="text-base font-lexend text-on-surface">
+            This is a Bachelor's Project
+          </span>
         </label>
-        <CourseSelector
-          selectedCourse={formData.course}
-          onSelectCourse={handleCourseChange}
-        />
-        {errors.course && (
-          <p className="text-sm text-error mt-1 font-lexend">{errors.course}</p>
-        )}
+        <p className="text-sm font-lexend text-on-surface-variant mt-2 ml-8">
+          Bachelor's Projects are not associated with a specific course.
+        </p>
       </div>
+
+      {/* Course */}
+      {!formData.isBachelorProject && (
+        <div className="mb-6">
+          <label className="block text-sm font-jakarta font-semibold uppercase tracking-widest text-on-surface mb-2">
+            Course *
+          </label>
+          <CourseSelector
+            selectedCourse={formData.course || ''}
+            onSelectCourse={handleCourseChange}
+          />
+          {errors.course && (
+            <p className="text-sm text-error mt-1 font-lexend">{errors.course}</p>
+          )}
+        </div>
+      )}
 
       {/* GitHub Link */}
       <div className="mb-6">
@@ -297,7 +325,7 @@ export default function ProjectEditor({
       </div>
       
       {/* Thesis Drafts (Bachelor Project only) */}
-      {formData.course === 'course-001' && (
+      {formData.isBachelorProject && (
         <ThesisDraftUploader
           drafts={formData.thesisDrafts}
           onDraftsChange={handleThesisDraftsChange}

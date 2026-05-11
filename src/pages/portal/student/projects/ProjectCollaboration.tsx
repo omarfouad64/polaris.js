@@ -97,6 +97,7 @@ export default function ProjectCollaboration() {
           currentUserId={currentUserId}
           isOwner={isOwner}
           projectCourseId={project?.course}
+          isBachelorProject={project?.isBachelorProject}
         />
       ) : (
         <ProjectTaskManager

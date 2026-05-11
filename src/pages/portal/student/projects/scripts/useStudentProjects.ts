@@ -13,7 +13,8 @@ export interface ProjectData {
   id: string;
   ownerId: string;
   title: string;
-  course: string;
+  course?: string;
+  isBachelorProject?: boolean;
   githubLink: string;
   projectReport: string;
   languages: string[];

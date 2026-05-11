@@ -7,6 +7,7 @@ interface CollaboratorListProps {
   currentUserId: string
   isOwner: boolean
   projectCourseId?: string
+  isBachelorProject?: boolean
 }
 
 type FilterType = 'all' | 'collaborators' | 'instructors' | 'pending'
@@ -19,13 +20,16 @@ export default function CollaboratorList({
   projectId,
   currentUserId,
   isOwner,
-  projectCourseId
+  projectCourseId,
+  isBachelorProject
 }: CollaboratorListProps) {
-  const isBachelorProject = projectCourseId === 'course-001'
+  // Use passed prop, fall back to false
+  const _isBachelorProject = isBachelorProject ?? false
   const { collaborators, stats, cancelInvitation, removeCollaborator } = useProjectInvitations(
     projectId,
     currentUserId,
-    projectCourseId
+    projectCourseId,
+    _isBachelorProject
   )
 
   const [filter, setFilter] = useState<FilterType>('all')
@@ -179,7 +183,7 @@ export default function CollaboratorList({
                   </div>
 
                   {/* Actions — only project owner, never on self, never on bachelor projects */}
-                  {!isBachelorProject && isOwner && collaborator.role !== 'owner' && (
+                  {!_isBachelorProject && isOwner && collaborator.role !== 'owner' && (
                     <div className="flex flex-col gap-2 shrink-0">
                       {collaborator.invitationStatus === 'pending' ? (
                         <button
