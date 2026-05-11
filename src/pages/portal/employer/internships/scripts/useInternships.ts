@@ -54,7 +54,6 @@ export default function useInternships() {
     internships,
     activeInternships,
     archivedInternships,
-    internshipsWithPassedDeadline,
     addInternship,
     updateInternship,
     deleteInternship,

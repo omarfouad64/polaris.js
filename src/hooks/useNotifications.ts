@@ -4,6 +4,8 @@ import { useGlobalContext } from '../globalContext'
 import type { RootState } from '../store'
 import type { Notification } from '../types'
 
+import { toggleNotificationRead, markNotificationsAllRead } from '../store/databaseSlice'
+
 const STORAGE_KEY = 'polaris_notifications'
 const MUTE_KEY = 'polaris_notifications_muted'
 
@@ -93,7 +95,7 @@ export default function useNotifications() {
   )
 
   const toggleRead = useCallback((id: string): void => {
-    dispatch({ type: 'database/toggleNotificationRead', payload: id })
+    dispatch(toggleNotificationRead(id))
     sharedNotifications = sharedNotifications.map((n: Notification) =>
       n.id === id ? { ...n, read: !n.read } : n
     )
@@ -101,9 +103,10 @@ export default function useNotifications() {
   }, [dispatch])
 
   const markAllRead = useCallback((): void => {
+    dispatch(markNotificationsAllRead())
     sharedNotifications = sharedNotifications.map((n: Notification) => ({ ...n, read: true }))
     emit()
-  }, [])
+  }, [dispatch])
 
   const addNotification = useCallback(
     (notification: Omit<Notification, 'id' | 'timestamp' | 'read'> & { recipientId?: string }) => {

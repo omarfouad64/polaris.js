@@ -13,7 +13,7 @@ import type { Internship } from '../../../../types'
  */
 export default function InternshipManagementPage(): React.JSX.Element {
   const navigate = useNavigate()
-  const { activeInternships, archivedInternships, internshipsWithPassedDeadline, addInternship, updateInternship, deleteInternship, toggleStatus, toggleArchive } = useInternships()
+  const { activeInternships, archivedInternships, addInternship, updateInternship, deleteInternship, toggleStatus, toggleArchive } = useInternships()
   const { studentsPlaced } = useEmployerStats()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewTab, setViewTab] = useState<'active' | 'archived'>('active')
@@ -108,7 +108,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
     setDeadlineError(null)
   }
 
-  const currentList = viewTab === 'active' ? internshipsWithPassedDeadline : archivedInternships
+  const currentList = viewTab === 'active' ? activeInternships : archivedInternships
 
   return (
     <div className="space-y-6">
@@ -127,8 +127,8 @@ export default function InternshipManagementPage(): React.JSX.Element {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Active Listings', value: internshipsWithPassedDeadline.length, icon: 'work', color: 'primary' },
-           { label: 'Total Applicants', value: internshipsWithPassedDeadline.reduce((s, i) => s + (i.applicantCount ?? 0), 0), icon: 'group', color: 'secondary' },
+          { label: 'Active Listings', value: activeInternships.length, icon: 'work', color: 'primary' },
+           { label: 'Total Applicants', value: activeInternships.reduce((s, i) => s + (i.applicantCount ?? 0), 0), icon: 'group', color: 'secondary' },
           { label: 'Total Participants', value: studentsPlaced, icon: 'people', color: 'secondary' },
           { label: 'Archived', value: archivedInternships.length, icon: 'archive', color: 'outline' }
         ].map(stat => (
@@ -188,7 +188,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
         <div className="border-b border-outline-variant/30 p-4 bg-surface-container-low/50 flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="flex bg-surface-container rounded-lg p-1">
             <button onClick={() => setViewTab('active')} className={`px-5 py-2 rounded-lg text-sm font-jakarta font-semibold transition-all ${viewTab === 'active' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}>
-              Active ({internshipsWithPassedDeadline.length})
+              Active ({activeInternships.length})
             </button>
             <button onClick={() => setViewTab('archived')} className={`px-5 py-2 rounded-lg text-sm font-jakarta font-semibold transition-all ${viewTab === 'archived' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}>
               Archived ({archivedInternships.length})
@@ -244,7 +244,18 @@ export default function InternshipManagementPage(): React.JSX.Element {
                   <button onClick={() => toggleStatus(internship.id)} className="px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-lg text-sm font-jakarta font-semibold hover:bg-surface-container transition-colors focus-visible:ring-2 focus-visible:ring-secondary" aria-label={`Toggle status of ${internship.title}`}>
                     {internship.status === 'Hiring' ? 'Mark Filled' : 'Reopen'}
                   </button>
-                  <button onClick={() => toggleArchive(internship.id)} className="px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-lg text-sm font-jakarta font-semibold hover:bg-surface-container transition-colors focus-visible:ring-2 focus-visible:ring-secondary" aria-label={`Archive ${internship.title}`}>
+                  <button 
+                    onClick={() => {
+                      if (!internship.archived && new Date(internship.applicationDeadline) > today) {
+                        return;
+                      }
+                      toggleArchive(internship.id);
+                    }} 
+                    disabled={!internship.archived && new Date(internship.applicationDeadline) > today}
+                    title={!internship.archived && new Date(internship.applicationDeadline) > today ? 'Internship deadline must pass before archiving' : ''}
+                    className={`px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-lg text-sm font-jakarta font-semibold hover:bg-surface-container transition-colors focus-visible:ring-2 focus-visible:ring-secondary ${!internship.archived && new Date(internship.applicationDeadline) > today ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    aria-label={`Archive ${internship.title}`}
+                  >
                     {internship.archived ? 'Unarchive' : 'Archive'}
                   </button>
                   <button onClick={() => startEdit(internship)} className="px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-lg text-sm font-jakarta font-semibold hover:bg-surface-container transition-colors focus-visible:ring-2 focus-visible:ring-secondary" aria-label={`Edit ${internship.title}`}>Edit</button>

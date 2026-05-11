@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useGlobalContext } from '../globalContext'
 import type { RootState } from '../store'
+import { toggleNotificationRead, markInvitationsAllRead } from '../store/databaseSlice'
 
 export interface ProjectInvitationNotification {
   id: string
@@ -43,14 +44,11 @@ export function useProjectNotifications() {
   )
 
   const markAsRead = (notificationId: string) => {
-    dispatch({ type: 'database/toggleNotificationRead', payload: notificationId })
+    dispatch(toggleNotificationRead(notificationId))
   }
 
   const markAllAsRead = () => {
-    const projNotifs = invitationNotifications.filter((n: any) => !n.read)
-    projNotifs.forEach((n: any) => {
-      dispatch({ type: 'database/toggleNotificationRead', payload: n.id })
-    })
+    dispatch(markInvitationsAllRead())
   }
 
   const deleteNotification = (notificationId: string) => {
