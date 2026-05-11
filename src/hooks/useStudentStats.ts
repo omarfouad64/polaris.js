@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import useDatabase from './useDatabase'
+import { useGlobalContext } from '../globalContext'
 
 export interface LanguageStat {
   language: string
@@ -30,9 +31,21 @@ export interface ProjectWithCollaborators {
  */
 export default function useStudentStats() {
   const { projects, projectCollaborators } = useDatabase()
+  const { user } = useGlobalContext()
 
   const projectsWithStats = useMemo(() => {
-    return projects.map(p => ({
+    // Filter projects where user is owner or accepted collaborator
+    const userProjects = projects.filter(p => {
+      if (p.ownerId === user?.username) return true
+      const isCollab = projectCollaborators.some(
+        c => c.projectId === p.id && 
+             c.collaboratorId === user?.username && 
+             c.invitationStatus === 'accepted'
+      )
+      return isCollab
+    })
+
+    return userProjects.map(p => ({
       id: p.id,
       title: p.title,
       courseId: p.courseId,
@@ -41,7 +54,7 @@ export default function useStudentStats() {
       tasks: p.tasks,
       languages: p.languages,
     }))
-  }, [projects])
+  }, [projects, projectCollaborators, user])
 
   const totalProjects = projectsWithStats.length
   const publicProjects = projectsWithStats.filter(p => p.isPublic).length
