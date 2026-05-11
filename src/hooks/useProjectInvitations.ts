@@ -11,7 +11,7 @@ import {
 /**
  * useProjectInvitations — manages project collaboration and invitations via Redux.
  */
-export function useProjectInvitations(projectId: string, _currentUserId: string, _projectCourseId?: string) {
+export function useProjectInvitations(projectId: string, _currentUserId: string, projectCourseId?: string) {
   const { projectCollaborators, projectInvitations, students, instructors, dispatch } = useDatabase()
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -44,6 +44,9 @@ export function useProjectInvitations(projectId: string, _currentUserId: string,
   }, [students, instructors, collaborators])
 
   const sendInvitation = useCallback((userId: string, userEmail: string, userName: string) => {
+    if (projectCourseId === 'course-001') {
+      return { success: false, message: "Bachelor's projects cannot have collaborators." }
+    }
     if (collaborators.some(c => c.email === userEmail)) {
       return { success: false, message: 'User is already on the team' }
     }
@@ -77,7 +80,7 @@ export function useProjectInvitations(projectId: string, _currentUserId: string,
     }))
 
     return { success: true }
-  }, [dispatch, collaborators, searchableUsers, projectId, _currentUserId])
+  }, [dispatch, collaborators, searchableUsers, projectId, _currentUserId, projectCourseId])
 
   const removeCollaborator = useCallback((email: string) => {
     const member = collaborators.find(c => c.email === email)

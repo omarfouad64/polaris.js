@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { type ProjectTask } from '../scripts/useStudentProjects';
 import { useProjectInvitations } from '../../../../../hooks/useProjectInvitations';
 import { useInstructorFeedback } from '../../../../../hooks/useInstructorFeedback';
@@ -33,6 +33,16 @@ export default function ProjectTaskManager({
     const { collaborators } = useProjectInvitations(projectId, currentUserId);
     const { addNotification } = useNotifications();
     const { getTaskFeedback, removeTaskFeedback } = useInstructorFeedback(projectId);
+
+    const projectMemberIds = useMemo(() => {
+        const ids = new Set<string>([currentUserId]);
+        collaborators.forEach(c => {
+            if (c.invitationStatus === 'accepted' && c.email !== currentUserId) {
+                ids.add(c.email);
+            }
+        });
+        return Array.from(ids);
+    }, [collaborators, currentUserId]);
 
     // Today's date string in YYYY-MM-DD — used as min for all deadline inputs
     const todayStr = new Date().toISOString().split('T')[0];
@@ -412,7 +422,8 @@ export default function ProjectTaskManager({
                 isOpen={!!feedbackTaskId}
                 onClose={() => setFeedbackTaskId(null)}
                 onFeedbackSubmitted={() => {
-                    addNotification({ type: 'feedback', title: 'New Task Feedback', body: `${userName} left feedback on task: "${feedbackTaskTitle}"` });
+                    const notificationBody = `${userName} left feedback on task: "${feedbackTaskTitle}"`;
+                    projectMemberIds.forEach(id => addNotification({ type: 'feedback', title: 'New Task Feedback', body: notificationBody, recipientId: id }));
                     setFeedbackTaskId(null);
                 }}
             />

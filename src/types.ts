@@ -112,6 +112,7 @@ export interface Conversation {
   lastMessage: string
   lastTimestamp: string
   unreadCount: number
+  participants?: string[]
 }
 
 export interface Notification {
@@ -170,6 +171,7 @@ export interface CourseLink {
   instructorId: string
   courseId: string
   status: 'linked' | 'pending' | 'rejected'
+  direction: 'link' | 'unlink'
   linkedAt: string
 }
 

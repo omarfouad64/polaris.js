@@ -44,12 +44,30 @@ export function useCourseLinks(instructorId: string) {
     const updated = [...courseLinks]
     const idx = updated.findIndex(l => l.instructorId === instructorId && l.courseId === courseId)
     if (idx >= 0) {
-      updated[idx] = { ...updated[idx], status: 'pending' as const }
+      updated[idx] = { ...updated[idx], status: 'pending' as const, direction: 'link' as const }
     } else {
       updated.push({
         instructorId,
         courseId,
         status: 'pending' as const,
+        direction: 'link' as const,
+        linkedAt: new Date().toISOString(),
+      })
+    }
+    dispatch({ type: 'database/updateDatabase', payload: { courseLinks: updated } })
+  }, [dispatch, courseLinks, instructorId])
+
+  const requestUnlink = useCallback((courseId: string) => {
+    const updated = [...courseLinks]
+    const idx = updated.findIndex(l => l.instructorId === instructorId && l.courseId === courseId)
+    if (idx >= 0) {
+      updated[idx] = { ...updated[idx], status: 'pending' as const, direction: 'unlink' as const }
+    } else {
+      updated.push({
+        instructorId,
+        courseId,
+        status: 'pending' as const,
+        direction: 'unlink' as const,
         linkedAt: new Date().toISOString(),
       })
     }
@@ -64,5 +82,6 @@ export function useCourseLinks(instructorId: string) {
     linkCourse,
     unlinkCourse,
     requestLink,
+    requestUnlink,
   }
 }

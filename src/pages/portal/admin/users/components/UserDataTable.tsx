@@ -12,7 +12,7 @@ export default function UserDataTable({ users, onToggleStatus }: UserDataTablePr
   
   const getRoleBadgeClasses = (role: string) => {
     switch (role) {
-      case 'Faculty': return 'bg-primary/20 text-primary-container font-semibold'
+      case 'Instructor': return 'bg-primary/20 text-primary-container font-semibold'
       case 'Student': return 'bg-surface-variant text-on-surface-variant'
       case 'Admin': return 'bg-primary-container text-on-primary-container'
       case 'Staff': return 'bg-surface-variant text-on-surface-variant'

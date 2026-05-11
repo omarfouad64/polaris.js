@@ -106,12 +106,13 @@ export default function useNotifications() {
   }, [])
 
   const addNotification = useCallback(
-    (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    (notification: Omit<Notification, 'id' | 'timestamp' | 'read'> & { recipientId?: string }) => {
       const newNotification: Notification = {
         ...notification,
         id: `notif-${Date.now()}`,
         timestamp: new Date().toISOString(),
         read: false,
+        recipientId: notification.recipientId,
       }
       dispatch({
         type: 'database/addNotification',

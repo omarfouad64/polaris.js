@@ -47,9 +47,9 @@ export default function ProjectTasksPage(): React.JSX.Element {
     updateProject(id, { tasks })
   }
 
-  // In this frontend-only app the logged-in student is always the owner of their projects.
+  // Determine ownership based on project data — a student may be viewing another student's project as collaborator
   const currentUserId = user?.username ?? 'current-user'
-  const isOwner = true
+  const isOwner = project?.ownerId === currentUserId
 
   return (
     <div className="min-h-screen bg-background p-[--spacing-polaris-md] md:p-[--spacing-polaris-lg]">

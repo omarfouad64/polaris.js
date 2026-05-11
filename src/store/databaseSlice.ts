@@ -123,6 +123,15 @@ const databaseSlice = createSlice({
       if (conv) {
         conv.lastMessage = content.trim();
         conv.lastTimestamp = msg.timestamp;
+        if (conv.participants && !conv.participants.includes(senderId)) {
+          conv.participants.push(senderId);
+        }
+        if (conv.participants && !conv.participants.includes(receiverId)) {
+          conv.participants.push(receiverId);
+        }
+        if (!conv.participants) {
+          conv.participants = [senderId, receiverId];
+        }
         if (conv.participantId !== senderId) {
           conv.unreadCount += 1;
         }
@@ -140,15 +149,22 @@ const databaseSlice = createSlice({
       state.conversations.forEach(c => { c.unreadCount = 0; });
     },
 
-    startConversation: (state, action: PayloadAction<DatabaseState['conversations'][number]>) => {
-      const existing = state.conversations.find(c => 
+    startConversation: (state, action: PayloadAction<DatabaseState['conversations'][number] & { senderId?: string }>) => {
+      const existing = state.conversations.find(c =>
         c.participantId === action.payload.participantId || c.id === action.payload.id
       );
       if (existing) {
-        existing.id = action.payload.id; // ensure ID matches what's expected
+        existing.id = action.payload.id;
+        if (action.payload.participants && !existing.participants) {
+          existing.participants = action.payload.participants;
+        }
         return;
       }
-      state.conversations.unshift(action.payload);
+      const conv = { ...action.payload } as any;
+      if (!conv.participants && action.payload.senderId) {
+        conv.participants = [action.payload.senderId, action.payload.participantId];
+      }
+      state.conversations.unshift(conv);
     },
 
     // ── Project Invitations & Collaborators ────────────────────────────────
@@ -306,14 +322,15 @@ const databaseSlice = createSlice({
       );
     },
 
-    requestCourseLink: (state, action: PayloadAction<{ instructorId: string; courseId: string }>) => {
-      const { instructorId, courseId } = action.payload;
+    requestCourseLink: (state, action: PayloadAction<{ instructorId: string; courseId: string; direction: 'link' | 'unlink' }>) => {
+      const { instructorId, courseId, direction } = action.payload;
       const existing = state.courseLinks.find(l => l.instructorId === instructorId && l.courseId === courseId);
       if (existing) {
         existing.status = 'pending';
+        existing.direction = direction;
       } else {
         state.courseLinks.push({
-          instructorId, courseId, status: 'pending', linkedAt: new Date().toISOString(),
+          instructorId, courseId, status: 'pending', direction, linkedAt: new Date().toISOString(),
         });
       }
     },

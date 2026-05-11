@@ -1021,7 +1021,8 @@ export const initialData: DatabaseState = {
       participantRole: "Employer",
       lastMessage: "Hi Alice! I've reviewed your portfolio and I'm impressed with your React skills. Let's set up an interview.",
       lastTimestamp: "2026-04-25T10:00:00Z",
-      unreadCount: 2
+      unreadCount: 2,
+      participants: ["alice.smith@student.guc.edu.eg", "hr@techcorp.com"]
     },
     {
       id: "conv_bob_alice",
@@ -1031,7 +1032,8 @@ export const initialData: DatabaseState = {
       participantRole: "Course Instructor",
       lastMessage: "Thank you Dr. Bob! I'll review the feedback right away.",
       lastTimestamp: "2026-04-24T16:00:00Z",
-      unreadCount: 1
+      unreadCount: 1,
+      participants: ["alice.smith@student.guc.edu.eg", "bob@guc.edu.eg"]
     },
     {
       id: "conv_charlie_david",
@@ -1041,7 +1043,8 @@ export const initialData: DatabaseState = {
       participantRole: "Student",
       lastMessage: "Yeah! We should collaborate. What stack are you planning to use?",
       lastTimestamp: "2026-04-23T10:00:00Z",
-      unreadCount: 0
+      unreadCount: 0,
+      participants: ["charlie@student.guc.edu.eg", "david.m@student.guc.edu.eg"]
     },
     {
       id: "conv_bob_david",
@@ -1051,7 +1054,8 @@ export const initialData: DatabaseState = {
       participantRole: "Student",
       lastMessage: "Will do, Dr. Bob. I'll have everything submitted by Friday.",
       lastTimestamp: "2026-04-25T11:00:00Z",
-      unreadCount: 0
+      unreadCount: 0,
+      participants: ["david.m@student.guc.edu.eg", "bob@guc.edu.eg"]
     }
   ],
   notifications: [

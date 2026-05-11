@@ -28,7 +28,7 @@ const roleToStatusMap: Record<string, string> = {
 const roleToLabelMap: Record<string, string> = {
   Student: 'Student',
   Employer: 'Employer',
-  'Course Instructor': 'Faculty',
+  'Course Instructor': 'Instructor',
   Administrator: 'Admin'
 }
 

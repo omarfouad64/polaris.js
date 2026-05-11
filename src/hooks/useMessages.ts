@@ -4,6 +4,12 @@ import { useGlobalContext } from '../globalContext'
 import type { RootState } from '../store'
 import type { Conversation, Message } from '../types'
 
+interface OtherParticipant {
+  name: string
+  avatar: string
+  role?: string
+}
+
 export default function useMessages() {
   const dispatch = useDispatch()
   const { user } = useGlobalContext()
@@ -13,15 +19,43 @@ export default function useMessages() {
   const myId = user?.username || 'me'
   const myEmail = user?.username || 'me'
 
-  // Filter conversations: only show conversations where the current user has messages
+  const getOtherParticipant = useCallback((conv: Conversation): OtherParticipant => {
+    const convMessages = (reduxMessages as Message[]).filter(m => m.conversationId === conv.id)
+    if (convMessages.length > 0) {
+      const otherMsg = convMessages.find(m => m.senderId !== myId) || convMessages[0]
+      return {
+        name: otherMsg.senderName || conv.participantName,
+        avatar: conv.participantAvatar,
+        role: otherMsg.senderRole,
+      }
+    }
+    if (conv.participantId === myId || conv.participantId === myEmail) {
+      return {
+        name: conv.participantName,
+        avatar: conv.participantAvatar,
+        role: conv.participantRole,
+      }
+    }
+    return {
+      name: conv.participantName,
+      avatar: conv.participantAvatar,
+      role: conv.participantRole,
+    }
+  }, [myId, myEmail, reduxMessages])
+
+  // Filter conversations: only show conversations where the current user is a participant
   const conversations = useMemo(() => {
-    return (reduxConversations as Conversation[]).filter((c) => {
+    const filtered = (reduxConversations as Conversation[]).filter((c) => {
+      const isInParticipants = c.participants?.includes(myId)
+      if (isInParticipants) return true
+      if (c.participantId !== myId && c.participantId !== myEmail) return false
       const hasMessages = (reduxMessages as Message[]).some((m: Message) =>
         m.conversationId === c.id
       )
       return hasMessages
     })
-  }, [reduxConversations, reduxMessages])
+    return filtered.map(c => ({ ...c, _otherParticipant: getOtherParticipant(c) }))
+  }, [reduxConversations, reduxMessages, myId, myEmail, getOtherParticipant])
 
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
     () => typeof window !== 'undefined' ? window.localStorage.getItem('polaris_active_conv') : null
@@ -34,8 +68,12 @@ export default function useMessages() {
   }, [activeConversationId])
 
   const activeConversation = useMemo(
-    () => conversations.find(c => c.id === activeConversationId) ?? null,
-    [conversations, activeConversationId]
+    () => {
+      const conv = conversations.find(c => c.id === activeConversationId)
+      if (!conv) return null
+      return { ...conv, _otherParticipant: getOtherParticipant(conv as unknown as Conversation) }
+    },
+    [conversations, activeConversationId, getOtherParticipant]
   )
 
   // Filter messages: show messages in the active conversation
@@ -77,13 +115,17 @@ export default function useMessages() {
 
   const totalUnread = useMemo(
     () => (reduxConversations as Conversation[]).filter((c) =>
-      c.participantId === myEmail || c.participantId === myId
+      c.participants?.includes(myId)
     ).reduce((sum, c) => sum + c.unreadCount, 0),
-    [reduxConversations, myId, myEmail]
+    [reduxConversations, myId]
   )
 
-  const startConversation = useCallback((participantId: string, name: string, avatar: string): string => {
-    const existing = conversations.find(c => c.participantId === participantId)
+  const startConversation = useCallback((otherUserId: string, name: string, avatar: string): string => {
+    const existing = conversations.find(c =>
+      c.participants &&
+      c.participants.includes(myId) &&
+      c.participants.includes(otherUserId)
+    )
     if (existing) {
       setActiveConversationId(existing.id)
       dispatch({ type: 'database/selectConversation', payload: existing.id })
@@ -101,7 +143,8 @@ export default function useMessages() {
         participantRole: 'Student' as const,
         lastMessage: '',
         lastTimestamp: new Date().toISOString(),
-        unreadCount: 0
+        unreadCount: 0,
+        senderId: myId
       }
     })
     setActiveConversationId(newId)
@@ -109,8 +152,8 @@ export default function useMessages() {
   }, [dispatch, conversations])
 
   return {
-    conversations,
-    activeConversation,
+    conversations: conversations as any,
+    activeConversation: activeConversation ? ({ ...activeConversation, _otherParticipant: activeConversation._otherParticipant }) as any : null,
     activeMessages,
     activeConversationId,
     sendMessage,

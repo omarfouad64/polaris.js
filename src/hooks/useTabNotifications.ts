@@ -28,13 +28,12 @@ export function useTabNotifications(): TabNotifications {
     : 'student'
 
   const isAdministrator = user?.role === 'Administrator'
-  const adminUsernames = ['admin@polaris.edu.eg', 'admin@guc.edu.eg']
 
   const userNotifications = useMemo(() => notifications.filter((n) => {
     if (isAdministrator && (n.type === 'admin' || n.type === 'link_request')) return true
-    if (n.recipientId && !adminUsernames.includes(n.recipientId)) return false
+    if (n.recipientId === userId) return true
     if (!n.recipientId) return true
-    return n.recipientId === userId || adminUsernames.includes(n.recipientId)
+    return false
   }), [notifications, userId, isAdministrator])
 
   const messageUnread = useMemo(() => {

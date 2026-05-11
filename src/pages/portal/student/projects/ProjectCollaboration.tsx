@@ -22,9 +22,9 @@ export default function ProjectCollaboration() {
   const projectId = id || 'proj-001'
   const project = getProjectById(projectId)
   const projectTitle = project?.title || 'E-Commerce Platform'
-  const currentUserId = user?.username || 'student-001'
-  // A student only ever sees their own projects, so they are always the owner
-  const isOwner = user?.role === 'Student'
+ const currentUserId = user?.username || 'student-001'
+  // Determine ownership based on project data — a student may be viewing another student's project as collaborator
+  const isOwner = project?.ownerId === currentUserId
   const isInstructor = user?.role === 'Course Instructor'
 
   const [activeTab, setActiveTab] = useState<'team' | 'tasks'>('team')

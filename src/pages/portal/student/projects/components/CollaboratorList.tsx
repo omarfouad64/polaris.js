@@ -21,6 +21,7 @@ export default function CollaboratorList({
   isOwner,
   projectCourseId
 }: CollaboratorListProps) {
+  const isBachelorProject = projectCourseId === 'course-001'
   const { collaborators, stats, cancelInvitation, removeCollaborator } = useProjectInvitations(
     projectId,
     currentUserId,
@@ -177,8 +178,8 @@ export default function CollaboratorList({
                     </div>
                   </div>
 
-                  {/* Actions — only project owner, never on self */}
-                  {isOwner && collaborator.role !== 'owner' && (
+                  {/* Actions — only project owner, never on self, never on bachelor projects */}
+                  {!isBachelorProject && isOwner && collaborator.role !== 'owner' && (
                     <div className="flex flex-col gap-2 shrink-0">
                       {collaborator.invitationStatus === 'pending' ? (
                         <button

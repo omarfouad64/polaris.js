@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { useGlobalContext } from '../../../../globalContext'
 import useStudentProjects, { type ProjectTask } from '../../student/projects/scripts/useStudentProjects'
 import { useInstructorFeedback } from '../../../../hooks/useInstructorFeedback'
@@ -8,6 +9,7 @@ import Button from '../../../../components/Button'
 import FeedbackDialog from '../../../../components/FeedbackDialog'
 import ConfirmDialog from '../../../../components/ConfirmDialog'
 import ProjectTaskSection from '../../shared/projects/components/ProjectTaskSection'
+import type { RootState } from '../../../../store'
 
 /** Inline style for a filled Material Symbol star. */
 const FILLED_STAR_STYLE: React.CSSProperties = { fontVariationSettings: "'FILL' 1" }
@@ -20,6 +22,7 @@ export default function ProjectOversightPage() {
   const { user } = useGlobalContext()
   const navigate = useNavigate()
   const { projects } = useStudentProjects()
+  const allCollaborators = useSelector((state: RootState) => state.database.projectCollaborators)
 
   const assignedProjects = useMemo(() => {
     return projects.filter(p =>
@@ -33,6 +36,13 @@ export default function ProjectOversightPage() {
     assignedProjects.find(p => p.id === selectedProjectId),
     [assignedProjects, selectedProjectId]
   )
+
+  const selectedProjectCollaborators = useMemo(() => {
+    if (!selectedProject) return []
+    return allCollaborators
+      .filter(c => (c as any).projectId === selectedProject.id && c.invitationStatus === 'accepted')
+      .map(c => (c as any).email)
+  }, [selectedProject, allCollaborators])
 
   return (
     <div className="space-y-8">
@@ -108,6 +118,8 @@ export default function ProjectOversightPage() {
                   tasks={selectedProject.tasks || []}
                   instructorId={user?.username ?? 'instructor@guc.edu.eg'}
                   instructorName={user?.username ?? 'Dr. Fatima Al-Mansouri'}
+                  projectOwnerId={selectedProject.ownerId}
+                  projectCollaborators={selectedProjectCollaborators}
                 />
               </div>
             </div>
@@ -145,15 +157,17 @@ const ratingLabel = (v: number) =>
   v === 5 ? 'Excellent!' : v === 4 ? 'Very Good' : v === 3 ? 'Good' : v === 2 ? 'Fair' : 'Needs Improvement'
 
 /**
- * ProjectEvaluationSection — Handles rating and feedback for a specific project.
- * One rating + one feedback per instructor per project.
- */
-function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId, instructorName }: {
+  * ProjectEvaluationSection — Handles rating and feedback for a specific project.
+  * One rating + one feedback per instructor per project.
+  */
+ function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId, instructorName, projectOwnerId, projectCollaborators }: {
   projectId: string
   projectTitle: string
   tasks: ProjectTask[]
   instructorId: string
   instructorName: string
+  projectOwnerId: string
+  projectCollaborators: string[]
 }) {
   const {
     projectFeedback,
@@ -166,6 +180,21 @@ function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId
   } = useInstructorFeedback(projectId)
 
   const { addNotification } = useNotifications()
+
+  const notificationRecipients = useMemo(() => {
+    const recipients = new Set<string>([projectOwnerId])
+    projectCollaborators.forEach(c => { if (c !== instructorId) recipients.add(c) })
+    return Array.from(recipients)
+  }, [projectOwnerId, projectCollaborators, instructorId])
+
+  function sendProjectNotification(title: string, body: string, recipientId: string) {
+    addNotification({
+      type: 'feedback',
+      title,
+      body,
+      recipientId,
+    })
+  }
 
   // ── Rating state ──────────────────────────────────────────────────────────
   const myRating = getInstructorRating(instructorId)
@@ -191,11 +220,8 @@ function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId
   const handleSubmitRating = () => {
     if (ratingValue === 0) return
     rateProject(instructorId, instructorName, ratingValue, ratingComment)
-    addNotification({
-      type: 'feedback',
-      title: 'Project Rated',
-      body: `${instructorName} rated your project "${projectTitle}" ${ratingValue}/5`
-    })
+    const notificationBody = `${instructorName} rated your project "${projectTitle}" ${ratingValue}/5`
+    notificationRecipients.forEach(r => sendProjectNotification('Project Rated', notificationBody, r))
     setSuccessMessage(`Project rated ${ratingValue}/5 stars successfully.`)
     setShowSuccessDialog(true)
     setRatingValue(0)
@@ -221,11 +247,8 @@ function ProjectEvaluationSection({ projectId, projectTitle, tasks, instructorId
   const handleAddFeedback = () => {
     if (!feedbackText.trim()) return
     addProjectFeedback(instructorId, instructorName, feedbackText.trim(), feedbackType)
-    addNotification({
-      type: 'feedback',
-      title: 'New Project Feedback',
-      body: `${instructorName} left feedback on your project "${projectTitle}"`
-    })
+    const notificationBody = `${instructorName} left feedback on your project "${projectTitle}"`
+    notificationRecipients.forEach(r => sendProjectNotification('New Project Feedback', notificationBody, r))
     setFeedbackText('')
     setSuccessMessage('Project feedback has been posted successfully.')
     setShowSuccessDialog(true)

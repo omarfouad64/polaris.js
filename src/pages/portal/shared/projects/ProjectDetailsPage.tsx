@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import useStudentProjects from '../../student/projects/scripts/useStudentProjects'
 import useCourses from '../../../../hooks/useCourses'
@@ -121,6 +121,20 @@ export default function ProjectDetailsPage(): React.JSX.Element {
   // One feedback per instructor
   const myFeedback = projectFeedback.find(fb => fb.instructorId === instructorId)
   const myRating = getInstructorRating(instructorId)
+  const projectOwnerId = project?.ownerId || ''
+  const projectCollaboratorIds = useMemo(
+    () => collaborators
+      .filter(c => c.invitationStatus === 'accepted' && c.email !== user?.username)
+      .map(c => c.email),
+    [collaborators, user?.username]
+  )
+
+  function notifyProjectMembers(title: string, body: string) {
+    const recipients = new Set<string>([projectOwnerId, ...projectCollaboratorIds])
+    recipients.forEach(r => {
+      if (r) addNotification({ type: 'feedback', title, body, recipientId: r })
+    })
+  }
   const [showFeedbackForm, setShowFeedbackForm] = useState(false)
   const [feedbackText, setFeedbackText] = useState('')
   const [feedbackType, setFeedbackType] = useState<'general' | 'thesis_draft'>('general')
@@ -532,7 +546,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                   onClick={() => {
                     if (ratingValue === 0) return
                     rateProject(instructorId, instructorName, ratingValue, ratingComment)
-                    addNotification({ type: 'feedback', title: 'Project Rated', body: `${instructorName} rated "${project?.title}" ${ratingValue}/5` })
+                    notifyProjectMembers('Project Rated', `${instructorName} rated "${project?.title}" ${ratingValue}/5`)
                     setSuccessMessage(`Project rated ${ratingValue}/5 stars.`)
                     setShowSuccessDialog(true)
                     setIsEditingRating(false)
@@ -600,7 +614,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
                 disabled={!feedbackText.trim()}
                 onClick={() => {
                   addProjectFeedback(instructorId, instructorName, feedbackText.trim(), feedbackType)
-                  addNotification({ type: 'feedback', title: 'New Project Feedback', body: `${instructorName} left feedback on "${project?.title}"` })
+                  notifyProjectMembers('New Project Feedback', `${instructorName} left feedback on "${project?.title}"`)
                   setSuccessMessage('Feedback posted successfully.')
                   setShowSuccessDialog(true)
                   setFeedbackText('')
