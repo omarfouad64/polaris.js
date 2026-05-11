@@ -747,14 +747,14 @@ export const initialData: DatabaseState = {
       { month: "Mar", placements: 3, internships: 7 }
     ]
   },
-  internships: [
+ internships: [
     {
       id: "internship_1",
       title: "Frontend Developer Intern",
       description: "Build modern UIs using React.",
       skills: ["React", "TypeScript"],
       duration: "3 months",
-      applicationDeadline: "2026-05-01T00:00:00Z",
+      applicationDeadline: "2025-05-01T00:00:00Z",
       programmingLanguages: ["JavaScript", "TypeScript"],
       status: "Hiring",
       archived: false,
@@ -769,7 +769,7 @@ export const initialData: DatabaseState = {
       description: "Create wireframes and prototypes for our web apps.",
       skills: ["Figma", "UI Design"],
       duration: "2 months",
-      applicationDeadline: "2026-04-15T00:00:00Z",
+      applicationDeadline: "2025-04-15T00:00:00Z",
       programmingLanguages: [],
       status: "Hiring",
       archived: false,
@@ -789,9 +789,39 @@ export const initialData: DatabaseState = {
       status: "Hiring",
       archived: false,
       postedAt: "2026-03-25T10:00:00Z",
-     companyName: "Global Systems",
+      companyName: "Global Systems",
       companyLogo: "/dummy-logo-2.png",
       applicantCount: 0
+    },
+    {
+      id: "internship_4",
+      title: "Backend Engineer Intern",
+      description: "Build scalable APIs and microservices.",
+      skills: ["Node.js", "PostgreSQL", "Docker"],
+      duration: "3 months",
+      applicationDeadline: "2025-03-15T00:00:00Z",
+      programmingLanguages: ["JavaScript", "TypeScript"],
+      status: "Hiring",
+      archived: false,
+      postedAt: "2026-02-01T08:00:00Z",
+      companyName: "Siemens Healthineers",
+      companyLogo: "/dummy-logo-2.png",
+      applicantCount: 3
+    }
+  ],
+  applications: [
+    {
+      id: "application_1",
+      internshipId: "internship_1",
+      internshipTitle: "Frontend Developer Intern",
+      companyName: "TechCorp",
+      studentId: "alice.smith@student.guc.edu.eg",
+      studentName: "Alice Smith",
+      studentEmail: "alice.smith@student.guc.edu.eg",
+      coverLetter: "I have built several React applications and am excited about frontend development.",
+      appliedAt: "2025-04-10T10:00:00Z",
+      status: "Pending",
+      contributionScore: 92
     },
     {
       id: "application_2",
@@ -802,9 +832,48 @@ export const initialData: DatabaseState = {
       studentName: "Charlie Brown",
       studentEmail: "charlie@student.guc.edu.eg",
       coverLetter: "I am a senior student with Python experience but eager to learn React.",
-      appliedAt: "2026-03-20T11:00:00Z",
+      appliedAt: "2025-04-12T11:00:00Z",
+      status: "Nominated",
+      contributionScore: 87
+    },
+    {
+      id: "application_3",
+      internshipId: "internship_1",
+      internshipTitle: "Frontend Developer Intern",
+      companyName: "TechCorp",
+      studentId: "david.m@student.guc.edu.eg",
+      studentName: "David Miller",
+      studentEmail: "david.m@student.guc.edu.eg",
+      coverLetter: "Experienced in full-stack development with strong TypeScript skills.",
+      appliedAt: "2025-04-18T14:00:00Z",
       status: "Rejected",
-      contributionScore: 40
+      contributionScore: 78
+    },
+    {
+      id: "application_4",
+      internshipId: "internship_2",
+      internshipTitle: "UI/UX Designer Intern",
+      companyName: "TechCorp",
+      studentId: "alice.smith@student.guc.edu.eg",
+      studentName: "Alice Smith",
+      studentEmail: "alice.smith@student.guc.edu.eg",
+      coverLetter: "I have experience with Figma and wireframing from my coursework.",
+      appliedAt: "2025-04-05T09:00:00Z",
+      status: "Accepted",
+      contributionScore: 95
+    },
+    {
+      id: "application_5",
+      internshipId: "internship_4",
+      internshipTitle: "Backend Engineer Intern",
+      companyName: "Siemens Healthineers",
+      studentId: "david.m@student.guc.edu.eg",
+      studentName: "David Miller",
+      studentEmail: "david.m@student.guc.edu.eg",
+      coverLetter: "My backend projects include Spring Boot microservices and PostgreSQL databases.",
+      appliedAt: "2025-03-10T10:00:00Z",
+      status: "Pending",
+      contributionScore: 88
     }
   ],
   favorites: [

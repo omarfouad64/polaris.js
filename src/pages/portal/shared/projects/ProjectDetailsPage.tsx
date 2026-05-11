@@ -16,89 +16,6 @@ import ConfirmDialog from '../../../../components/ConfirmDialog'
 import ProjectTaskSection from './components/ProjectTaskSection'
 import type { RootState } from '../../../../store'
 
-function resolveBackNavigation(
-  origin: string | null,
-  rolePath: string,
-  navigate: (path: string) => void,
-  project: any,
-  id: string | undefined
-) {
-  if (!origin) {
-    navigate(`/portal/${rolePath}/search`)
-    return
-  }
-
-  const studentProjectsPattern = `/portal/student/projects/${id}`
-  const studentProfilePattern = `/portal/student/profile`
-  const instructorProfilePattern = `/portal/instructor/projects`
-  const instructorOversightPattern = `/portal/instructor/oversight`
-  const employerInternshipsPattern = `/portal/employer/internships`
-  const employerProfilePattern = `/portal/employer/profile`
-
-  if (origin.includes('/student/projects/') || origin === `/portal/student/projects`) {
-    navigate('/portal/student/projects')
-    return
-  }
-
-  if (origin.includes('/student/profile')) {
-    navigate('/portal/student/profile')
-    return
-  }
-
-  if (origin.includes('/instructor/projects') || origin === `/portal/instructor/projects`) {
-    navigate('/portal/instructor/projects')
-    return
-  }
-
-  if (origin.includes('/instructor/oversight')) {
-    navigate('/portal/instructor/projects')
-    return
-  }
-
-  if (origin.includes('/employer/internships')) {
-    navigate('/portal/employer/internships')
-    return
-  }
-
-  if (origin.includes('/employer/profile')) {
-    navigate('/portal/employer/profile')
-    return
-  }
-
-  if (origin.includes('/administrator')) {
-    navigate('/portal/administrator/projects')
-    return
-  }
-
-  navigate(`/portal/${rolePath}/search`)
-}
-
-function getBackLabel(origin: string | null, rolePath: string, project: any, id: string | undefined): string {
-  if (!origin) return 'Back to Search'
-
-  if (origin.includes('/student/projects/') || origin === `/portal/student/projects`) {
-    return 'Back to My Projects'
-  }
-
-  if (origin.includes('/student/profile')) {
-    return 'Back to Profile'
-  }
-
-  if (origin.includes('/instructor/projects') || origin.includes('/instructor/oversight')) {
-    return 'Back to Projects'
-  }
-
-  if (origin.includes('/employer/internships') || origin.includes('/employer/profile')) {
-    return 'Back to Internships'
-  }
-
-  if (origin.includes('/administrator')) {
-    return 'Back to Projects'
-  }
-
-  return 'Go Back'
-}
-
 /**
  * FlagModal — handles the reasoning for flagging a project.
  */
@@ -242,25 +159,23 @@ export default function ProjectDetailsPage(): React.JSX.Element {
   }, [id])
 
   useEffect(() => {
-    const stored = localStorage.getItem('polaris_back_origin')
-    if (stored) {
-      setBackOrigin(stored)
-      const label = localStorage.getItem('polaris_back_label')
+    if (!localStorage.getItem('polaris_back_label')) {
       const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
-      setBackLabel(getBackLabel(stored, rolePath, null, id))
-    } else {
-      localStorage.setItem('polaris_back_origin', location.pathname)
-      const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
-      const newLabel = getBackLabel(location.pathname, rolePath, null, id)
+      let newLabel = 'Go Back'
+      if (location.pathname.includes('/student/projects/')) newLabel = 'Back to My Projects'
+      else if (location.pathname.includes('/student/profile')) newLabel = 'Back to Profile'
+      else if (location.pathname.includes('/instructor/projects') || location.pathname.includes('/instructor/oversight')) newLabel = 'Back to Projects'
+      else if (location.pathname.includes('/employer/internships') || location.pathname.includes('/employer/profile')) newLabel = 'Back to Internships'
+      else if (location.pathname.includes('/administrator')) newLabel = 'Back to Projects'
+      else if (location.pathname.includes('/search')) newLabel = 'Back to Search'
       localStorage.setItem('polaris_back_label', newLabel)
-      setBackOrigin(location.pathname)
-      setBackLabel(newLabel)
     }
-  }, [id, location.pathname, user, navigate])
+    setBackLabel(localStorage.getItem('polaris_back_label'))
+    setBackOrigin(location.pathname)
+  }, [id, location.pathname, user])
 
   const handleBack = () => {
-    const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
-    resolveBackNavigation(backOrigin, rolePath, navigate, project, id)
+    navigate(-1)
   }
 
   const handleToggleFavorite = () => {
@@ -322,15 +237,7 @@ export default function ProjectDetailsPage(): React.JSX.Element {
         <span className="material-symbols-outlined text-6xl text-outline/30 mb-4">search_off</span>
         <h2 className="text-2xl font-jakarta font-bold text-on-surface">Project Not Found</h2>
         <p className="font-lexend text-on-surface-variant mt-2 mb-8">The project you are looking for does not exist or is private.</p>
-        <Button onClick={() => {
-          const stored = localStorage.getItem('polaris_back_origin')
-          if (stored) {
-            const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
-            resolveBackNavigation(stored, rolePath, navigate, null, id)
-          } else {
-            navigate(-1)
-          }
-        }}>Go Back</Button>
+        <Button onClick={() => navigate(-1)}>Go Back</Button>
       </div>
     )
   }

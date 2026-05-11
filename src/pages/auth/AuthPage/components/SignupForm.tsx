@@ -61,7 +61,7 @@ export default function SignupForm({ role, setRole }: SignupFormProps): React.JS
     }
 
     const userRole = role === 'Course Instructor' ? 'Course Instructor' : role
-    registerUser(email, userRole, password)
+    registerUser(email, userRole, password, firstName, lastName)
     login(email, userRole)
     
     if (role === 'Employer' && companyName) {

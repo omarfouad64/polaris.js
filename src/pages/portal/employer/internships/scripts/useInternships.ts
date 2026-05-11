@@ -46,11 +46,15 @@ export default function useInternships() {
 
   const activeInternships = internships.filter(i => !i.archived)
   const archivedInternships = internships.filter(i => i.archived)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const internshipsWithPassedDeadline = internships.filter(i => !i.archived && new Date(i.applicationDeadline) <= today)
 
   return {
     internships,
     activeInternships,
     archivedInternships,
+    internshipsWithPassedDeadline,
     addInternship,
     updateInternship,
     deleteInternship,

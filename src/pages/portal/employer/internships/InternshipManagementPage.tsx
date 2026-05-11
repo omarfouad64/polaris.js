@@ -13,7 +13,7 @@ import type { Internship } from '../../../../types'
  */
 export default function InternshipManagementPage(): React.JSX.Element {
   const navigate = useNavigate()
-  const { activeInternships, archivedInternships, addInternship, updateInternship, deleteInternship, toggleStatus, toggleArchive } = useInternships()
+  const { activeInternships, archivedInternships, internshipsWithPassedDeadline, addInternship, updateInternship, deleteInternship, toggleStatus, toggleArchive } = useInternships()
   const { studentsPlaced } = useEmployerStats()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewTab, setViewTab] = useState<'active' | 'archived'>('active')
@@ -58,8 +58,8 @@ export default function InternshipManagementPage(): React.JSX.Element {
       return
     }
     const selectedDeadline = parseDateInput(form.applicationDeadline)
-    if (selectedDeadline < today) {
-      setDeadlineError('Deadline must be today or later.')
+    if (!form.applicationDeadline) {
+      setDeadlineError('Deadline is required.')
       return
     }
     setDeadlineError(null)
@@ -108,7 +108,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
     setDeadlineError(null)
   }
 
-  const currentList = viewTab === 'active' ? activeInternships : archivedInternships
+  const currentList = viewTab === 'active' ? internshipsWithPassedDeadline : archivedInternships
 
   return (
     <div className="space-y-6">
@@ -127,8 +127,8 @@ export default function InternshipManagementPage(): React.JSX.Element {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Active Listings', value: activeInternships.length, icon: 'work', color: 'primary' },
-          { label: 'Total Applicants', value: activeInternships.reduce((s, i) => s + (i.applicantCount ?? 0), 0), icon: 'group', color: 'secondary' },
+          { label: 'Active Listings', value: internshipsWithPassedDeadline.length, icon: 'work', color: 'primary' },
+           { label: 'Total Applicants', value: internshipsWithPassedDeadline.reduce((s, i) => s + (i.applicantCount ?? 0), 0), icon: 'group', color: 'secondary' },
           { label: 'Total Participants', value: studentsPlaced, icon: 'people', color: 'secondary' },
           { label: 'Archived', value: archivedInternships.length, icon: 'archive', color: 'outline' }
         ].map(stat => (
@@ -166,7 +166,6 @@ export default function InternshipManagementPage(): React.JSX.Element {
               <Input
                 label="Deadline"
                 type="date"
-                min={formatDateInput(today)}
                 value={form.applicationDeadline}
                 error={deadlineError ?? undefined}
                 onChange={e => {
@@ -189,7 +188,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
         <div className="border-b border-outline-variant/30 p-4 bg-surface-container-low/50 flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="flex bg-surface-container rounded-lg p-1">
             <button onClick={() => setViewTab('active')} className={`px-5 py-2 rounded-lg text-sm font-jakarta font-semibold transition-all ${viewTab === 'active' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}>
-              Active ({activeInternships.length})
+              Active ({internshipsWithPassedDeadline.length})
             </button>
             <button onClick={() => setViewTab('archived')} className={`px-5 py-2 rounded-lg text-sm font-jakarta font-semibold transition-all ${viewTab === 'archived' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}>
               Archived ({archivedInternships.length})

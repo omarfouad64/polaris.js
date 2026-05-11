@@ -82,6 +82,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
   }
 
   const handleViewProject = (id: string) => {
+    localStorage.setItem('polaris_back_label', 'Back to Profile')
     const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Employer' ? 'employer' : 'student'
     navigate(`/portal/${rolePath}/projects/${id}/view`)
   }

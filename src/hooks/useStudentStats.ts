@@ -25,50 +25,33 @@ export interface ProjectWithCollaborators {
   topCollaborators: ProjectCollaboratorStat[]
 }
 
-const DUMMY_COLLABORATORS: Record<string, ProjectCollaboratorStat[]> = {
-  'proj-001': [
-    { id: 'c-001', name: 'Ahmed Hassan', role: 'Lead Developer', taskCount: 4 },
-    { id: 'c-002', name: 'Mariam Khalil', role: 'Frontend Dev', taskCount: 2 },
-    { id: 'c-003', name: 'Sara Ali', role: 'Backend Dev', taskCount: 3 },
-  ],
-  'proj-002': [
-    { id: 'c-004', name: 'Omar Ibrahim', role: 'ML Engineer', taskCount: 5 },
-    { id: 'c-005', name: 'Fatima Mousa', role: 'Data Analyst', taskCount: 3 },
-  ],
-  'proj-003': [
-    { id: 'c-006', name: 'Khaled Nasser', role: 'Mobile Dev', taskCount: 6 },
-  ],
-}
-
 /**
- * useStudentStats — reads projects from Redux store and computes statistics.
+ * useStudentStats — reads projects and collaborators from Redux store and computes statistics.
  */
 export default function useStudentStats() {
-  const { projects } = useDatabase()
+  const { projects, projectCollaborators } = useDatabase()
 
-  // Map Redux projects to the shape expected by useStudentStats consumers
   const projectsWithStats = useMemo(() => {
     return projects.map(p => ({
       id: p.id,
       title: p.title,
       courseId: p.courseId,
-      // Additional fields expected by stats consumers are synthesized
-      isPublic: true,
-      status: 'active' as const,
-      tasks: [],
-      languages: [] as string[],
+      isPublic: p.isPublic,
+      status: p.status,
+      tasks: p.tasks,
+      languages: p.languages,
     }))
   }, [projects])
 
   const totalProjects = projectsWithStats.length
-  const publicProjects = projectsWithStats.filter(p => (p as any).isPublic).length
-  const activeProjects = projectsWithStats.filter(p => (p as any).status === 'active').length
-  const totalTasks = projectsWithStats.reduce((acc, p) => acc + ((p as any).tasks?.length || 0), 0)
+  const publicProjects = projectsWithStats.filter(p => p.isPublic).length
+  const activeProjects = projectsWithStats.filter(p => p.status === 'active').length
+  const totalTasks = projectsWithStats.reduce((acc, p) => acc + (p.tasks?.length || 0), 0)
 
   const languageStats = useMemo((): LanguageStat[] => {
     const langMap: Record<string, number> = {}
     projectsWithStats.forEach(p => {
-      const langs = (p as any).languages || []
+      const langs = p.languages || []
       langs.forEach((lang: string) => { langMap[lang] = (langMap[lang] || 0) + 1 })
     })
     const total = Object.values(langMap).reduce((sum, n) => sum + n, 0)
@@ -77,14 +60,29 @@ export default function useStudentStats() {
       .map(([language, count]) => ({ language, count, percentage: total > 0 ? Math.round((count / total) * 100) : 0 }))
   }, [projectsWithStats])
 
-  const projectsWithCollaborators = useMemo((): ProjectWithCollaborators[] =>
-    projectsWithStats.map(p => ({
+  const projectsWithCollaborators = useMemo((): ProjectWithCollaborators[] => {
+    const collaboratorMap: Record<string, ProjectCollaboratorStat[]> = {}
+    projectCollaborators.filter(c => c.invitationStatus === 'accepted').forEach(c => {
+      if (!collaboratorMap[c.projectId]) {
+        collaboratorMap[c.projectId] = []
+      }
+      const existing = collaboratorMap[c.projectId].find(x => x.id === c.id)
+      if (!existing) {
+        collaboratorMap[c.projectId].push({
+          id: c.id,
+          name: c.name,
+          role: c.role,
+          taskCount: 1
+        })
+      }
+    })
+
+    return projectsWithStats.map(p => ({
       projectId: p.id,
       projectTitle: p.title,
-      topCollaborators: (DUMMY_COLLABORATORS[p.id] ?? []).sort((a, b) => b.taskCount - a.taskCount).slice(0, 3),
-    })),
-    [projectsWithStats]
-  )
+      topCollaborators: (collaboratorMap[p.id] ?? []).sort((a, b) => b.taskCount - a.taskCount).slice(0, 3),
+    }))
+  }, [projectsWithStats, projectCollaborators])
 
   return {
     totalProjects,

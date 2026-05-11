@@ -8,8 +8,8 @@ import { registerUser as registerUserAction } from '../store/databaseSlice'
 export default function useUsers() {
   const { users, companies, dispatch } = useDatabase()
 
-  const registerUser = (username: string, role: UserRole, _password = 'password') => {
-    dispatch(registerUserAction({ username, role, password: _password }))
+  const registerUser = (username: string, role: UserRole, _password = 'password', firstName?: string, lastName?: string) => {
+    dispatch(registerUserAction({ username, role, password: _password, firstName, lastName }))
     return true
   }
 

@@ -494,9 +494,10 @@ const databaseSlice = createSlice({
     },
 
     // ── Auth / Users ────────────────────────────────────────────────────────────
-    registerUser: (state, action: PayloadAction<{ username: string; role: UserRole; password?: string }>) => {
+    registerUser: (state, action: PayloadAction<{ username: string; role: UserRole; password?: string; firstName?: string; lastName?: string }>) => {
       const existing = state.users.find(u => u.username === action.payload.username)
       if (!existing) {
+        const fullName = [action.payload.firstName, action.payload.lastName].filter(Boolean).join(' ')
         state.users.push({
           username: action.payload.username,
           role: action.payload.role,
@@ -505,7 +506,7 @@ const databaseSlice = createSlice({
         if (action.payload.role === 'Student') {
           state.students.push({
             studentId: action.payload.username,
-            name: '',
+            name: fullName,
             email: action.payload.username,
             major: '',
             year: '',
@@ -520,7 +521,7 @@ const databaseSlice = createSlice({
         } else if (action.payload.role === 'Course Instructor') {
           state.instructors.push({
             instructorId: action.payload.username,
-            name: '',
+            name: fullName,
             email: action.payload.username,
             biography: '',
             researchInterests: [],

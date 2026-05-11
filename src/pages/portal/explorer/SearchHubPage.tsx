@@ -82,10 +82,12 @@ export default function SearchHubPage(): React.JSX.Element {
   }, [projects, showMoreProjects])
 
   const handleViewProject = (id: string) => {
+    localStorage.setItem('polaris_back_label', 'Back to Search')
     navigate(`/portal/${rolePath}/projects/${id}/view`)
   }
 
   const handleViewInstructor = (id: string) => {
+    localStorage.setItem('polaris_back_label', 'Back to Search')
     navigate(`/portal/${rolePath}/instructors/${id}`)
   }
 

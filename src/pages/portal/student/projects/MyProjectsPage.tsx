@@ -40,8 +40,9 @@ export default function MyProjectsPage() {
     }
   };
 
-  const handleView = (id: string) => {
+const handleView = (id: string) => {
     dispatch({ type: 'database/markProjectNotifications', payload: id });
+    localStorage.setItem('polaris_back_label', 'Back to My Projects')
     navigate(`/portal/student/projects/${id}/view`);
   };
 

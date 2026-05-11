@@ -29,7 +29,7 @@ const defaultProfile: CompanyProfile = {
 /**
  * useCompanyProfile — provides company profile data from Redux store.
  */
-export default function useCompanyProfile(): {
+function useCompanyProfileImpl(): {
   profile: CompanyProfile
   updateProfile: (updates: Partial<CompanyProfile>) => void
   setLocation: (lat: number, lng: number, address?: string | null) => void
@@ -112,3 +112,5 @@ export default function useCompanyProfile(): {
 
  return { profile, updateProfile, setLocation: setLocationAction, uploadDocument: uploadDocumentAction, removeDocument: removeDocumentAction }
 }
+
+export default useCompanyProfileImpl
