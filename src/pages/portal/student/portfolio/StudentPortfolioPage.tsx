@@ -91,6 +91,7 @@ export default function StudentPortfolioPage(): React.JSX.Element {
     setEditMajor(portfolio.major)
     setEditBio(portfolio.bio)
     setEditLinkedin(portfolio.linkedinUrl)
+    setNewSkill('')
     setIsEditing(true)
   }
 
@@ -102,6 +103,8 @@ export default function StudentPortfolioPage(): React.JSX.Element {
     // Synchronize name if we had a name edit field (currently name is static in dummy)
     setIsEditing(false)
   }
+
+  
 
   // Handler: Add skill
   const handleAddSkill = () => {
@@ -319,7 +322,7 @@ const handleToggleFavorite = (): void => {
                         className="flex items-center gap-2 px-3 py-1 bg-secondary-container rounded-full"
                       >
                         <span className="text-sm font-lexend text-on-secondary-container">{skill}</span>
-                        {!isReadOnly && (
+                        {isEditing && !isReadOnly && (
                           <button
                             onClick={() => handleRemoveSkill(skill)}
                             className="text-on-secondary-container hover:opacity-70 transition-opacity"
@@ -337,7 +340,7 @@ const handleToggleFavorite = (): void => {
               </div>
 
               {/* Add Skill Input */}
-              {!isReadOnly && (
+              {isEditing && !isReadOnly && (
                 <div>
                   <label className="block text-sm font-jakarta font-semibold text-on-surface mb-2">
                     Add a Skill
@@ -448,7 +451,7 @@ const handleToggleFavorite = (): void => {
                       </div>
                       <div className="text-right flex-shrink-0">
                         <span className="px-2.5 py-1 bg-secondary/10 text-secondary rounded-full text-xs font-jakarta font-semibold">Completed</span>
-                        <p className="text-xs font-lexend text-on-surface-variant mt-1">{ci.completedAt}</p>
+                        <p className="text-xs font-lexend text-on-surface-variant mt-1">{new Date(ci.completedAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                   ))}

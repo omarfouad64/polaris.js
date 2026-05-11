@@ -38,9 +38,9 @@ export default function LoginForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-8">
       <div className="space-y-5">
         <Input 
-          label="University Email" 
+          label="Email" 
           type="email" 
-          placeholder="jane.doe@guc.edu.eg" 
+          placeholder="example@email.com" 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           icon={<span className="material-symbols-outlined">mail</span>}

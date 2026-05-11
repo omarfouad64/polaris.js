@@ -227,7 +227,10 @@ export default function ProjectDetailsPage(): React.JSX.Element {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              const rolePath = user?.role === 'Course Instructor' ? 'instructor' : user?.role === 'Administrator' ? 'administrator' : user?.role === 'Employer' ? 'employer' : 'student'
+              navigate(`/portal/${rolePath}/search`)
+            }}
             className="flex items-center gap-2 text-sm font-jakarta font-bold text-primary hover:underline"
           >
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>

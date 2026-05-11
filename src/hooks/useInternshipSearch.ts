@@ -17,7 +17,7 @@ export default function useInternshipSearch(currentStudentId = 'student_1', curr
   const [sortOrder, setSortOrder] = useState<'posted_desc' | 'posted_asc'>('posted_desc')
 
   const filteredInternships = useMemo(() => {
-    let results = internships.filter((i: Internship) => !i.archived)
+    let results = (internships || []).filter((i: Internship) => !i.archived)
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
       results = results.filter(i =>
@@ -63,7 +63,7 @@ export default function useInternshipSearch(currentStudentId = 'student_1', curr
   }, [dispatch, internships, currentStudentId, currentStudentName, currentStudentEmail])
 
   const hasApplied = useCallback((internshipId: string) => {
-    return applications.some(a => a.internshipId === internshipId && a.studentId === currentStudentId)
+    return (applications || []).some(a => a.internshipId === internshipId && a.studentId === currentStudentId)
   }, [applications, currentStudentId])
 
   const toggleDurationFilter = (duration: string) => {
@@ -74,8 +74,8 @@ export default function useInternshipSearch(currentStudentId = 'student_1', curr
 
   return {
     internships: filteredInternships,
-    applications: applications.filter(a => a.studentId === currentStudentId),
-    completedInternships: completedInternships.filter(ci => ci.studentId === currentStudentId),
+    applications: (applications || []).filter(a => a.studentId === currentStudentId),
+    completedInternships: (completedInternships || []).filter(ci => ci.studentId === currentStudentId),
     searchQuery,
     setSearchQuery,
     companyFilter,

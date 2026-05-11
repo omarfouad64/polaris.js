@@ -214,7 +214,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="text-lg font-jakarta font-semibold text-on-surface group-hover:text-primary transition-colors">{internship.title}</h3>
-                  <p className="text-sm font-lexend text-on-surface-variant mt-0.5">{internship.duration} • Deadline: {internship.applicationDeadline}</p>
+                  <p className="text-sm font-lexend text-on-surface-variant mt-0.5">{internship.duration} • Deadline: {new Date(internship.applicationDeadline).toLocaleDateString()}</p>
                 </div>
                 <span className={`px-2.5 py-1 rounded-lg text-xs font-jakarta font-semibold tracking-wider uppercase ${
                   internship.status === 'Hiring' ? 'bg-secondary/10 text-secondary' : 'bg-outline-variant/30 text-on-surface-variant'
@@ -332,7 +332,7 @@ export default function InternshipManagementPage(): React.JSX.Element {
                 </div>
                 <div>
                   <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">Deadline</p>
-                  <p className="text-sm font-jakarta font-bold text-on-surface mt-1">{sel.applicationDeadline}</p>
+                  <p className="text-sm font-jakarta font-bold text-on-surface mt-1">{new Date(sel.applicationDeadline).toLocaleDateString()}</p>
                 </div>
                 <div>
                   <p className="text-xs font-jakarta font-semibold text-on-surface-variant uppercase tracking-wider">Applicants</p>
